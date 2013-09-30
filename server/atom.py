@@ -7,6 +7,7 @@ import os, re, sys
 
 class atom:
 	def __init__(self,id,status,servicename,aspectratio,ebno,pol,bissstatus,vresol,framerate,vstate,asioutmode,inSatSetupModType,inSatSetupModType2,inSatSetupRollOff,inSatSetupSymbolRate,inSatSetupSatelliteFreq,inSatSetupFecRate,inSatSetupInputSelect,inSatSetupSatelliteFreq2,inSatSetupSymbolRate2,input_selection,inputTsBitrate,pol2,lockState):
+		self.model = 0
 		self.id = id
 		self.status = status
 		self.servicename = servicename
@@ -160,12 +161,22 @@ class atom:
 		self.servicename = servicename
 		
 	def setAspectRatio(self,aspectratio):
-		if (aspectratio == "2"):
-			self.aspectratio = "16:9"
-		if (aspectratio == "3"):
-			self.aspectratio = "4:3"
-		if (aspectratio == ""):
-			self.aspectratio = ""
+	#Syntax	 Integer32 {unknown(0), ar_16_9(1), ar_4_3(2), ar_22_1(4), ar_Square(8), ar_Extended_Par(16)}
+		if self.model == 4:
+			if (aspectratio == "1"):
+				self.aspectratio = "16:9"
+			if (aspectratio == "2"):
+				self.aspectratio = "4:3"
+			else:
+				self.aspectratio = ""
+
+		else:
+			if (aspectratio == "2"):
+				self.aspectratio = "16:9"
+			if (aspectratio == "3"):
+				self.aspectratio = "4:3"
+			if (aspectratio == ""):
+				self.aspectratio = ""
 			
 	def setEbno(self,ebno):
 		try:
@@ -243,6 +254,11 @@ class atom:
 			
 # JP Changes
 
+	def setinSatSetupInputSelect(self, inSatSetupInputSelect):
+		# {channel_1(0),channel_2(1), channel_3(2), channel_4(3), channel_5(4), channel_6(5), channel_7(6), channel_8(7)}
+		if self.model == 4:
+			inSatSetupInputSelect += 1
+		self.inSatSetupInputSelect = inSatSetupInputSelect
 
 		
 	def setinSatSetupModType2(self,inSatSetupModType2):		
@@ -255,30 +271,50 @@ class atom:
 		self.serviceID2 = serviceID2
 		
 	def setinput_selection(self,input_selection):
-					
-		
-		if (input_selection == "1"):
-			self.input_selection = "ASI"
-		
-		elif (input_selection == "2"):
-			self.input_selection = "SAT"
-
-		else:
-			self.input_selection = ""
+		self.input_selection = ""			
+		if self.model == 3:
+			if (input_selection == "1"):
+				self.input_selection = "ASI"
+			
+			elif (input_selection == "2"):
+				self.input_selection = "SAT"
+		elif self.model == 4:
+			# Syntax	 Integer32 {asi(0), euro(1), euro_redundant(2), st_input(3), auto(5)}
+			if input_selection == "0":
+				self.input_selection = "ASI"
+			
+			elif input_selection in ["1","2"]:
+				self.input_selection = "SAT"
+			
 
 	def setinSatSetupSatelliteFreq2(self,inSatSetupSatelliteFreq2):
-				self.inSatSetupSatelliteFreq2 = inSatSetupSatelliteFreq2
+		self.inSatSetupSatelliteFreq2 = inSatSetupSatelliteFreq2
 
 	def setinSatSetupInputSelect(self,inSatSetupInputSelect):
-				self.inSatSetupInputSelect =inSatSetupInputSelect
-
+		if self.model == 4:		
+			# Syntax	 Integer32 {channel_1(0),channel_2(1), channel_3(2), channel_4(3), channel_5(4), channel_6(5), channel_7(6), channel_8(7)}
+			self.inSatSetupInputSelect =inSatSetupInputSelect +1
+		else:
+			self.inSatSetupInputSelect =inSatSetupInputSelect
+			
 	def setinSatSetupRollOff(self,inSatSetupRollOff):
-		if (inSatSetupRollOff == "1"):
-			self.inSatSetupRollOff= "0.20"
-		if (inSatSetupRollOff == "2"):
-			self.inSatSetupRollOff = "0.35"
-		if (inSatSetupRollOff == "3"):
-			self.inSatSetupRollOff = "0.25"	
+		if self.model == 4:
+			# # Syntax	 Integer32 {twenty(0), twenty-five(2), thirty-five(1)  }
+			if (inSatSetupRollOff == "0"):
+				self.inSatSetupRollOff= "0.20"
+			if (inSatSetupRollOff == "1"):
+				self.inSatSetupRollOff = "0.35"
+			if (inSatSetupRollOff == "2"):
+				self.inSatSetupRollOff = "0.25"	
+		
+		else:		
+			
+			if (inSatSetupRollOff == "1"):
+				self.inSatSetupRollOff= "0.20"
+			if (inSatSetupRollOff == "2"):
+				self.inSatSetupRollOff = "0.35"
+			if (inSatSetupRollOff == "3"):
+				self.inSatSetupRollOff = "0.25"	
 	
 	# IRD reports Symbolrate in SYMBOLS per second. D2S database in Kilosymbols
 	# Must devide by 1000 for consistency

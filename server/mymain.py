@@ -20,7 +20,30 @@ def getSNMP(equipmentobj):
 			snmp_commands += com
 	except:
 		raise "DB error"
-		 	
+	
+	
+	""" This reads the SAT input from the last run of the program in order to poll receivers. 
+	This means they take longer to update if the sat input changes, but since it doesn't too often it's OK """
+	
+	comsel ="SELECT Sat_Input FROM status WHERE id = %i" % equipmentobj.id
+	sat_input = 1
+	try:
+		sat_input = sql.qselect(comsel)[0]
+		if type(sat_input) == type(["list"]): #Not sure if it returns a list
+			sat_input = sat_input[0]
+	except:
+		
+		raise "DB error"	
+	if sat_input in ["1","2","3","4"]:
+		pass
+	else:
+		sat_input = 1
+	snmp_commands = snmp_commands.replace('X', str(sat_input))
+	
+	#for i in range(len(snmp_commands):
+	#	snmp_commands[i] = snmp_commands[i].replace('X', str(sat_input))
+			
+	 	
 	atomobj = equipmentobj.getSNMP(snmp_commands)
 	#print snmp_commands
 	if (mid == 1):

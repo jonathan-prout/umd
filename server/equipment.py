@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-import sys,os,commands,string
+import sys,os,commands,string, subprocess
 import getopt,atom,encoderatom
 
 """ OCT 09 added 
@@ -11,6 +11,7 @@ import getopt,atom,encoderatom
 		
 """
 def askSN_AR(thiscommand,id,model):
+	"""
 	(status, out) = commands.getstatusoutput(thiscommand)
 	#print out
 	lines = string.split(out,"\n")
@@ -22,7 +23,23 @@ def askSN_AR(thiscommand,id,model):
 	res = string.find(lines[0],"Timeout")
 	#print "self->model:",model
 	#if (model == 1):
+	
 	if (res == -1):
+	"""
+	try:
+		out = subprocess.check_output(thiscommand)
+		#print out
+		lines = string.split(out,"\n")
+		#i = 0	 
+		#for l in lines:
+			#print i,":",l
+			#i = (i+1)
+			#print lines[9]
+		res = string.find(lines[0],"Timeout")
+		if (res == -1):
+			raise "Timeout"
+	except CalledProcessError, "Timeout":
+	
 		# decoder part
 		servicename =""
 		aspectratio =""
@@ -42,8 +59,10 @@ def askSN_AR(thiscommand,id,model):
 		inSatSetupSatelliteFreq2 =""
 		inSatSetupSymbolRate2 =""
 		input_selection = ""
+		dvbS2InputNumber = ""
 		inSatSetupModType2 = ""
 		inputtsbitrate = ""
+		serviceID = ""
 		serviceID2 = ""
 		# encoder part
 		muxbitrate=""
@@ -63,10 +82,10 @@ def askSN_AR(thiscommand,id,model):
 		temperature=""
 		pol2=""
 		lockState=""
-		
+	else:	
 		try:
 			if (model == 1):
-				servicename = lines[0][1:]
+				serviceID = lines[0][1:]
 				aspectratio = lines[1][1:]
 				ebno = lines[2][1:]
 				pol = lines[3][1:]
@@ -113,7 +132,27 @@ def askSN_AR(thiscommand,id,model):
 				pol2   = lines[20][1:]
 				lockState = lines[21][1:]
 				#print inputTsBitrate
-
+			if (model == 4):
+				serviceID = lines[0][1:]  
+				aspectratio = lines[1][1:] 
+				ebno = lines[2][1:] #k
+				pol = lines[3][1:] #k
+				bissstatus = lines[4][1:] 
+				vresol = lines[5][1:] 
+				framerate = lines[6][1:] 
+				vstate = lines[7][1:] 
+				asioutmode = lines[8][1:] 
+				inSatSetupModType = lines[9][1:]  
+				inSatSetupSatelliteFreq = lines[10][1:] 
+				inSatSetupSymbolRate = lines[11][1:]
+				inSatSetupFecRate = lines[12][1:]
+				inSatSetupInputSelect = lines[13][1:]
+				dvbS2InputNumber = lines[14][1:] #new
+				inSatSetupRollOff = lines[15][1:]
+				input_selection  = lines[16][1:]
+				inputTsBitrate  = lines[17][1:]
+				lockState = lines[18][1:]
+				#print inputTsBitrate
 			if (model == 2):
 				
 				servicename = lines[0][1:]
@@ -181,6 +220,7 @@ def askSN_AR(thiscommand,id,model):
 			
 		if (model == 1):
 			obj = atom.atom("","","","","","","","","","","","","","","","","","","","","","","","")
+			obj.model = model
 			obj.setStatus("on")
 			obj.setId(id)
 			obj.setServiceName(servicename)
@@ -209,6 +249,7 @@ def askSN_AR(thiscommand,id,model):
 			return obj
 		if (model == 3):
 			obj = atom.atom("","","","","","","","","","","","","","","","","","","","","","","","")
+			obj.model = model
 			obj.setStatus("on")
 			obj.setId(id)
 			obj.setServiceName(servicename)
@@ -238,7 +279,7 @@ def askSN_AR(thiscommand,id,model):
 			return obj			
 		if (model == 2):
 			obj = encoderatom.encoderatom("","","","","","","","","","","","","","","","","","")
-
+			obj.model = model
 			obj.setId(id)
 			obj.setStatus("on")
 			obj.setServiceName(servicename)
@@ -263,6 +304,7 @@ def askSN_AR(thiscommand,id,model):
 		#print "IRD is offline"
 		if (model == 1):
 			obj = atom.atom("","","","","","","","","","","","","","","","","","","","","","","")
+			obj.model = model
 			obj.setId(id)
 			obj.setStatus("off")
 			obj.setEbno('')
@@ -287,6 +329,31 @@ def askSN_AR(thiscommand,id,model):
 			return obj
 		if (model == 3):
 			obj = atom.atom("","","","","","","","","","","","","","","","","","","","")
+			obj.model = model
+			obj.setId(id)
+			obj.setStatus("off")
+			obj.setEbno('')
+			obj.setPol("")
+			obj.setBissStatus("")
+			obj.setVResol("")
+			obj.setFrameRate("")
+			obj.setVState("")
+			obj.setAsioutMode("")
+			obj.setinSatSetupModType("")
+			obj.setinSatSetupRollOff("")	
+			obj.setinSatSetupSymbolRate("")
+			obj.setinSatSetupSatelliteFreq("")
+			obj.setinSatSetupFecRate("")
+			obj.setinput_selection("")	
+			obj.setinSatSetupModType2("")
+			obj.setinputTsBitrate("")
+			obj.setserviceID2("")
+			obj.setpol2("")
+			obj.setlockState("")			
+			return obj
+		if (model == 4):
+			obj = atom.atom("","","","","","","","","","","","","","","","","","","","")
+			obj.model = model
 			obj.setId(id)
 			obj.setStatus("off")
 			obj.setEbno('')
@@ -311,6 +378,7 @@ def askSN_AR(thiscommand,id,model):
 			
 		if (model == 2):
 			obj = encoderatom.encoderatom("","","","","","","","","","","","","","","","","","","")
+			obj.model = model
 			obj.setId(id)
 			obj.setStatus("off")
 			obj.setServiceName("")
@@ -334,7 +402,24 @@ def askSN_AR(thiscommand,id,model):
 				 obj = encoderatom.encoderatom("","","","","","","","","","","","","","","","")
 				 return obj
 			"""
-  
+ 
+def snmp_walk(ip, command):
+	commandlist = ["/usr/bin/snmpwalk", "-v 1", "-c public", ip, command] 
+	try:
+		output = subprocess.check_output(commandlist)
+	except CalledProcessError:
+		return []
+	
+	returnlist = []
+	lines = output.split('\n')
+	for line in lines:
+		if ":" in line:
+			line = line.split(':')[1]
+		line = line.strip('"')
+		line = line.strip()
+		returnlist.append(line)
+	return returnlist
+	
 class equipment:
 	
 	def __init__(self,id,model,ip,name,network,matrixname):

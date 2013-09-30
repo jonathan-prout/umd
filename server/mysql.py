@@ -3,45 +3,63 @@ import os, re, sys
 import threading, MySQLdb
 
 class mysql:
-	dhost="localhost"
-	duser="umd"
-	dpass="umd"
-	dname="UMD"
-	db = None
-	cursor= None
-	semaphore = None
-	mutex = None
-	DBBAD = "oppps"
-
 	def __init__(self):
+		self.dhost="localhost"
+		self.duser="umd"
+		self.dpass="umd"
+		self.dname="UMD"
+		self.db = None
+		self.cursor= None
+		self.semaphore = None
+		self.mutex = None
+		self.DBBAD = "oppps"
 		try:
 			#print "Opening Database Connection...."
 
-			mysql.db = MySQLdb.connect(mysql.dhost,mysql.duser,mysql.dpass,mysql.dname)
-	
+			self.db = MySQLdb.Connection(self.dhost,self.duser,self.dpass,self.dname)
+			self.cursor = self.db.cursor()
 
 		except:
 			print "Database Connection Error"
 			#raise mysql.DBBAD
 		
-	def qselect(self,sql):
-		""" semaphore & mutex lock to access share database """
-		mysql.semaphore.acquire()
-		mysql.mutex.acquire()
+		#self.db.query("DO 0;")
+		#self.db.commit()
 		
-		mysql.cursor = mysql.db.cursor()
-		mysql.cursor.execute("set autocommit = 1")
+	def qselect(self,sql):
+		""" semaphore & mutex lock to access share database takes sql command as string. Returns list"""
+		self.semaphore.acquire()
+		self.mutex.acquire()
+		rows = []
+		
+		#self.cursor.execute("set autocommit = 1")
 		#print "\n Mysql Class: I'm going to execute ", sql
-		mysql.cursor.execute(sql)
-		##mysql.cursor.commit()
-		data = mysql.cursor.fetchall()
+		#self.cursor.execute(sql)
+		for command in sql.split(";"): #SQL commands separated by ; but this can do one at a time
+			if command not in ["", " "]: #there will always be one 0 len at the end
+				#print "'" + command + "'"
+				self.db.query(command + ";")
+				data = self.db.use_result()
+			
+				
+				
+				#data = self.cursor.fetchall()
+				#self.db.commit()
+				
+				try:
+					rows +=  data.fetch_row(maxrows=0)
+				except:
+					pass
+			
+		
 		
 		""" semaphore & mutex lock to release locked share database """
-		mysql.mutex.release()
-		mysql.semaphore.release()		
-		return data
-	
+		self.mutex.release()
+		self.semaphore.release()
+		
+		return rows
+		
 	def close(self):
 		#print "Closing database....."
-		mysql.db.close()
+		self.db.close()
 
