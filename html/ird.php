@@ -1,4 +1,9 @@
 <?php
+ error_reporting(E_ALL); 
+ ini_set( 'display_errors','1'); 
+
+
+ 
  //usage: http://fxchange1.ebu.ch/umd/ird.php?sat=W3A
 
  //
@@ -58,7 +63,7 @@ else
 <table border="0"width="50%">
 <tr>	
 <td style="vertical-align:middle"> Select by category </td>
-<td style="vertical-align:middle"> <form action="dummy" method="post"><select name="choice" size="1" onChange="jump(this.form)"><option value="#">Please Select</option><option value="ird.php?sat=W3A">W3A</option><option value="ird.php?sat=W2A">W2A</option><option value="ird.php?sat=NSS806">NSS806</option><option value="ird.php?sat=RX">HD Rx</option><option value="ird.php?sat=FiNE">FiNE</option></select></form></td>
+<td style="vertical-align:middle"> <form action="dummy" method="post"><select name="choice" size="1" onChange="jump(this.form)"><option value="#">Please Select</option><option value="ird.php?sat=W3">W3A</option><option value="ird.php?sat=W2">W2A</option><option value="ird.php?sat=806">NSS806</option><option value="ird.php?sat=RX">HD Rx</option><option value="ird.php?sat=FiNE">FiNE</option></select></form></td>
 </tr>
 </table>
  </center>
@@ -69,6 +74,7 @@ else
 		<td>Modulation</td>
 		<td>Video Format</td>
 		<td>Service</td>
+		<td>ASI mode</td>
 	</tr>
 	
 	
@@ -76,13 +82,10 @@ else
 
 <?php 
 	
-	$sql = 'SELECT `status` . * , `equipment` . * , `status`.`channel` , `status`.`modtype2` '
-        . ' FROM equipment, status'
-        . ' WHERE (('
-        . ' `equipment`.`id` = `status`.`id` '
-        . ' ) AND ( `equipment`.`satellite` LIKE "%' 
-		. $sat 
-		. '%"))';
+	$sql = 'SELECT `equipment`.*,`status`.*
+FROM equipment, status
+WHERE (`equipment`.`labelnamestatic` like  "%'. $sat .'%") AND `equipment`.`id`= `status`.`id`';
+		
 		//print $sql;
 		
 		
@@ -93,16 +96,16 @@ else
 	
 	$i=0;
 	while ($i < $num) {
-		$label=mysql_result($result,$i,"labelnamestatic");
-		$channel=mysql_result($result,$i,"channel");
-		$modulation=mysql_result($result,$i,"modtype2");
-		$videoresolution=mysql_result($result,$i,"videoresolution");
-		$aspectratio=mysql_result($result,$i,"aspectratio");
-		$servicename=mysql_result($result,$i,"servicename");
-		$ip=mysql_result($result,$i,"ip");
-		$videostate=mysql_result($result,$i,"videostate");
-		$framerate=mysql_result($result,$i,"framerate");
-		
+		$label=mysql_result($result,$i,"equipment.labelnamestatic");
+		$channel=mysql_result($result,$i,"status.channel");
+		$videoresolution=mysql_result($result,$i,"status.videoresolution");
+		$aspectratio=mysql_result($result,$i,"status.aspectratio");
+		$servicename=mysql_result($result,$i,"status.servicename");
+		$ip=mysql_result($result,$i,"equipment.ip");
+		$videostate=mysql_result($result,$i,"status.videostate");
+		$modulation=mysql_result($result,$i,"status.modulationtype");
+		$framerate=mysql_result($result,$i,"status.framerate");
+		$asioutmode=mysql_result($result,$i,"status.asioutmode");
 		if ($videostate == "Running")
 			$background = "lightgreen";
 		else
@@ -114,6 +117,7 @@ else
 		echo '<td bgcolor="'. $background .'">'. $modulation . '</td>';
 		echo '<td bgcolor="'. $background .'">'. $videoresolution . ', '. $aspectratio .', '. $framerate . '</td>';
 		echo '<td bgcolor="'. $background .'">'. $servicename . '</td>';
+		echo '<td bgcolor="'. $background .'">'. $asioutmode . '</td>';
 		echo '</tr>';
 	
 	

@@ -1,4 +1,4 @@
- <form method="post" action="<?php echo $PHP_SELF;?>">
+ <form method="post" action="<?php echo  $_SERVER['PHP_SELF'];?>">
  <input type="hidden" name="formused" value="login">
  <center>
 <table width="400" height="382" border="1" cellpadding="1">

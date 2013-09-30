@@ -19,7 +19,7 @@
  function dbstart(){
  	global $dbhost,$dblogin,$dbpass,$dbname,$connection;
  	
- 	$connection = mysql_connect("$dbhost","$dblogin","$dbpass") or die ("Trouble to connect...");
+ 	$connection = mysql_connect("$dbhost","$dblogin","$dbpass") or die ("Failure with the UMD manager database. Please restart machine.");
  	$ressource = mysql_select_db($dbname);
  }
 
