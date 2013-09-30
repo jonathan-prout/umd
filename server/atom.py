@@ -181,11 +181,12 @@ class atom:
 	
 	
 	def setPol(self,pol,pol2,inSatSetupInputSelect):
-			polvar = 0
+		polvar = 0
 		if(inSatSetupInputSelect == "2"): #This is input 1 not 2
-			polvar = int(pol)
+			polvar = pol
 		if(inSatSetupInputSelect == "3"): 
-			polvar = int(pol2)
+			polvar = pol2
+		
 		if (polvar == "1"):
 			self.pol = "Y"
 		elif (polvar == "2"):
