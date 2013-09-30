@@ -26,23 +26,25 @@ def service():
         for i in range(0,len(status)):
           result = ""
           #print status[i][0]
-          channel_request = "SELECT c.channel FROM channel_def c WHERE ((c.sat =\"" + str(status[i][0]) + "\") AND (c.pol =\"" + str(status[i][1]) + "\") AND (c.frequency LIKE \"" + str(status[i][2]) + "%\") AND (c.symbolrate =\"" + str(status[i][3]) + "\"))"
+          channel_request = "SELECT c.channel, c.modulationtype FROM channel_def c WHERE ((c.sat =\"" + str(status[i][0]) + "\") AND (c.pol =\"" + str(status[i][1]) + "\") AND (c.frequency LIKE \"" + str(status[i][2]) + "%\") AND (c.symbolrate =\"" + str(status[i][3]) + "\"))"
           #print channel_request
           result = sql.qselect(channel_request)
           if(len(result) != 0 ):
-             channel = str(result[0]) 
-             channel = channel[2:(len(channel)-3)]
+             channel = str(result[0][0]) 
+             modulation = str(result[0][1])
+             channel = channel[0:(len(channel)-3)]
              #channel = str(status[i][0]) + " " + channel + "/"
 
           else:
           #     channel = str(status[i][6])
                 channel = ""
+                modulation = ""
 
 
           #print i + 1,
           #print " = ",
-          #print channel
-          updatesql = "UPDATE status SET channel ='%s' WHERE id ='%i'" %(channel,(i+1))
+          #print channel + " " + modulation 
+          updatesql = "UPDATE status SET channel ='%s', modtype2 ='%s' WHERE id ='%i'" %(channel,modulation,(i+1))
           result = sql.qselect(updatesql)
           
 
