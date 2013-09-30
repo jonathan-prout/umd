@@ -6,6 +6,7 @@ import sys
 
 SLEEPTIME=5
 shellcommand=r'/var/www/programming/client/umd.py'
+shellcommand2=r'/var/www/programming/client/customlabel.py'
 
 
 def thread(sleeptime):
@@ -20,3 +21,4 @@ if __name__ == "__main__":
 		t1.start()
 		t1.join()
 		os.system(shellcommand)
+		os.system(shellcommand2)

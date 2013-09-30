@@ -85,8 +85,29 @@ if __name__ == "__main__":
 				
 				
 				if (element == kaleidoaddr):
+					if "$" in text:
+						text = text.split("$")
+						mysql.mysql.semaphore = threading.BoundedSemaphore(value=1)
+						mysql.mysql.mutex = threading.RLock()
+					        sql = mysql.mysql()
 
-					sendumd += "<setKDynamicText>set address=\"" + labeladdr + "\" text=\"" + text + "\" </setKDynamicText>\n"
+        					result = ""
+						request = request = 'SELECT `ebno` FROM `status` WHERE `id` =' + str(text[1])
+						
+        					try:
+                					result = sql.qselect(request)
+        					except:
+							result = ""
+                					print "SQL Connection Error at ",now.strftime("%H:%M:%S")
+               						print "Error %d: %s" % (e.args[0], e.args[1])
+						try:
+							result = result[0][0]
+						except:
+							result = "IRD not found"
+						sql.close()
+						sendumd += "<setKDynamicText>set address=\"" + labeladdr + "\" text=\"" + text[0] + result + "\" </setKDynamicText>\n"
+					else:
+						sendumd += "<setKDynamicText>set address=\"" + labeladdr + "\" text=\"" + text + "\" </setKDynamicText>\n"
 						
 
 					print str(i), sendumd
