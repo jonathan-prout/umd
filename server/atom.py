@@ -6,7 +6,7 @@ import os, re, sys
 # added moudulation roll off symbol rate sat freq and FEC
 
 class atom:
-	def __init__(self,id,status,servicename,aspectratio,ebno,pol,bissstatus,vresol,framerate,vstate,asioutmode,inSatSetupModType,inSatSetupModType2,inSatSetupRollOff,inSatSetupSymbolRate,inSatSetupSatelliteFreq,inSatSetupFecRate,inSatSetupInputSelect,inSatSetupSatelliteFreq2,inSatSetupSymbolRate2,input_selection,inputTsBitrate):
+	def __init__(self,id,status,servicename,aspectratio,ebno,pol,bissstatus,vresol,framerate,vstate,asioutmode,inSatSetupModType,inSatSetupModType2,inSatSetupRollOff,inSatSetupSymbolRate,inSatSetupSatelliteFreq,inSatSetupFecRate,inSatSetupInputSelect,inSatSetupSatelliteFreq2,inSatSetupSymbolRate2,input_selection,inputTsBitrate,pol2,lockState):
 		self.id = id
 		self.status = status
 		self.servicename = servicename
@@ -29,6 +29,8 @@ class atom:
 		self.inSatSetupSymbolRate2 = inSatSetupSymbolRate2
 		self.input_selection = input_selection
 		self.inputTsBitrate = inputTsBitrate
+		self.pol2 = pol2
+		self.lockState = lockState
 		
 		
 	def getId(self):
@@ -127,6 +129,12 @@ class atom:
 
 	def getinput_selection(self):
 		return self.input_selection		
+	
+	def getpol2(self):
+		return self.pol2
+	
+	def getlockState(self):
+		return self.lockState
 #--		
 			
 	def setId(self,id):
@@ -168,10 +176,19 @@ class atom:
 			final = ""
 		self.ebno = final
 	
-	def setPol(self,pol):
-		if (pol == "1"):
+	def setpol2(self,pol2):
+		self.pol2 = pol2
+	
+	
+	def setPol(self,pol,pol2,inSatSetupInputSelect):
+			polvar = 0
+		if(inSatSetupInputSelect == "2"): #This is input 1 not 2
+			polvar = int(pol)
+		if(inSatSetupInputSelect == "3"): 
+			polvar = int(pol2)
+		if (polvar == "1"):
 			self.pol = "Y"
-		elif (pol == "2"):
+		elif (polvar == "2"):
 			self.pol = "X"
 		else:
 			self.pol = ""
@@ -330,3 +347,14 @@ class atom:
 			self.inSatSetupFecRate = "8/9"
 		if (inSatSetupFecRate == "9"):
 			self.inSatSetupFecRate = "Auto"	
+	
+	def setlockState(self,lockState):
+		#    SYNTAX    INTEGER { unknown(1), lock(2), unlock(3) }
+		if (lockState == "1"):
+			self.lockState = "Unknown"
+		elif (lockState == "2"):
+			self.lockState = "Lock"
+		elif (lockState == "3"):
+			self.lockState = "Unlock"
+		else:
+			self.lockstate = ""

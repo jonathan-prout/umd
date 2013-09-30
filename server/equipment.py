@@ -61,41 +61,44 @@ def askSN_AR(thiscommand,id,model):
 		videomaxbitrate=""
 		videodelay=""
 		temperature=""
+		pol2=""
+		lockState=""
 		
 		try:
 			if (model == 1):
-				servicename = lines[0][1:len(lines[0])]
+				servicename = lines[0][1:]
 				aspectratio = lines[1][1:]
-				ebno = lines[2][1:len(lines[0])]
+				ebno = lines[2][1:]
 				pol = lines[3][1:]
 				bissstatus = lines[4][1:]
 				vresol = lines[5][1:]
 				framerate = lines[6][1:]
-				vstate = lines[7][1:len(lines[0])]
-				asioutmode = lines[8][1:len(lines[0])]
+				vstate = lines[7][1:]
+				asioutmode = lines[8][1:]
 				inSatSetupModType = lines[9][1:]
 				inSatSetupSatelliteFreq = lines[10][1:]
 				inSatSetupSymbolRate = lines[11][1:]
-				inSatSetupFecRate = lines[12][1:len(lines[0])]
+				inSatSetupFecRate = lines[12][1:]
 				inSatSetupInputSelect = lines[13][1:]
 				inSatSetupSatelliteFreq2 = lines[14][1:]
 				inSatSetupSymbolRate2  = lines[15][1:]
 				inSatSetupModType2  = lines[16][1:]
 				inputTsBitrate  = lines[17][1:]
-				#serviceID2   = lines[18][1:]
+				pol2   = lines[18][1:]
+				lockState = lines[19][1:]
 				input_selection = ""
 				#print inputTsBitrate
 
 			if (model == 3):
-				servicename = lines[0][1:len(lines[0])]
-				aspectratio = lines[1][1:len(lines[0])]
-				ebno = lines[2][1:len(lines[0])]
+				servicename = lines[0][1:]
+				aspectratio = lines[1][1:]
+				ebno = lines[2][1:]
 				pol = lines[3][1:]
-				bissstatus = lines[4][1:len(lines[0])]
-				vresol = lines[5][1:len(lines[0])]
-				framerate = lines[6][1:len(lines[0])]
-				vstate = lines[7][1:len(lines[0])]
-				asioutmode = lines[8][1:len(lines[0])]
+				bissstatus = lines[4][1:]
+				vresol = lines[5][1:]
+				framerate = lines[6][1:]
+				vstate = lines[7][1:]
+				asioutmode = lines[8][1:]
 				inSatSetupModType = lines[9][1:]
 				inSatSetupSatelliteFreq = lines[10][1:]
 				inSatSetupSymbolRate = lines[11][1:]
@@ -107,12 +110,13 @@ def askSN_AR(thiscommand,id,model):
 				input_selection  = lines[17][1:]
 				inSatSetupModType2  = lines[18][1:]
 				inputTsBitrate  = lines[19][1:]
-				#serviceID2   = lines[20][1:]
+				pol2   = lines[20][1:]
+				lockState = lines[21][1:]
 				#print inputTsBitrate
 
 			if (model == 2):
 				
-				servicename = lines[0][1:len(lines[0])]
+				servicename = lines[0][1:]
 				muxbitrate = lines[1][1:len(lines[1])]
 				muxscrambling = lines[2][1:len(lines[2])]
 				muxbissword =lines[3][1:len(lines[3])]
@@ -128,12 +132,7 @@ def askSN_AR(thiscommand,id,model):
 				videomaxbitrate =lines[13][1:len(lines[13])]
 				videodelay = lines[14][1:len(lines[14])]
 				temperature = lines[15][1:len(lines[15])]	
-				"""
-				inSatSetupModType = lines[9][1:len(lines[0])]
-				inSatSetupSatelliteFreq = lines[10][1:len(lines[0])]
-				nSatSetupSymbolRate = lines[11][1:len(lines[0])]
-				inSatSetupFecRate = lines[12][1:len(lines[0])]
-				"""
+
 				"""
 					print "lines ",lines
 				print "lines[0]",lines[0]				
@@ -181,7 +180,7 @@ def askSN_AR(thiscommand,id,model):
 			
 			
 		if (model == 1):
-			obj = atom.atom("","","","","","","","","","","","","","","","","","","","","","")
+			obj = atom.atom("","","","","","","","","","","","","","","","","","","","","","","","")
 			obj.setStatus("on")
 			obj.setId(id)
 			obj.setServiceName(servicename)
@@ -205,9 +204,11 @@ def askSN_AR(thiscommand,id,model):
 			obj.setinSatSetupSatelliteFreq2(inSatSetupSatelliteFreq2)
 			obj.setinSatSetupSymbolRate(inSatSetupSymbolRate,inSatSetupSymbolRate2,inSatSetupInputSelect)
 			obj.setinSatSetupSatelliteFreq(inSatSetupSatelliteFreq,inSatSetupSatelliteFreq2,inSatSetupInputSelect)
+			obj.setpol2(pol2)
+			obj.setlockState(lockState)
 			return obj
 		if (model == 3):
-			obj = atom.atom("","","","","","","","","","","","","","","","","","","","","","")
+			obj = atom.atom("","","","","","","","","","","","","","","","","","","","","","","","")
 			obj.setStatus("on")
 			obj.setId(id)
 			obj.setServiceName(servicename)
@@ -232,7 +233,8 @@ def askSN_AR(thiscommand,id,model):
 			obj.setinSatSetupSatelliteFreq2(inSatSetupSatelliteFreq2)
 			obj.setinSatSetupSatelliteFreq(inSatSetupSatelliteFreq,inSatSetupSatelliteFreq2,inSatSetupInputSelect)
 			obj.setinSatSetupSymbolRate(inSatSetupSymbolRate,inSatSetupSymbolRate2,inSatSetupInputSelect)
-
+			obj.setpol2(pol2)
+			obj.setlockState(lockState)
 			return obj			
 		if (model == 2):
 			obj = encoderatom.encoderatom("","","","","","","","","","","","","","","","","","")
@@ -260,7 +262,7 @@ def askSN_AR(thiscommand,id,model):
 	else:
 		#print "IRD is offline"
 		if (model == 1):
-			obj = atom.atom("","","","","","","","","","","","","","","","","","","","","")
+			obj = atom.atom("","","","","","","","","","","","","","","","","","","","","","","")
 			obj.setId(id)
 			obj.setStatus("off")
 			obj.setEbno('')
@@ -280,10 +282,11 @@ def askSN_AR(thiscommand,id,model):
 			obj.setinSatSetupSatelliteFreq("")
 			obj.setinSatSetupFecRate("")
 			obj.setinput_selection("")		
-		
+			obj.setpol2("")
+			obj.setlockState("")
 			return obj
 		if (model == 3):
-			obj = atom.atom("","","","","","","","","","","","","","","","","","")
+			obj = atom.atom("","","","","","","","","","","","","","","","","","","","")
 			obj.setId(id)
 			obj.setStatus("off")
 			obj.setEbno('')
@@ -301,7 +304,9 @@ def askSN_AR(thiscommand,id,model):
 			obj.setinput_selection("")	
 			obj.setinSatSetupModType2("")
 			obj.setinputTsBitrate("")
-			obj.setserviceID2("")			
+			obj.setserviceID2("")
+			obj.setpol2("")
+			obj.setlockState("")			
 			return obj
 			
 		if (model == 2):
@@ -365,12 +370,12 @@ class equipment:
 		#print self.model
 		""" IRD """
 		if (self.model == 1):
-			myatom = atom.atom("","","","","","","","","","","","","","","","","","","","","","")
+			myatom = atom.atom("","","","","","","","","","","","","","","","","","","","","","","","")
 		""" ENCODER """
 		if (self.model == 2):
 			myatom = encoderatom.encoderatom("","","","","","","","","","","","","","","","","","")
 		if (self.model == 3):
-			myatom = atom.atom("","","","","","","","","","","","","","","","","","","","","","")
+			myatom = atom.atom("","","","","","","","","","","","","","","","","","","","","","","","")
 		myatom = askSN_AR(sendcommand,self.id,self.model)
 		return myatom
 		

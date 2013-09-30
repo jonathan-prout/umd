@@ -41,8 +41,8 @@ if __name__ == "__main__":
 	res = ""
 	
 #	request = "SELECT s.servicename,s.aspectratio,s.ebno,s.pol,s.bissstatus, e.matrixname,e.labeladdr2,e.kaleidoaddr,e.labeladdr,e.labelnamestatic,s.framerate FROM equipment e, status s WHERE e.id = s.id"
-	request = "SELECT s.servicename,s.aspectratio,s.ebno,s.pol,s.bissstatus, e.matrixname,e.labeladdr2,e.kaleidoaddr,e.labeladdr,s.channel,s.framerate,e.labelnamestatic,s.modulationtype,s.modtype2,s.asi,s.videoresolution,e.model_id,s.muxbitrate FROM equipment e, status s WHERE e.id = s.id"
-#					   0			  1				 2	 3		 4			 5		    	6			7			 8			9		   10		   11				 12			      13		14	   15				 16
+	request = "SELECT s.servicename,s.aspectratio,s.ebno,s.pol,s.bissstatus, e.matrixname,e.labeladdr2,e.kaleidoaddr,e.labeladdr,s.channel,s.framerate,e.labelnamestatic,s.modulationtype,s.modtype2,s.asi,s.videoresolution,e.model_id,s.muxbitrate,s.videostate FROM equipment e, status s WHERE e.id = s.id"
+#					   0			  1				 2	 3		 4			 5		    	6			7			 8			9		   10		   11				 12			      13		14	   15				 16          17          18
 
 	try:
 		res = sql.qselect(request)
@@ -95,12 +95,25 @@ if __name__ == "__main__":
 				videoresolution  = res[i][15]
 				model_id		 = res[i][16]
 				muxbitrate		 = res[i][17]
+				videostate 		 = res[i][18]
 				
 				if (element == kaleidoaddr):
 					""" s.servicename,s.aspectratio,s.ebno,s.pol,s.bissstatus, e.matrixname,e.labeladdr2,e.kaleidoaddr,e.labeladdr,e.labelnamestatic,s.framerate """
 					
-					"res[i][2] are signal/noise ratio... if 0 no transmission, otherwise there are info to display..."
-					if (len(ebno) != 0):
+					#if unlocked, rx either shows .-1 or 100.10db. For some reason TS lock state is not reliable so we work it out
+					lockstate = "true"
+					if (ebno == ".-1dB"):
+						lockstate = "false"
+					if (ebno == "100.10dB"):
+						lockstate = "false"
+					if (len(servicename) != 0): #clearly if there is a service name it is locked
+						lockstate = "true"
+					if (videostate == "Running"):
+						lockstate = "true"
+					
+					
+					
+					if (lockstate == "true"):
 					
 						# Let's go through and see if we are HD - and our SD resolution
 						HD = false
@@ -205,7 +218,7 @@ if __name__ == "__main__":
 					
 										
 					if (len(channelname) != 0): #Have we found the channel?
-						if (len(ebno) != 0): # Channel found and service running
+						if (lockstate == "true"): # Channel found and service running
 							toplabeltext = labelnamestatic[:1] + " " + channelname[0:(len(channelname)-3)] + " " + bitratestring + "" + dvbmode + "| " + servicename
 						else: #no input
 							toplabeltext = labelnamestatic + " " + channelname + "" + dvbmode
