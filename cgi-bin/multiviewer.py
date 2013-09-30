@@ -10,7 +10,6 @@ import telnetlib, Queue, signal, time
 
 class boilerplate(object):
     """ Boilerplate stuff to inherit into sublcass that does stuff"""
-    lookuptable = {}
     def shout(self, stuff):
         print "%s" % stuff
         
@@ -22,22 +21,8 @@ class boilerplate(object):
         except:
             pass
         
-    def writeStatus(self, status, queued=True):
-            """ Write Errors to the multiviewer """
-            
-            klist = sorted(self.lookuptable.keys())
-            for key in range(0, len(klist), 16):
-                    if queued:
-                        try: 
-                                self.put( (klist[key], "BOTTOM", status, "TEXT") )
-                        except:
-                                pass        
-                    else:
-                        try:
-                            self.writeline(klist[key], "BOTTOM", status, "TEXT")
-                        except:
-                            pass
-                        
+        
+                    
     def get_offline(self):
             try:
                     return self.offline
@@ -202,7 +187,7 @@ class kaleido(boilerplate):
             self.tel.write("\n")
             self.tel.read_until(">", self.timeout)
             self.set_online()
-            self.writeStatus("UMD manager connected", queued=False)
+            
         except:
             self.set_offline("init")
             self.shout("Cannot connect to %s" %self.host)
@@ -312,27 +297,10 @@ class kaleido(boilerplate):
             pass
     def clearalarms(self):
         """ KX has alarms on on startup, so clear them """
-        if self.get_offline():
-            return
-        self.writeStatus("Clearing Alarms", queued=False)
-        alarm_addresses = {"REC":500, "C/N":600}
         for alarm_type in ["REC", "C/N"]:
-            
-            for mv_input in range(self.size):
-                addr = alarm_addresses[alarm_type] + mv_input +1
-                cmd = '<setKStatusMessage>set id="%s" status="%s"</setKStatusMessage>\n' %(addr, "DISABLE")
-                a = ""
-                try:
-                    self.tel.write(cmd)
-                    a = self.tel.read_until("<ack/>", self.timeout)
-                    if "<ack/>" not in a:
-                        self.shout(a)
-                except Exception as e:
-                    if "<nack/>" in a:
-                        self.shout("NACK ERROR in writeline when writing %s"% cmd)
-                    else:
-                        self.set_offline("ClearAlarms, %s, %s "%(addr, e) )
-                        return
+            for mv_input in self.lookuptable.keys():
+                self.put( (mv_input, alarm_type, "DISABLE", "ALARM")   )
+
 class KX(kaleido):
     mv_type = "KX"
     port = 13000

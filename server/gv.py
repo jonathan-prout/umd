@@ -5,6 +5,8 @@ import collections, threading, datetime, time, Queue, mysql
 sql = mysql.mysql()
 sql.semaphore = threading.BoundedSemaphore(value=10)
 sql.mutex = threading.RLock()
+min_refresh_time = 10 #Force 5 seconds between refreshes
+
 
 last_refresh_dict = {}
 oidDict = {}
@@ -12,6 +14,9 @@ oidDict = {}
 equipmentDict = {}
 def addEquipment(equipment):		
 	equipmentDict[equipment.getId()] = equipment
+
+programChrashed = False
+exceptions = []
 
 """Keeping track of theads"""
 ThreadCommandQueue = Queue.Queue()
@@ -28,7 +33,7 @@ def log(stuff):
 	out = "%s: Instance %s: %s \n"%(time.strftime("%Y-%m-d %H:%M:%S"), parity, stuff)
 	
 	if loud:
-		print out
+		print "%s"%out
 	else:
 		loglock.acquire()
 		try:

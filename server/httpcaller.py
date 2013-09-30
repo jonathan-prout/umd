@@ -4,19 +4,16 @@ import urllib
 import httplib2
 import sys
 #from taskscript import debug, die
-from gv import log
 def debug(stuff):
-	log(stuff)
-	"""
 	import gv
-	if gv.loud:
-		print stuff
-	"""
-def die(stuff):
-	log(stuff)
-	#print stuff
+	gv.log(stuff)
 
-def get( ip, port, addr, do_not_call_machine_test_on_timeout = "False", username="", password=""):
+def die(stuff):
+	print "\n".join(stuff)
+	import sys
+	sys.exit(1)
+
+def get( ip, port, addr, username="", password=""):
 	"""
 	ip as string, port as int addr string do_not_call_machine_test_on_timeout boolean
 	returns response as dictionary, content as string
@@ -34,13 +31,7 @@ def get( ip, port, addr, do_not_call_machine_test_on_timeout = "False", username
 	try:
 		response, content = http.request(url, method, headers=headers)
 	except:
-		if do_not_call_machine_test_on_timeout == "False":
-			# Die may have been called when a machine has become unresponsive, so now is a good time to test.
-			#import testmachinestatus
-			#testmachinestatus.testmachinestatus()
-			#die(["HTTP Error with " + ip])
-			response = {"status":"500"}
-			content = ""
+		die(["HTTP Error with " + ip])
 	return response, content
 
 
@@ -54,16 +45,14 @@ def geturl(url, username="", password=""):
 	"""
 	
 	
-	do_not_call_machine_test_on_timeout = "False"
+
 	http = httplib2.Http()
 	method = 'GET'
 	
 	if password != "":
 		http.add_credentials(username, password)
 
-	headers = {'Accept': '*',
-				'Content-Type': 'application/vnd.ipgp+xml',
-				'User-Agent':	'IPGP Player'}
+	headers = {'User-Agent':	'Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 6.0; Trident/4.0)'}
 
 
 	#response, content = http.request(url, method, headers=headers)
@@ -71,10 +60,7 @@ def geturl(url, username="", password=""):
 	try:
 		response, content = http.request(url, method, headers=headers)
 	except:
-		if do_not_call_machine_test_on_timeout == "False":
-			# Die may have been called when a machine has become unresponsive, so now is a good time to test.
-			import testmachinestatus
-			testmachinestatus.testmachinestatus()
+
 		die(["HTTP Error with " + url])
 	return response, content
 
@@ -175,7 +161,7 @@ def getcache( ip, port, addr, cache_max_age='120'):
 		
 	return response, content
 
-def post(ip, port, addr, body, username="", password=""):
+def post(ip, port, addr, body="", username="", password=""):
 	"""
 	ip as string, port as int addr body as string 
 	returns response as dictionary, content as string

@@ -19,18 +19,12 @@ def usage():
 
 def getMultiviewer(mvType, host):
     
-	if mvType in ["kaleido", "Kaleido"]:
-		print "Starting Kaleido"
-		return multiviewer.kaleido(host)
-	elif mvType in ["kx", "KX"]:
-		print "Starting Kaleido"
-		return multiviewer.KX(host)
-	elif mvType in ["kx16", "KX-16"]:
-		print "Starting Kaleido"
-		return multiviewer.KX16(host)
-	else: #Harris/Zandar
-		print "Starting Harris" 
-		return multiviewer.zprotocol(host)
+    if mvType in ["kaleido", "Kaleido"]:
+        print "Starting Kaleido"
+        return multiviewer.kaleido(host)
+    else: #Harris/Zandar
+        print "Starting Harris" 
+        return multiviewer.zprotocol(host)
 
 def main(argv, method='commandline', client=''):
 	programStartTime = time.time()
@@ -39,10 +33,11 @@ def main(argv, method='commandline', client=''):
 	setumd3 = False
 	setumd4 = False
 	something_to_be_done = False
-	host = ""
+	host = "10.75.18.122"
 	port = ""
         size = 4
 	file = None
+	"""
 	if method == 'commandline':
 		try:                                
 			opts, args = getopt.getopt(argv, "di:s:f:m:") 
@@ -81,7 +76,8 @@ def main(argv, method='commandline', client=''):
             elif opt in ("-m"):
                     mvType = arg
                     
-
+	"""
+	mvType = "Kaleido"
         mv = getMultiviewer(mvType, host)
         """ BACKGROUND REFRESH THREAD """
         def startthreads():
@@ -101,7 +97,7 @@ def main(argv, method='commandline', client=''):
                 mythreads[x] = bg
                 bg.start()
                 print "%s restarted" %bg.name
-        startthreads()
+        #startthreads()
         if file:
             with open(file, "r") as fobj:
                 for i in range(size):
@@ -111,7 +107,7 @@ def main(argv, method='commandline', client=''):
                         except EOFError:
                             break
                         #videoInput, level, line, mode
-                        mv.put( (i+1, level, line.replace("\n", ""), "TEXT")   )
+                        mv.put( (i+1, level, line, "TEXT")   )
                 mv.refresh()
                 #time.sleep(1)
                 
@@ -131,7 +127,7 @@ def main(argv, method='commandline', client=''):
                             line = "iter %s UMD %s, %s"%(counter, i+1, level)
                             mv.put( (i+1, level, line, "TEXT")   )
                     
-                    
+                    mv.refresh()
                     time.sleep(1)
                     if mv.get_offline():
                         now = datetime.datetime.now()
@@ -155,7 +151,7 @@ def main(argv, method='commandline', client=''):
                         type = mv.type
                         host = mv.host
                         mv.close()
-			
+			return #quit
                         mv = getMultiviewer(mvType, host)
                         
                         gv.threadTerminationFlag = False
@@ -190,5 +186,5 @@ def refresh(mv):
     #print "Leaving thread as termintation flag set"
         
 if __name__ == '__main__':
-    main(sys.argv[1:])
-            
+    #main(sys.argv[1:])
+    main(None)

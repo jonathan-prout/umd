@@ -24,16 +24,21 @@ class OmneonHelper(object):
 			#response, stringfromserver = httpcaller.get(item, '9998', 'streamstores')
 			waiting_for_http = True
 			while waiting_for_http:
-				response, stringfromserver = httpcaller.get(str(ipgridportiplist[item]), '9998', 'recorders/started') #The last is a caching value of 5 seconds. New streamstores will not be seen for that long unless the cache is flushed
+				try:
+					response, stringfromserver = httpcaller.get(str(ipgridportiplist[item]), '9998', 'recorders/started') #The last is a caching value of 5 seconds. New streamstores will not be seen for that long unless the cache is flushed
+				except:
+					response = {"status":"500"}
+					stringfromserver = ""
 				if response['status'] != '200':
-					self.offline = True
+					#self.offline = True
 					#die( zip(response, "----------", "Bad response from server when getting streamstores from ", ipgridportiplist[item]))
-				if 	 '<Waiting />' in stringfromserver:
-					os.sleep(1)
+					continue
 				else:
 					waiting_for_http = False
-			
-			xmlfromserver = xmlhelper.stringtoxml(stringfromserver)
+			try:
+				xmlfromserver = xmlhelper.stringtoxml(stringfromserver)
+			except:
+				continue
 			#print xmlfromserver.toxml()
 			
 			#newstreams = xmlhelper.getAttributesFromTagsConditional('StreamStoreInfo', 'StreamId', xmlfromserver, 'InUse', 'true')
@@ -82,10 +87,15 @@ class OmneonHelper(object):
 		#debug(ipgridportiplist)
 		for item in range(len(ipgridportiplist)):
 			#response, stringfromserver = httpcaller.get(item, '9998', 'streamstores')
-			response, stringfromserver = httpcaller.getcache(str(ipgridportiplist[item]), '9998', 'streamstores', '900') #The last is a caching value of 15 minutes. New streamstores will not be seen for that long unless the cache is flushed
+			try:
+				response, stringfromserver = httpcaller.getcache(str(ipgridportiplist[item]), '9998', 'streamstores', '30') #The last is a caching value of 15 minutes. New streamstores will not be seen for that long unless the cache is flushed
+			except:
+				response = {"status":"500"}
+				stringfromserver = "" 
 			if response['status'] != '200':
-				self.offline = True
-				return {}
+				#self.offline = True
+				#return {}
+				continue
 				#die( zip(response, "----------", "Bad response from server when getting streamstores from ", ipgridportiplist[item]))
 				
 			

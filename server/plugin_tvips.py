@@ -26,7 +26,7 @@ class TVG420(tvips):
 	def get_port_config(self):
 		#   Uncomment wehen ready to test from server
 		try:
-			response, stringfromserver = httpcaller.get(self.ip, '80', 'txp_get_tree?path=/ports&depth=4', do_not_call_machine_test_on_timeout = "True", username= self.username, password=  self.password)
+			response, stringfromserver = httpcaller.get(self.ip, '80', 'txp_get_tree?path=/ports&depth=4',  username= self.username, password=  self.password)
 			if response['status'] != '200':
 				raise "HTTP Error"
 				#	die( zip(response, "----------", "Bad response from server when getting information on ports from the TVIPS at ", self.ip))
@@ -81,7 +81,7 @@ class TVG420(tvips):
 		
 		for item in range(len(self.ids)):
 			try:
-				response, stringfromserver = httpcaller.get(self.ip, '80', 'txp_get?path=/ports/[' +str(self.ids[item])+ ']/iptx|_select:totrate', do_not_call_machine_test_on_timeout = "True", username= self.username, password=  self.password)
+				response, stringfromserver = httpcaller.get(self.ip, '80', 'txp_get?path=/ports/[' +str(self.ids[item])+ ']/iptx|_select:totrate',  username= self.username, password=  self.password)
 				if response['status'] != '200':
 					#die( zip(response, "----------", "Bad response from server when getting information on ports from the TVIPS at ", self.ip))
 					raise "HTTP ERROR"
@@ -101,7 +101,7 @@ class TVG420(tvips):
 	def get_enable_only(self): #To be used after get_port_config
 	
 		try:
-			response, stringfromserver = httpcaller.get(self.ip, '80', 'txp_get_tree?path=/ports&depth=1', do_not_call_machine_test_on_timeout = "True", username= self.username, password=  self.password)
+			response, stringfromserver = httpcaller.get(self.ip, '80', 'txp_get_tree?path=/ports&depth=1',  username= self.username, password=  self.password)
 			if response['status'] != '200':
 			#	die( zip(response, "----------", "Bad response from server when getting information on ports from the TVIPS at ", self.ip))
 				raise Exception()

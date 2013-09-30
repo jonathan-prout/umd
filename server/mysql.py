@@ -31,31 +31,42 @@ class mysql:
 		self.semaphore.acquire()
 		self.mutex.acquire()
 		rows = []
+		e = None
 		
-		#self.cursor.execute("set autocommit = 1")
-		#print "\n Mysql Class: I'm going to execute ", sql
-		#self.cursor.execute(sql)
-		for command in sql.split(";"): #SQL commands separated by ; but this can do one at a time
-			if command not in ["", " "]: #there will always be one 0 len at the end
-				#print "'" + command + "'"
-				self.db.query(command + ";")
-				data = self.db.use_result()
-			
+		""" If we get an error. We need to make sure that db lock is released before raising the error. """
+		try:
+			#self.cursor.execute("set autocommit = 1")
+			#print "\n Mysql Class: I'm going to execute ", sql
+			#self.cursor.execute(sql)
+			for command in sql.split(";"): #SQL commands separated by ; but this can do one at a time
+				if command not in ["", " "]: #there will always be one 0 len at the end
+					#print "'" + command + "'"
+					self.db.query(command + ";")
+					data = self.db.use_result()
 				
-				
-				#data = self.cursor.fetchall()
-				#self.db.commit()
-				
-				try:
-					rows +=  data.fetch_row(maxrows=0)
-				except:
-					pass
-			
+					
+					
+					#data = self.cursor.fetchall()
+					#self.db.commit()
+					
+					try:
+						rows +=  data.fetch_row(maxrows=0)
+					except:
+						pass
+		except Exception as e:
+			pass
 		
 		
-		""" semaphore & mutex lock to release locked share database """
-		self.mutex.release()
-		self.semaphore.release()
+		
+		
+		finally:
+			""" semaphore & mutex lock to release locked share database """
+			self.mutex.release()
+			self.semaphore.release()
+		
+		
+		if e != None:
+			raise(e)
 		
 		return rows
 		

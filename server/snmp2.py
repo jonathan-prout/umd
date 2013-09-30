@@ -3,8 +3,7 @@ def oidFromDict(n , invdict):
 		if invdict.has_key("." + n):
 			n = "." + n
 		else:
-			#print invdict
-			for k, v in invdict.items():
+			for k, v in invdict:
 				if n in k:
 					n = k
 	return n
@@ -14,17 +13,10 @@ def get(commandDict, ip):
 	
 	try:
 		return get_subprocess(commandDict, ip)
-	except Exception as e:
-		if any( ( isinstance(e, AssertionError), isinstance(e, AttributeError) ) ):
-		    if gv.loud:
-			    print "NETSNP Errored so using PYSNMP on %s"% ip
-		    return get_pysnmp(commandDict, ip)
-		else:
-			print "snmp.get: %s Error on %s"% (type(e),ip)
-			gv.exceptions.append(e)
-			raise e
-		
-			
+	except AssertionError:
+		if gv.loud:
+			print "NETSNP Errored so using PYSNMP on %s"% ip
+		return get_pysnmp(commandDict, ip)
 
 
 def get_pysnmp(commandDict, ip):
@@ -118,27 +110,19 @@ def get_subprocess(commandDict, ip):
 	
 	sub = subprocess.Popen(["/usr/bin/snmpget", "-v1", "-cpublic", ip] + commands, stdout=subprocess.PIPE)
 	returncode = sub.wait() #Block here waiting for subprocess to return. Next thrad should execute from here
-	sout = sub.stdout.readlines()
-	try:
-		serr = sub.stderr.read()
-	except:
-		serr = ""
 	if returncode != 0:
-		if gv.loud:
-			print returncode
-			print sout
-			print serr
-	del(sub)
+		print returncode
+		print sub.stdout.read()
+		print sub.stderr.read()
 	assert(returncode == 0) #Error if NET SNMP has an error. Fall back to PYSNMP which is slower but with better error handling
-	for outputLine in sout:	
+	for outputLine in sub.stdout.readlines():	
 		oid, valtype, value = process_netsnmp_line(outputLine)
 		n = oidFromDict(oid , invdict)
 		try:
 			returndict[invdict[ n ] ] = str(value)
 		except KeyError:
-			print "KeyError"
 			print invdict
-			print str(oid), str(value)
+			print str(oid), str(val)
 	return returndict
 
 
@@ -147,14 +131,10 @@ def getnext(commandDict, ip):
 	
 	try:
 		return getnext_subprocess(commandDict, ip)
-	except Exception as e:
-		if isinstance(e, AssertionError):
-		    if gv.loud:
-			    print "NETSNP Errored so using PYSNMP on %s"% ip
-		    return getnext_pysnmp(commandDict, ip)
-		else:
-			print "snmp.getnext: %s Error on %s"% (type(e),ip)
-			
+	except AssertionError:
+		if gv.loud:
+			print "NETSNP Errored so using PYSNMP on %s"% ip
+		return getnext_pysnmp(commandDict, ip)
 
 		
 def getnext_subprocess(commandDict, ip):
@@ -172,25 +152,18 @@ def getnext_subprocess(commandDict, ip):
 		commands.append(v)
 		invdict[v] = k
 	for command in commands:
-		sub = subprocess.Popen(["/usr/bin/snmpwalk", "-v1", "-cpublic", ip, command], stdout=subprocess.PIPE)
+		sub = subprocess.Popen(["/usr/bin/walk", "-v1", "-cpublic", ip] + command, stdout=subprocess.PIPE)
 		returncode = sub.wait() #Block here waiting for subprocess to return. Next thrad should execute from here
-		sout = sub.stdout.readlines()
-		try:
-			serr = sub.stderr.read()
-		except:
-			serr = ""
 		if returncode != 0:
-			if gv.loud:
-				print returncode
-				print sout
-				print serr
-		del(sub)
+			print returncode
+			print sub.stdout.read()
+			print sub.stderr.read()
 		assert(returncode == 0) #Error if NET SNMP has an error. Fall back to PYSNMP which is slower but with better error handling
 		results = []
-		for outputLine in sout:	
+		for outputLine in sub.stdout.readlines():	
 			oid, valtype, value = process_netsnmp_line(outputLine)
 			results.append(value)
-		n = oidFromDict(command , invdict)
+		n = oidFromDict(oid , invdict)
 		returndict[invdict[n]] = results
 	return returndict
 	

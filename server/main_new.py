@@ -16,24 +16,42 @@ def retrivalList():
     request = "select id, ip, labelnamestatic FROM equipment"
     
     return  gv.sql.qselect(request)
-    """  
-    except:
-            raise "Oooppp...."
-            return NULL
-    """
-    
+
 
 class myThread (threading.Thread):
     def __init__(self, threadID, name, counter):
-        self.threadID = threadID
-        self.name = name
-        self.counter = counter
-        threading.Thread.__init__(self)
-    def run(self):
-        #print "Starting " + self.name
-        backgroundworker()
-        print "Exiting " + self.name
+	threading.Thread.__init__(self)
+	self.threadID = threadID
+	self.name = name
+	self.counter = counter
+	self.running = False
 
+    def run(self):
+	#print "Starting " + self.name
+	try:
+		self.running = True
+		backgroundworker()
+	except Exception as e:
+	    print e
+	finally:
+	    self.running = False
+	print "Exiting " + self.name
+
+def crashdump():
+    import pickle, time
+    print "UMD MANAGER HAS MADE AN ERROR AND WILL NOW CLOSE"
+    filepath = "/var/www/programming/server/"
+    filename = filepath + "server-crashdump-%s.pickle"% time.strftime("%Y_%m_%d_%H_%M_%S")
+    cmd = "UPDATE `UMD`.`management` SET `value` = 'OFFLINE_ERROR' WHERE `management`.`key` = 'current_status';"
+    gv.sql.qselect(cmd)
+    cmdq = []
+    while not gv.ThreadCommandQueue.empty():
+	cmdq.append(gv.ThreadCommandQueue.get())
+    objs = [ cmdq, gv.equipmentDict, gv.exceptions]
+    with open(filename, "w") as fobj:
+	pickle.dump(objs, fobj)
+    #ecit with error status
+    cleanup(1)
 
 def beginthreads():
     print "Starting %s threads..."% gv.bg_worker_threads
@@ -52,8 +70,10 @@ def start():
 
 	for equipmentID, ip, name in retrivalList():
 		#print equipmentID, ip, name
-		if name == "IP Gridport":
+		if name == "IP Gridport": #NOT SNMP
 			newird = equipment_new.IPGridport(int(equipmentID), ip, name)
+		#elif "NS2000" in name: #Method not supported yet
+		#	newird = equipment_new.NS2000(int(equipmentID), ip, name)
 		else:
 			newird = equipment_new.GenericIRD(int(equipmentID), ip, name)
 		gv.addEquipment(newird)
@@ -87,6 +107,11 @@ def determine_type(args):
 		
 	elif "Rx8000"in Type:
 		newird = equipment_new.RX8200(equipmentID, ip, name)
+		subtype = newird.determine_subtype()
+		if subtype == "RX8200-4RF":
+		    newird = equipment_new.RX8200_4RF(equipmentID, ip, name)
+		elif subtype == "RX8200-2RF":
+		    newird = equipment_new.RX8200_2RF(equipmentID, ip, name)
 		newird.lastRefreshTime = 0
 		gv.addEquipment(newird)
 		t = "Rx8200"
@@ -98,17 +123,33 @@ def determine_type(args):
 		t = "TVG420"
 		newird.lastRefreshTime = 0
 	elif "IP Gridport"in Type:
-	    	newird = equipment_new.IPGridport(equipmentID, ip, name)
+		newird = equipment_new.IPGridport(equipmentID, ip, name)
 		newird.lastRefreshTime = 0
 		gv.addEquipment(newird)
 		t = "IP Gridport"
+	elif "NS2000"in Type:
+		newird = equipment_new.NS2000(equipmentID, ip, name)
+		subtype = newird.determine_subtype()
+		if subtype == "NS2000_WEB":
+		    newird = equipment_new.NS2000_WEB(equipmentID, ip, name)
+		elif subtype == "NS2000_SNMP":
+		    newird = equipment_new.NS2000_SNMP(equipmentID, ip, name)
+		newird.lastRefreshTime = 0
+		gv.addEquipment(newird)
+		t = "NS2000"
 		
 	elif Type == "OFFLINE":	
 		t = "OFFLINE"
 		gv.equipmentDict[equipmentID].offline = True
 	query = "UPDATE equipment SET model_id ='%s' WHERE id ='%i'"%(t, equipmentID)
+	
 	if gv.loud:
 		print "IRD " + str(equipmentID) + " is a " + t
+	gv.sql.qselect(query)
+	u = 'Online'
+	if t == 'OFFLINE':
+	    u = 'Offline'
+	query = "UPDATE `UMD`.`status` SET `aspectratio` = '',`status` = '%s', `ebno` = '', `frequency` = '', `symbolrate` = '', `asi` = '', `sat_input` = '', `bissstatus` = '', `videoresolution` = '', `framerate` = '', `videostate` = '', `asioutmode` = '', `framerate` = '',`muxbitrate` = '', `muxstate` = '' WHERE `status`.`id` = '%i'"%(u, equipmentID)
 	gv.sql.qselect(query)
 	if autostart:
 		if gv.threadJoinFlag == False:
@@ -116,32 +157,43 @@ def determine_type(args):
 				gv.ThreadCommandQueue.put((refresh, equipmentID))
 
 def refresh(equipmentID):
-    min_refresh_time = 5 #Force 5 seconds between refreshes
+    currentEquipment = gv.equipmentDict[equipmentID]
+    import time
     try:
-	t = gv.equipmentDict[equipmentID].lastRefreshTime
+	t = currentEquipment.lastRefreshTime
     except:
 	t = 0
     
-    if not gv.equipmentDict[equipmentID].get_offline():
-	if t > (time.time() - min_refresh_time): 
-	    time.sleep(max(0, (min_refresh_time - (time.time() - t) )))
+    if not currentEquipment.get_offline():
+	while t > (time.time() - currentEquipment.min_refresh_time()):
+	    #if gv.loud: print "sleeping %s seconds" % max(0, (gv.min_refresh_time - (time.time() - t) ))
+	    sleepytime = min(max(0, (currentEquipment.min_refresh_time() - (time.time() - t) )), 1)
+	    time.sleep(sleepytime)
+	    
 	try:
-	    gv.equipmentDict[equipmentID].refresh()
+	    currentEquipment.refresh()
 	except:
-	    gv.equipmentDict[equipmentID].set_offline()
+	    currentEquipment.set_offline()
 
-    if not gv.equipmentDict[equipmentID].get_offline():		    
-	e = gv.equipmentDict[equipmentID]
-	updatesql = e.updatesql()
+    if not currentEquipment.get_offline():		    
+	
+	updatesql = currentEquipment.updatesql()
 	msg = gv.sql.qselect(updatesql)
 	
 	#except: raise "gv.sql ERRROR"
 	
 	# process channel
-	updatechannel = e.getChannel()
+	updatechannel = currentEquipment.getChannel()
 	re = gv.sql.qselect(updatechannel)
 	
-	gv.equipmentDict[equipmentID].lastRefreshTime = time.time()
+	currentEquipment.lastRefreshTime = time.time()
+	try:
+	    
+	    currentEquipment.refreshjitter = time.time() - currentEquipment.excpetedNextRefresh 
+	except: pass
+	
+	
+	currentEquipment.excpetedNextRefresh = time.time() + currentEquipment.min_refresh_time()
 	gv.hit(equipmentID)
 	# Add itself to end of queue
 	if gv.threadJoinFlag == False:
@@ -149,7 +201,7 @@ def refresh(equipmentID):
 
         
 def backgroundworker():
-	#import time
+	import time
 	item = 1
 	
 	gotdata = True
@@ -173,17 +225,33 @@ def backgroundworker():
 		    #print "processed a thred command!s"
 		    gv.ThreadCommandQueue.task_done()
 		    item +=1
-	thread.exit()
+	#thread.exit()
 
 
-def cleanup():
+def cleanup(exit_status=0):
     import sys
-    gv.sql.close()
-    gv.threadTerminationFlag = True
-    sys.exit(0)
+    try:
+	gv.threadTerminationFlag = True
+	for thread in gv.threads:
+	    thread.join(1)
+	if exit_status == 0:
+	    cmd = "UPDATE `UMD`.`management` SET `value` = 'OFFLINE' WHERE `management`.`key` = 'current_status';"
+	    gv.sql.qselect(cmd)
+	gv.sql.close()
+    except Exception as e:
+	print "%s error during shutdown"%type(e)
+	exit_status = 1
+    finally:
+        sys.exit(exit_status)
 
-def main():
-    "Started at " + time.strftime("%H:%M:%S")
+def main(debugBreak = False):
+    print "Started at " + time.strftime("%H:%M:%S")
+    finishedStarting = False
+    cmd = "UPDATE `UMD`.`management` SET `value` = 'STARTING' WHERE `management`.`key` = 'current_status';"
+    gv.sql.qselect(cmd)
+    cmd = "UPDATE `UMD`.`management` SET `value` = '%s' WHERE `management`.`key` = 'up_since';"% time.strftime("%Y %m %d %H:%M:%S")
+    gv.sql.qselect(cmd)
+    
     time1 = time.time()
 
     start()
@@ -211,9 +279,13 @@ def main():
     loopcounter = 0
     while gv.threadTerminationFlag == False:
 	try:
-	
 	    time.sleep(30)
-	    if loopcounter > 5:
+	    if not finishedStarting:
+		cmd = "UPDATE `UMD`.`management` SET `value` = 'RUNNING' WHERE `management`.`key` = 'current_status';"
+		gv.sql.qselect(cmd)
+		finishedStarting = True
+	    
+	    if loopcounter > 3:
 		inactives = gv.get_inactive()
 		if gv.loud:
 		    print inactives
@@ -225,11 +297,78 @@ def main():
 		except TypeError:
 		    pass
 	    loopcounter += 1
-	    if loopcounter > 19: # Restart all threads every 5 minutes
+	    if loopcounter > 10: # Restart all threads every 5 minutes
 		gv.threadJoinFlag = True
 		if gv.loud:
 			print "Joining Queue"
 		gv.ThreadCommandQueue.join()
+
+		for k in gv.equipmentDict.keys():
+		    gv.ThreadCommandQueue.put((refresh, k))
+		loopcounter = 0
+		if gv.loud:
+			print "Resuming Threads"
+		gv.threadJoinFlag = False
+		gv.threadTerminationFlag = False
+	    
+	    if loopcounter > 2:
+		oncount = 0
+		offcount = 0
+		runningThreads = 0
+		stoppedThreads = 0
+		
+		jitterlist = []
+		for equipmentID in gv.equipmentDict.keys():
+		    try:
+			if gv.equipmentDict[equipmentID].get_offline():
+			    offcount += 1
+			else:
+			    oncount += 1
+			    jitterlist.append(gv.equipmentDict[equipmentID].refreshjitter)
+			    if gv.loud:
+				print "%s: %s"%(equipmentID, gv.equipmentDict[equipmentID].refreshjitter)
+		    except: pass
+		def avg(L):
+		    return float(sum(L)) / len(L)
+		for t in gv.threads:
+		    try:
+			if t.running:
+			    runningThreads += 1
+			else:
+			    stoppedThreads += 1
+		    except:
+			stoppedThreads += 1
+		if gv.loud:
+		    print "Refresh statistics loop %s"% loopcounter
+		    print "Minimum refresh time %s seconds" % gv.min_refresh_time
+		    print "MAX: %s MIN: %s AVG:%s "%(max(jitterlist)+ gv.min_refresh_time, min(jitterlist)+ gv.min_refresh_time, avg(jitterlist)+ gv.min_refresh_time)
+		    print "%s stopped threads. %s running threads"%(stoppedThreads, runningThreads)
+		mj = float(min(jitterlist))
+		xj = float(max(jitterlist))
+		aj = float(avg(jitterlist))
+		gv.sql.qselect("UPDATE `UMD`.`management` SET `value` = '%s' WHERE `management`.`key` = 'min_jitter';" %mj )
+		gv.sql.qselect("UPDATE `UMD`.`management` SET `value` = '%s' WHERE `management`.`key` = 'max_jitter';" %xj  )
+		gv.sql.qselect("UPDATE `UMD`.`management` SET `value` = '%s' WHERE `management`.`key` = 'avg_jitter';" %aj)
+		gv.sql.qselect("UPDATE `UMD`.`management` SET `value` = '%s' WHERE `management`.`key` = 'equipment_online';" %oncount    )
+		gv.sql.qselect("UPDATE `UMD`.`management` SET `value` = '%s' WHERE `management`.`key` = 'equipment_offline';"%offcount)
+		gv.sql.qselect("UPDATE `UMD`.`management` SET `value` = '%s' WHERE `management`.`key` = 'last_self_check';"% time.strftime("%Y %m %d %H:%M:%S"))
+		gv.sql.qselect("UPDATE `UMD`.`management` SET `value` = '%s' WHERE `management`.`key` = 'errors';"%len(gv.exceptions))   
+		gv.sql.qselect("UPDATE `UMD`.`management` SET `value` = '%s' WHERE `management`.`key` = 'running_threads';"%runningThreads)
+		
+		
+		new_poll_time = gv.sql.qselect("SELECT * FROM `management` WHERE `key` LIKE 'min_poll_time'")
+		try:
+		    fpoll_time = float(new_poll_time[0][1])
+		    if fpoll_time > 0:
+			gv.min_refresh_time = fpoll_time
+		except:
+		    pass
+		if gv.loud:
+		    print "Min refresh time now %s"%gv.min_refresh_time
+		assert oncount > offcount, "More equipment off than on. Most likely an error there"
+		assert len(gv.exceptions) < 20, "Program has errors"
+		assert aj < 15, "Program is running slowly so quitting"
+		assert gv.programChrashed == False, "Program Crashed flag has been raised so quitting"
 		"""
 		if gv.loud:
 			print "Joining Threads"
@@ -241,22 +380,26 @@ def main():
 			if gv.loud:
 			    print "Thread Timed out. :("
 		
-		"""    
-		if gv.loud:
-			print "Resuming Threads"
-		gv.threadJoinFlag = False
-		gv.threadTerminationFlag = False
+		"""
+		if debugBreak:
+		    print "Leaving loop"
+		    return
+		
 		"""
 		for thread in gv.threads:
 		    thread.run()
 		"""
-		for k in gv.equipmentDict.keys():
-		    gv.ThreadCommandQueue.put((refresh, k))
-		loopcounter = 0
+
 	except KeyboardInterrupt:
 	    print "Quitting"
 	    cleanup()
 	    break
+	
+	except Exception as e:
+	    gv.exceptions.append(e)
+	    print "%s Error."%type(e)
+	    crashdump()
+	
 
     
 
@@ -269,7 +412,7 @@ def usage():
 if __name__ == "__main__":
 	try:                                
 		opts, args = getopt.getopt(sys.argv[1:], "vle", ["verbose", "loop", "errors"]) 
-	except getopt.GetoptError, errr:
+	except getopt.GetoptError, err:
 		print str(err)	
 		print "error in arguments"
 		usage()                          
