@@ -61,12 +61,12 @@ def askSN_AR(thiscommand,id,model):
 		try:
 			if (model == 1):
 				servicename = lines[0][1:len(lines[0])]
-				aspectratio = lines[1][1:len(lines[0])]
+				aspectratio = lines[1][1:]
 				ebno = lines[2][1:len(lines[0])]
 				pol = lines[3][1:]
-				bissstatus = lines[4][1:len(lines[0])]
-				vresol = lines[5][1:len(lines[0])]
-				framerate = lines[6][1:len(lines[0])]
+				bissstatus = lines[4][1:]
+				vresol = lines[5][1:]
+				framerate = lines[6][1:]
 				vstate = lines[7][1:len(lines[0])]
 				asioutmode = lines[8][1:len(lines[0])]
                                 inSatSetupModType = lines[9][1:]

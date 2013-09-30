@@ -22,7 +22,7 @@ def getSNMP(equipmentobj):
 		raise "DB error"
 		 	
 	atomobj = equipmentobj.getSNMP(snmp_commands)
-	#print snmp_commands
+	print snmp_commands
 	if (mid == 1):
 		updatesql = "UPDATE status SET status = '%s' , servicename = '%s', aspectratio ='%s', ebno='%s', pol='%s', bissstatus='%s', videoresolution='%s', framerate='%s',videostate='%s',asioutmode='%s',frequency='%s',symbolrate='%s',fec='%s',rolloff='%s',modulationtype='%s' WHERE id = %i; " %(atomobj.getStatus(),atomobj.getServiceName(),atomobj.getAspectRatio(),atomobj.getEbno(),atomobj.getPol(),atomobj.getBissStatus(),atomobj.getVResol(),atomobj.getFrameRate(),atomobj.getVState(),atomobj.getAsioutMode(),atomobj.getinSatSetupSatelliteFreq(),atomobj.getinSatSetupSymbolRate(),atomobj.getinSatSetupFecRate(),atomobj.getinSatSetupRollOff(),atomobj.getinSatSetupModType(),atomobj.getId())
         #        print updatesql
