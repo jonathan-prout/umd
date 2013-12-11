@@ -2,6 +2,12 @@ import gv
 import plugin_tvips
 from plugin_omneon import OmneonHelper
 
+def enum(iterable):
+	
+	d = {}
+	for i in range(len(iterable)):
+		d[i] = iterable[i]
+	return d
 
 class equipment(object):
 	def getoid(self):
@@ -146,7 +152,7 @@ class equipment(object):
 		except:
 			return "Unknown"
 	def set_offline(self):
-	    self.offline = True
+		self.offline = True
 
 	def get_offline(self):
 		try:
@@ -168,9 +174,9 @@ class IRD(equipment):
 		
 	def oid_mask(self):
 		try:
-		    masks = self.masked_oids[self.getinSatSetupInputSelect()]
+			masks = self.masked_oids[self.getinSatSetupInputSelect()]
 		except KeyError:
-		    masks = []
+			masks = []
 		for key in self.oid_get.keys():
 			if not self.snmp_res_dict.has_key(key):
 				masks.append(key)
@@ -180,111 +186,111 @@ class IRD(equipment):
 
 		dic =  self.oid_get.copy()
 		try:
-		    masks = self.masked_oids[self.getinSatSetupInputSelect()]
+			masks = self.masked_oids[self.getinSatSetupInputSelect()]
 		except KeyError:
-		    masks = []
-		    
+			masks = []
+			
 		for k, v in dic.items():
-		    v = v.replace('enterprises.','.1.3.6.1.4.1.')
-		    v = v.replace('X', str(self.getinSatSetupInputSelect()))
-		    if k in masks:
-			del dic[k]
-		    else:
-			dic[k] = v
+			v = v.replace('enterprises.','.1.3.6.1.4.1.')
+			v = v.replace('X', str(self.getinSatSetupInputSelect()))
+			if k in masks:
+				del dic[k]
+			else:
+				dic[k] = v
 		#if self.getinSatSetupInputSelect() = 1:
 		#    print "%s is on imput %s"%(self.name, self.getinSatSetupInputSelect())
 		return dic
 	
 	def bulkoids(self):
-	    return self.oid_getBulk
+		return self.oid_getBulk
 	
 	def getServiceName(self):
-	    try:
-		serviceName = self.snmp_res_dict["service name"]
-	    except KeyError:
-		serviceName = ""
-	    return self.processServiceName(serviceName)
+		try:
+			serviceName = self.snmp_res_dict["service name"]
+		except KeyError:
+			serviceName = ""
+			return self.processServiceName(serviceName)
 	
 	def processServiceName(self, servicename):
-	    servicename = servicename.strip()
-	    servicename = servicename.replace(';',' ')
-	    servicename = servicename.replace('%',' ')
-	    servicename = servicename.replace('&',' ')
-	    servicename = servicename.replace('*',' ')
-	    servicename = servicename.replace(',',' ')
-	    servicename = servicename.replace('?',' ')
-	    servicename = servicename.replace('{',' ')
-	    servicename = servicename.replace('}',' ')
-	    servicename = servicename.replace('(',' ')
-	    servicename = servicename.replace(')',' ')
-	    servicename = servicename.replace('[',' ')
-	    servicename = servicename.replace(']',' ')
-	    servicename = servicename.replace('^',' ')
-	    servicename = servicename.replace('+',' ')
-	    servicename = servicename.replace('|',' ')
-	    servicename = servicename.replace('-',' ')
-	    servicename = servicename.replace('_',' ')
-	    servicename = servicename.replace('"',' ')
-	    servicename = servicename.replace('\'',' ')
-	    servicename = servicename.replace('#',' ')
-	    servicename = servicename.replace(':',' ')
-	    servicename = servicename.replace('!',' ')
-	    servicename = servicename.replace('`',' ')
-	    servicename = servicename.replace('.',' ')
-	    servicename = servicename.replace('\n','')
-	    servicename = servicename.strip()
+		servicename = servicename.strip()
+		servicename = servicename.replace(';',' ')
+		servicename = servicename.replace('%',' ')
+		servicename = servicename.replace('&',' ')
+		servicename = servicename.replace('*',' ')
+		servicename = servicename.replace(',',' ')
+		servicename = servicename.replace('?',' ')
+		servicename = servicename.replace('{',' ')
+		servicename = servicename.replace('}',' ')
+		servicename = servicename.replace('(',' ')
+		servicename = servicename.replace(')',' ')
+		servicename = servicename.replace('[',' ')
+		servicename = servicename.replace(']',' ')
+		servicename = servicename.replace('^',' ')
+		servicename = servicename.replace('+',' ')
+		servicename = servicename.replace('|',' ')
+		servicename = servicename.replace('-',' ')
+		servicename = servicename.replace('_',' ')
+		servicename = servicename.replace('"',' ')
+		servicename = servicename.replace('\'',' ')
+		servicename = servicename.replace('#',' ')
+		servicename = servicename.replace(':',' ')
+		servicename = servicename.replace('!',' ')
+		servicename = servicename.replace('`',' ')
+		servicename = servicename.replace('.',' ')
+		servicename = servicename.replace('\n','')
+		servicename = servicename.strip()
 
 
-	    return servicename
+		return servicename
 	
 	def getAspectRatio(self):
-	    
+		
 		d = {"2":"16:9","3":"4:3"}
 		return self.lookup_replace('aspect ratio', d)
 
 	def getStatus(self):
-		    if self.offline:
-			    return "Offline"
-		    else:
-			    return "Online"
+			if self.offline:
+				return "Offline"
+			else:
+				return "Online"
 	
 	def getEbno(self):
 	
-		    ebno = self.lookup('Eb / No')
-		    ebno = ebno.replace(' ', '')
-		    ebno = ebno.replace('"', '')
-		    try:
-				    final = ebno[0:len(ebno)-2]+"."+ebno[:2]+"dB"
-		    except:
-				    final = ""
-		    if len(ebno) <= 1:
-				    final = ""
-		    final = final.replace(' ', '')
-		    final = final.replace('"', '')
-		    return final
+			ebno = self.lookup('Eb / No')
+			ebno = ebno.replace(' ', '')
+			ebno = ebno.replace('"', '')
+			try:
+					final = ebno[0:len(ebno)-2]+"."+ebno[:2]+"dB"
+			except:
+					final = ""
+			if len(ebno) <= 1:
+					final = ""
+			final = final.replace(' ', '')
+			final = final.replace('"', '')
+			return final
 
 	def getPol(self):
-	    d = {"1":"Y","2":"X"}
-	    return self.lookup_replace('polarisation', d)
+		d = {"1":"Y","2":"X"}
+		return self.lookup_replace('polarisation', d)
 	
 	def getBissStatus(self):
-	    d = {"1":"Off","2":"On"}
-	    return self.lookup_replace('Biss Status', d)
+		d = {"1":"Off","2":"On"}
+		return self.lookup_replace('Biss Status', d)
 	
 	
 	def getSat(self):
-		    if not self.sat_dict.has_key(self.getinSatSetupInputSelect()):
+			if not self.sat_dict.has_key(self.getinSatSetupInputSelect()):
 	
 	
-			    req = "SELECT SAT1,SAT2,SAT3,SAT4 FROM equipment WHERE id = %i" % self.getId()
-			    res = gv.sql.qselect(req)
-			    res = res[0] #1 line
-			    for x in range(len(res)):
-				    self.sat_dict[x + 1] = res[x]
-		    try:
-			    return self.sat_dict[self.getinSatSetupInputSelect()]
-		    except KeyError:
-			    return ""
+				req = "SELECT SAT1,SAT2,SAT3,SAT4 FROM equipment WHERE id = %i" % self.getId()
+				res = gv.sql.qselect(req)
+				res = res[0] #1 line
+				for x in range(len(res)):
+					self.sat_dict[x + 1] = res[x]
+			try:
+				return self.sat_dict[self.getinSatSetupInputSelect()]
+			except KeyError:
+				return ""
 	def get_lo_offset(self):
 		try:
 			return self.lo_offset
@@ -306,7 +312,7 @@ class IRD(equipment):
 			satfreq =  float(self.getinSatSetupSatelliteFreq()) + float(self.get_lo_offset())
 			# C band
 			if satfreq < 0:
-			    satfreq = -satfreq
+				satfreq = -satfreq
 			satfreq = str(satfreq)
 		else:
 			satfreq = str(self.getinSatSetupSatelliteFreq())
@@ -320,9 +326,9 @@ class IRD(equipment):
 		   #channel = str(status[i][0]) + " " + channel + "/"
 		
 		else:
-		    #     channel = str(status[i][6])
-		    channel = ""
-		    modulation = ""
+			#     channel = str(status[i][6])
+			channel = ""
+			modulation = ""
 		
 		
 		
@@ -331,166 +337,166 @@ class IRD(equipment):
 		#print channel + " " + modulation 
 		#return "UPDATE status SET channel ='%s', modtype ='%s' WHERE id ='%i'" %(channel,modulation,self.getId())
 		return "UPDATE status SET channel ='%s'WHERE id ='%i'" %(channel,self.getId())
-		    
+			
 	def getVResol(self):
-	    return self.lookup('video vertical resolution')
+		return self.lookup('video vertical resolution')
 	
 	def getFrameRate(self):
-	    #d = {"1":"Unknown","2":"25 Hz","3":"30 Hz","4":"50 Hz","5":"60 Hz","6":"29.97 Hz","7":"59.97 Hz"}
-	    d = {"1":"Unknown","2":"25Hz","3":"30Hz","4":"50Hz","5":"60Hz","6":"29.97Hz","7":"59.97Hz"}
-	    return self.lookup_replace('video frame rate', d)
+		#d = {"1":"Unknown","2":"25 Hz","3":"30 Hz","4":"50 Hz","5":"60 Hz","6":"29.97 Hz","7":"59.97 Hz"}
+		d = {"1":"Unknown","2":"25Hz","3":"30Hz","4":"50Hz","5":"60Hz","6":"29.97Hz","7":"59.97Hz"}
+		return self.lookup_replace('video frame rate', d)
 	
 	def getVState(self):
-	    d = {"1":"Running","2":"Stopped","3":"Errors"}
-	    return self.lookup_replace('video state', d)
+		d = {"1":"Running","2":"Stopped","3":"Errors"}
+		return self.lookup_replace('video state', d)
 	
 	def getAsioutMode(self):
-	    d = {"1":"Disabled","2":"Encrypted","3":"Patrially Decrypted","4":"Decrypted" }
-	    return self.lookup_replace('asi output mode', d)
+		d = {"1":"Disabled","2":"Encrypted","3":"Patrially Decrypted","4":"Decrypted" }
+		return self.lookup_replace('asi output mode', d)
 	
 	def getinSatSetupModType(self):
-	    key = 'inSatModType'
-	    return self.lookup(key)
+		key = 'inSatModType'
+		return self.lookup(key)
 
 	def getinSatSetupRollOff(self):
-	    """ Overide for RX8200 """
-	    d = {"1":"0.20","2":"0.35","3":"0.20"}
-	    return self.lookup_replace('inSatSetupRollOff ', d)
-	    
+		""" Overide for RX8200 """
+		d = {"1":"0.20","2":"0.35","3":"0.20"}
+		return self.lookup_replace('inSatSetupRollOff ', d)
+		
 	def getinSatSetupSymbolRate(self):
-		    """ Take SPS return KSPS """
-		    key = "inSatSetupSymbolRate"
-		    try:
-			    symbolRateFloat = float(self.lookup(key))
-		    except ValueError:
-			    symbolRateFloat = 0
-		    symbolRateFloat = (symbolRateFloat / 1000)
-		    finalsymrate = str(symbolRateFloat)
-		    ##print finalsymrate
-		    if(finalsymrate[(len(finalsymrate)-2):] == ".0"):
-				    finalsymrate = finalsymrate[:(len(finalsymrate)-2)]
-		    return finalsymrate
+			""" Take SPS return KSPS """
+			key = "inSatSetupSymbolRate"
+			try:
+				symbolRateFloat = float(self.lookup(key))
+			except ValueError:
+				symbolRateFloat = 0
+			symbolRateFloat = (symbolRateFloat / 1000)
+			finalsymrate = str(symbolRateFloat)
+			##print finalsymrate
+			if(finalsymrate[(len(finalsymrate)-2):] == ".0"):
+					finalsymrate = finalsymrate[:(len(finalsymrate)-2)]
+			return finalsymrate
 	
 	def getinSatSetupSatelliteFreq(self):
-		    """ Take KHz Return MHz """
-		    
-		    try:
-			    SatelliteFreqFloat = float(self.lookup('inSatSetupSatelliteFreq'))
-		    except ValueError: 
-			    SatelliteFreqFloat = 0
-						    
-		    SatelliteFreqFloat = (SatelliteFreqFloat / 1000)
-		    finalSatelliteFreq = str(SatelliteFreqFloat)
-						    ##print finalsymrate
-						    # This code is to compensate for inconsistencies in the D2S frequency table where
-						    # sometimes we have .0 at the end sometimes we don't
-						    # services.py then uses LIKE ...% to get it to match
-		    if(finalSatelliteFreq[(len(finalSatelliteFreq)-2):] == ".0"):
-				    finalSatelliteFreq = finalSatelliteFreq[:(len(finalSatelliteFreq)-2)]
-		    return finalSatelliteFreq    
+			""" Take KHz Return MHz """
+			
+			try:
+				SatelliteFreqFloat = float(self.lookup('inSatSetupSatelliteFreq'))
+			except ValueError: 
+				SatelliteFreqFloat = 0
+							
+			SatelliteFreqFloat = (SatelliteFreqFloat / 1000)
+			finalSatelliteFreq = str(SatelliteFreqFloat)
+							##print finalsymrate
+							# This code is to compensate for inconsistencies in the D2S frequency table where
+							# sometimes we have .0 at the end sometimes we don't
+							# services.py then uses LIKE ...% to get it to match
+			if(finalSatelliteFreq[(len(finalSatelliteFreq)-2):] == ".0"):
+					finalSatelliteFreq = finalSatelliteFreq[:(len(finalSatelliteFreq)-2)]
+			return finalSatelliteFreq    
 	
 	def getinSatSetupFecRate(self):
-	    """Return FEC rate. Normally Auto"""
-	    d = {"1":"0","2":"1/2","3":"2/3","4":"3/4","5":"5/6","6":"6/7","7":"7/8","8":"8/9","9":"Auto"}
-	    return self.lookup_replace('inSatSetupFecRate', d)
-	    
+		"""Return FEC rate. Normally Auto"""
+		d = {"1":"0","2":"1/2","3":"2/3","4":"3/4","5":"5/6","6":"6/7","7":"7/8","8":"8/9","9":"Auto"}
+		return self.lookup_replace('inSatSetupFecRate', d)
+		
 	def getinputTsBitrate(self):
-	    key = 'inputtsbitrate '
-	    return self.lookup(key)
-	    
+		key = 'inputtsbitrate '
+		return self.lookup(key)
+		
 	def getinSatSetupInputSelect(self):
-	    """For TT1260 and RX1290"""
-	    key = 'inSatSetupInputSelect '
-	    try:
-			    return int(self.lookup(key)) -1 
-	    except: 
-			    #print "can't be int"
-			    #print self.lookup(key)
-			    return 1
-	    
-	    
+		"""For TT1260 and RX1290"""
+		key = 'inSatSetupInputSelect '
+		try:
+				return int(self.lookup(key)) -1 
+		except: 
+				#print "can't be int"
+				#print self.lookup(key)
+				return 1
+		
+		
 	def getinput_selection(self):
-	    """ Sat or ASI Different on each type so should be overriden"""
-	    return "ASI"
-	    
+		""" Sat or ASI Different on each type so should be overriden"""
+		return "ASI"
+		
 	def getlockState(self):
-	    d = {"1":"Unknown","2":"Lock","3":"Unlock"}
-	    return self.lookup_replace('LockState', d)
-		    
+		d = {"1":"Unknown","2":"Lock","3":"Unlock"}
+		return self.lookup_replace('LockState', d)
+			
 	
 	def set_offline(self):
-		    self.offline = True
-		    try:
-			    order = "UPDATE status SET status ='Offline' WHERE id ='%i';" %self.getId()
-			    result = gv.sql.qselect(order)
-			    order = "UPDATE equipment SET model_id ='OFFLINE' WHERE id ='%i';" %self.getId()
-			    result = gv.sql.qselect(order)
-		    except: pass
-		    
-		    
+			self.offline = True
+			try:
+				order = "UPDATE status SET status ='Offline' WHERE id ='%i';" %self.getId()
+				result = gv.sql.qselect(order)
+				order = "UPDATE equipment SET model_id ='OFFLINE' WHERE id ='%i';" %self.getId()
+				result = gv.sql.qselect(order)
+			except: pass
+			
+			
 class GenericIRD(IRD):
-    def __init__(self, equipmentId, ip, name):
-	    self.equipmentId = equipmentId
-	    self.ip = ip
-	    self.name = name
-	    self.modelType = "GenericIRD"
-	    
-	    super( GenericIRD, self ).__init__()
+	def __init__(self, equipmentId, ip, name):
+		self.equipmentId = equipmentId
+		self.ip = ip
+		self.name = name
+		self.modelType = "GenericIRD"
+		
+		super( GenericIRD, self ).__init__()
 
-    def updatesql(self):
-	    return "DO 0;" #DO NOTHING 
+	def updatesql(self):
+		return "DO 0;" #DO NOTHING 
 class TT1260(IRD):
-    
-    
-    def __init__(self, equipmentId, ip, name):
-	self.equipmentId = equipmentId
-	self.ip = ip
-	self.name = name
-	self.modelType = "TT1260"
-	super( TT1260, self ).__init__()
+	
+	
+	def __init__(self, equipmentId, ip, name):
+		self.equipmentId = equipmentId
+		self.ip = ip
+		self.name = name
+		self.modelType = "TT1260"
+		super( TT1260, self ).__init__()
 
-    def getinSatSetupModType(self):
-	    key = 'inSatModType'
-	    d = {"5":"DVB-S2","2":"DVB-S"}
-	    return self.lookup_replace(key, d)
-    """ Done in IRD class
-    def getoids(self):
-        
+	def getinSatSetupModType(self):
+		key = 'inSatModType'
+		d = {"5":"DVB-S2","2":"DVB-S"}
+		return self.lookup_replace(key, d)
+	""" Done in IRD class
+	def getoids(self):
+		
 	dic =  self.oid_get.copy()
 	if self.getinSatSetupInputSelect() == 5:
-	    for k, v in dic.items():
+		for k, v in dic.items():
 		if "X" in v:
-		    del dic[k]
-        
+			del dic[k]
+		
 	for k, v in dic.items():
-	    v = v.replace('enterprises.','.1.3.6.1.4.1.')
-	    v = v.replace('X', str(self.getinSatSetupInputSelect()))
-	    dic[k] = v
+		v = v.replace('enterprises.','.1.3.6.1.4.1.')
+		v = v.replace('X', str(self.getinSatSetupInputSelect()))
+		dic[k] = v
 	#if self.getinSatSetupInputSelect() = 1:
 	#    print "%s is on imput %s"%(self.name, self.getinSatSetupInputSelect())
-        return dic
-    """
-    def updatesql(self):
-        return  "UPDATE status SET status = '%s' , servicename = '%s', aspectratio ='%s', ebno='%s', pol='%s', bissstatus='%s', videoresolution='%s', framerate='%s',videostate='%s',asioutmode='%s',frequency='%s',symbolrate='%s',fec='%s',rolloff='%s',modulationtype='%s',muxbitrate='%s',muxstate='%s', asi='%s', sat_input='%i' WHERE id = %i; " %(self.getStatus(),self.getServiceName(),self.getAspectRatio(),self.getEbno(),self.getPol(),self.getBissStatus(),self.getVResol(),self.getFrameRate(),self.getVState(),self.getAsioutMode(),self.getinSatSetupSatelliteFreq(),self.getinSatSetupSymbolRate(),self.getinSatSetupFecRate(),self.getinSatSetupRollOff(),self.getinSatSetupModType(),self.getinputTsBitrate(),self.getlockState(),self.getinput_selection(),self.getinSatSetupInputSelect(),self.getId())
+		return dic
+	"""
+	def updatesql(self):
+		return  "UPDATE status SET status = '%s' , servicename = '%s', aspectratio ='%s', ebno='%s', pol='%s', bissstatus='%s', videoresolution='%s', framerate='%s',videostate='%s',asioutmode='%s',frequency='%s',symbolrate='%s',fec='%s',rolloff='%s',modulationtype='%s',muxbitrate='%s',muxstate='%s', asi='%s', sat_input='%i' WHERE id = %i; " %(self.getStatus(),self.getServiceName(),self.getAspectRatio(),self.getEbno(),self.getPol(),self.getBissStatus(),self.getVResol(),self.getFrameRate(),self.getVState(),self.getAsioutMode(),self.getinSatSetupSatelliteFreq(),self.getinSatSetupSymbolRate(),self.getinSatSetupFecRate(),self.getinSatSetupRollOff(),self.getinSatSetupModType(),self.getinputTsBitrate(),self.getlockState(),self.getinput_selection(),self.getinSatSetupInputSelect(),self.getId())
 
-    def getinput_selection(self):
-        """ Sat or ASI Different on each"""
-        if self.getinSatSetupSatelliteFreq() == "0":
-            return "ASI"
-        else:
-            return "SAT"
+	def getinput_selection(self):
+		""" Sat or ASI Different on each"""
+		if self.getinSatSetupSatelliteFreq() == "0":
+			return "ASI"
+		else:
+			return "SAT"
 class RX1290(IRD):
-    
-    def __init__(self, equipmentId, ip, name):
-        
-        self.equipmentId = equipmentId
-        self.ip = ip
-        self.name = name
-        self.modelType = "RX1290"
-        super( RX1290, self ).__init__()
-     
-    def updatesql(self):
-        #return  "UPDATE status SET status = '%s' , servicename = '%s', aspectratio ='%s', ebno='%s', pol='%s', bissstatus='%s', videoresolution='%s', framerate='%s',videostate='%s',asioutmode='%s',frequency='%s',symbolrate='%s',fec='%s',rolloff='%s',modulationtype='%s',asi='%s',muxbitrate='%s', sat_input='%i' WHERE id = %i; " %(self.getStatus(),self.getServiceName(),self.getAspectRatio(),self.getEbno(),self.getPol(),self.getBissStatus(),self.getVResol(),self.getFrameRate(),self.getVState(),self.getAsioutMode(),self.getinSatSetupSatelliteFreq(),self.getinSatSetupSymbolRate(),self.getinSatSetupFecRate(),self.getinSatSetupRollOff(),self.getinSatSetupModType(),self.getinput_selection(),self.getinputTsBitrate(),self.getinSatSetupInputSelect(),self.getId())
+	
+	def __init__(self, equipmentId, ip, name):
+		
+		self.equipmentId = equipmentId
+		self.ip = ip
+		self.name = name
+		self.modelType = "RX1290"
+		super( RX1290, self ).__init__()
+
+	def updatesql(self):
+		#return  "UPDATE status SET status = '%s' , servicename = '%s', aspectratio ='%s', ebno='%s', pol='%s', bissstatus='%s', videoresolution='%s', framerate='%s',videostate='%s',asioutmode='%s',frequency='%s',symbolrate='%s',fec='%s',rolloff='%s',modulationtype='%s',asi='%s',muxbitrate='%s', sat_input='%i' WHERE id = %i; " %(self.getStatus(),self.getServiceName(),self.getAspectRatio(),self.getEbno(),self.getPol(),self.getBissStatus(),self.getVResol(),self.getFrameRate(),self.getVState(),self.getAsioutMode(),self.getinSatSetupSatelliteFreq(),self.getinSatSetupSymbolRate(),self.getinSatSetupFecRate(),self.getinSatSetupRollOff(),self.getinSatSetupModType(),self.getinput_selection(),self.getinputTsBitrate(),self.getinSatSetupInputSelect(),self.getId())
 		sql =  "UPDATE status SET status = '%s' , "% self.getStatus()
 		sql += "servicename = '%s', "% self.getServiceName()
 		sql += "aspectratio ='%s', "% self.getAspectRatio()
@@ -512,33 +518,39 @@ class RX1290(IRD):
 		sql += "sat_input='%i'"% self.getinSatSetupInputSelect()
 		sql += "WHERE id = %i; " %self.getId()
 		return sql
-    def getinSatSetupModType(self):
-	    key = 'inSatModType'
-	    d = {"2":"DVB-S2","1":"DVB-S"}
-	    return self.lookup_replace(key, d)
+	def getinSatSetupModType(self):
+		key = 'inSatModType'
+		d = {"2":"DVB-S2","1":"DVB-S"}
+		return self.lookup_replace(key, d)
 
-    def getinput_selection(self):
-        d = {"1":"ASI","2":"SAT"}
-        return self.lookup_replace('input_selection ', d)
-        
+	def getinput_selection(self):
+		d = {"1":"ASI","2":"SAT"}
+		return self.lookup_replace('input_selection ', d)
+		
 class RX8200(IRD):
-    
-    def __init__(self, equipmentId, ip, name):
-        self.equipmentId = equipmentId
-        self.ip = ip
-        self.name = name
-        self.modelType = "RX8200"
-        super( RX8200, self ).__init__()
-    def getlockState(self):
-        d = {"1":"Lock","0":"Unlock"}
-        return self.lookup_replace('LockState', d)
+	
+	def __init__(self, equipmentId, ip, name):
+		self.equipmentId = equipmentId
+		self.ip = ip
+		self.name = name
+		self.modelType = "RX8200"
+		super( RX8200, self ).__init__()
+	def getlockState(self):
+		d = {"1":"Lock","0":"Unlock"}
+		return self.lookup_replace('LockState', d)
+	
 
-    def getinputTsBitrate(self):
+	def getinputTsBitrate(self):
+		key = 'inputtsbitrate '
+		s = self.lookup(key) + "000" #kbps to bps
+		return s
+
+		
 	key = 'inputtsbitrate '
 	s = self.lookup(key) + "000" #kbps to bps
 	return s
 
-    def updatesql(self):
+	def updatesql(self):
 		sql =  "UPDATE status SET status = '%s' , "% self.getStatus()
 		sql += "servicename = '%s', "% self.getServiceName()
 		sql += "aspectratio ='%s', "% self.getAspectRatio()
@@ -561,12 +573,12 @@ class RX8200(IRD):
 		sql += "WHERE id = %i; " %self.getId()
 		return sql
 
-    def getinSatSetupModType(self):
-	    key = 'inSatModType'
-	    d = {"1":"DVB-S2","0":"DVB-S"}
-	    return self.lookup_replace(key, d)
+	def getinSatSetupModType(self):
+		key = 'inSatModType'
+		d = {"1":"DVB-S2","0":"DVB-S"}
+		return self.lookup_replace(key, d)
    
-    def getinSatSetupInputSelect(self):
+	def getinSatSetupInputSelect(self):
 		"""For RX8200
 		# {channel_1(0),channel_2(1), channel_3(2), channel_4(3), channel_5(4), channel_6(5), channel_7(6), channel_8(7)}"""
 		key = 'inSatSetupInputSelect '
@@ -575,46 +587,45 @@ class RX8200(IRD):
 			return int(inp) +1   
 		except ValueError:
 			return 1
-    def getinSatSetupRollOff(self):
-        """for RX8200 """
-        d = {"0":"0.20","1":"0.35","2":"0.20"}
-        return self.lookup_replace('inSatSetupRollOff ', d)    
+	def getinSatSetupRollOff(self):
+		"""for RX8200 """
+		d = {"0":"0.20","1":"0.35","2":"0.20"}
+		return self.lookup_replace('inSatSetupRollOff ', d)    
 
-    def getinSatSetupFecRate(self):
-	    """Return FEC rate. Normally Auto"""
-	    #{auto(0), fec_1_2(102), fec_1_3(103), fec_1_4(104),fec_2_3(203),fec_2_5(205),fec_3_4(304), fec_3_5(305),fec_4_5(405), fec_5_6(506), fec_6_7(607), fec_7_8(708),fec_8_9(809), fec_9_10(910),fec_unknown(999)  
-	    d = {"999":"0","102":"1/2","103":"1/3",     "104":"1/4",     "203":"2/3", "205":"2/5",   "304":"3/4",  "305":"3/5",   "405":"4/5",       "506":"5/6",  "607":"6/7",  "708":"7/8",   "809":"8/9",    "910":"9/10",  "0":"Auto"}
-	    return self.lookup_replace('inSatSetupFecRate', d) 
+	def getinSatSetupFecRate(self):
+		"""Return FEC rate. Normally Auto"""
+		#{auto(0), fec_1_2(102), fec_1_3(103), fec_1_4(104),fec_2_3(203),fec_2_5(205),fec_3_4(304), fec_3_5(305),fec_4_5(405), fec_5_6(506), fec_6_7(607), fec_7_8(708),fec_8_9(809), fec_9_10(910),fec_unknown(999)  
+		d = {"999":"0","102":"1/2","103":"1/3",     "104":"1/4",     "203":"2/3", "205":"2/5",   "304":"3/4",  "305":"3/5",   "405":"4/5",       "506":"5/6",  "607":"6/7",  "708":"7/8",   "809":"8/9",    "910":"9/10",  "0":"Auto"}
+		return self.lookup_replace('inSatSetupFecRate', d) 
 
-    def getinput_selection(self):
-	    d = {"0":"ASI","1":"SAT","2":"SAT"}
-	    return self.lookup_replace('input_selection ', d)
-    
-    def getServiceName(self):
-        try:
-            Table_Service_ID = list(self.snmp_res_dict["Table_Service_ID"])
-	    Table_Service_Name = list(self.snmp_res_dict["Table_Service_Name"])
-	    ServiceID = self.snmp_res_dict["ServiceID"]
-        except KeyError:
-            return  ""
-	for x in xrange(len(Table_Service_ID)):
-	    try:
-		v = Table_Service_ID[x]
-		v = v.replace('"','')
-		v = v.replace('\n','')
-		v = v.replace(' ','')
-		Table_Service_ID[x] = int(v)
-	    except ValueError:
-		Table_Service_ID[x] = -1
-	try:
-	    pos = Table_Service_ID.index(int(ServiceID))
-	    serviceName = Table_Service_Name[pos]
-	    return self.processServiceName(serviceName)
-	except:
-	    return ""
+	def getinput_selection(self):
+		d = {"0":"ASI","1":"SAT","2":"SAT"}
+		return self.lookup_replace('input_selection ', d)
 
-    def getEbno(self):
-  
+	def getServiceName(self):
+		try:
+			Table_Service_ID = list(self.snmp_res_dict["Table_Service_ID"])
+			Table_Service_Name = list(self.snmp_res_dict["Table_Service_Name"])
+			ServiceID = self.snmp_res_dict["ServiceID"]
+		except KeyError:
+			return  ""
+		for x in xrange(len(Table_Service_ID)):
+			try:
+				v = Table_Service_ID[x]
+				v = v.replace('"','')
+				v = v.replace('\n','')
+				v = v.replace(' ','')
+				Table_Service_ID[x] = int(v)
+			except ValueError:
+				Table_Service_ID[x] = -1
+		try:
+			pos = Table_Service_ID.index(int(ServiceID))
+			serviceName = Table_Service_Name[pos]
+			return self.processServiceName(serviceName)
+		except:
+			return ""
+
+	def getEbno(self):
 		ebno = self.lookup('Eb / No')
 		ebno = ebno.strip()
 		ebno = ebno.replace(' ', '')
@@ -629,25 +640,25 @@ class RX8200(IRD):
 		return final
 
 
-    def getAspectRatio(self):
+	def getAspectRatio(self):
 		
 		d = {"1":"16:9","2":"4:3"}
 		
 		return self.lookup_replace('aspect ratio', d)
-    def getPol(self):
-        d = {"0":"Y","1":"X"}
-        return self.lookup_replace('polarisation', d)
+	def getPol(self):
+		d = {"0":"Y","1":"X"}
+		return self.lookup_replace('polarisation', d)
 	
-    def getBissStatus(self):
-        d = {"0":"Off","1":"On"}
-        return self.lookup_replace('Biss Status', d)
-    def getFrameRate(self):
-        #d = {"1":"Unknown","2":"25Hz","3":"30Hz","4":"50Hz","5":"60Hz","6":"29.97Hz","7":"59.97Hz"}
-        fr = self.lookup('video frame rate')
+	def getBissStatus(self):
+		d = {"0":"Off","1":"On"}
+		return self.lookup_replace('Biss Status', d)
+	def getFrameRate(self):
+		#d = {"1":"Unknown","2":"25Hz","3":"30Hz","4":"50Hz","5":"60Hz","6":"29.97Hz","7":"59.97Hz"}
+		fr = self.lookup('video frame rate')
 	try:
-	    fr = float(fr)
+		fr = float(fr)
 	except:
-	    fr = 0
+		fr = 0
 	fr = fr/1000
 	st = "%sHz"% fr
 	st = st.replace(".0", "")
@@ -655,41 +666,41 @@ class RX8200(IRD):
 
 
 		
-    def determine_subtype(self):
-	""" determine Sub Type. Returns string and
-	should be processed outside the class as the idea is to replace with the correct device class"""
-	import snmp
-	#d = {'DeviceType':".1.3.6.1.4.1.1773.1.1.1.7.0"}
-	d = {'inputCardType':".1.3.6.1.4.1.1773.1.3.208.2.1.1.0"} #
-	# Integer32 {unknown(0); asi(1); sat_qpsk(2); ofdm(3); sat_16Qam(4); g057(5); sat_turbo_demod1(6); sat_hd(7);ip_input_g037(8); ipi_input(9); local_asi(10); atm_e3(11); atm_ds3(12); ip_input_g036(13);vsbCard_g062(14); 
-	subtypes = {
-		19: "RX8200-4RF",
-		21: "RX8200-2RF"
-		}
-	#resdict  = snmp.get({'DeviceType':".1.3.6.1.4.1.1773.1.1.1.7.0"}, self.ip)
-	try:
-		resdict  = snmp.get(d, self.ip)
-		self.offline = False
-	except:
-		self.offline = True
-		resdict = {'inputCardType':"OFFLINE"}
-	if resdict.has_key('inputCardType'):
-		
+	def determine_subtype(self):
+		""" determine Sub Type. Returns string and
+		should be processed outside the class as the idea is to replace with the correct device class"""
+		import snmp
+		#d = {'DeviceType':".1.3.6.1.4.1.1773.1.1.1.7.0"}
+		d = {'inputCardType':".1.3.6.1.4.1.1773.1.3.208.2.1.1.0"} #
+		# Integer32 {unknown(0); asi(1); sat_qpsk(2); ofdm(3); sat_16Qam(4); g057(5); sat_turbo_demod1(6); sat_hd(7);ip_input_g037(8); ipi_input(9); local_asi(10); atm_e3(11); atm_ds3(12); ip_input_g036(13);vsbCard_g062(14); 
+		subtypes = {
+			19: "RX8200-4RF",
+			21: "RX8200-2RF"
+			}
+		#resdict  = snmp.get({'DeviceType':".1.3.6.1.4.1.1773.1.1.1.7.0"}, self.ip)
 		try:
-			return subtypes[int( resdict['inputCardType'] )]
-		except KeyError:
-			return "Rx8200"
-	else:
-		if gv.loud:
-			print resdict
-		self.offline = True
-		return "OFFLINE"
-
-	"""  Gets a unit's subtype if required. Override if the unit actually has a subtype"""
-	try:
-		return self.modelType
-	except:
-		return "Unknown"
+			resdict  = snmp.get(d, self.ip)
+			self.offline = False
+		except:
+			self.offline = True
+			resdict = {'inputCardType':"OFFLINE"}
+		if resdict.has_key('inputCardType'):
+			
+			try:
+				return subtypes[int( resdict['inputCardType'] )]
+			except KeyError:
+				return "Rx8200"
+		else:
+			if gv.loud:
+				print resdict
+			self.offline = True
+			return "OFFLINE"
+	
+		"""  Gets a unit's subtype if required. Override if the unit actually has a subtype"""
+		try:
+			return self.modelType
+		except:
+			return "Unknown"
 
 
 
@@ -769,8 +780,8 @@ class NS2000(IRD):
 	def getinSatSetupInputSelect(self):
 		return 1 #There's only one input
 	def getPol(self):
-	    d = {"0":"?","1":"Y","2":"Y","3":"X","4":"X"}
-	    return self.lookup_replace('polarisation', d)
+		d = {"0":"?","1":"Y","2":"Y","3":"X","4":"X"}
+		return self.lookup_replace('polarisation', d)
 class NS2000_WEB(NS2000):
 	def __init__(self, equipmentId, ip, name):
 		super( NS2000_WEB, self ).__init__(equipmentId, ip, name)
@@ -847,16 +858,16 @@ class NS2000_WEB(NS2000):
 	
 	def getEbno(self):
 	
-		    ebno = self.lookup('margin')
+			ebno = self.lookup('margin')
 
-		    ebno = ebno.replace(' ', '')
-		    ebno = ebno.replace('"', '')
-		    return ebno
+			ebno = ebno.replace(' ', '')
+			ebno = ebno.replace('"', '')
+			return ebno
 	def getlockState(self):
-	    #d = {"1":"Lock","0":"Unlock"}
-	    #return self.lookup_replace('LockState', d)
-	    d = {"Locked":"Lock","Unlocked":"Unlock"} # yes i know it's silly but ought to match
-	    return self.lookup_replace('lock', d)
+		#d = {"1":"Lock","0":"Unlock"}
+		#return self.lookup_replace('LockState', d)
+		d = {"Locked":"Lock","Unlocked":"Unlock"} # yes i know it's silly but ought to match
+		return self.lookup_replace('lock', d)
 	
 	def getinputTsBitrate(self):
 		key = 'datarate'
@@ -940,16 +951,217 @@ class NS2000_SNMP(NS2000):
 		d = {'1': 'DSNG', '0': 'DVB-S', '3': 'NS3', '2': 'DVB-S2'}
 		return self.lookup_replace('inSatModType', d)
 	def getlockState(self):
-	    d = {"1":"Lock","0":"Unlock"}
-	    return self.lookup_replace('LockState', d)
+		d = {"1":"Lock","0":"Unlock"}
+		return self.lookup_replace('LockState', d)
 	
 class oidWorkaround(equipment):
 	def __init__(self, modelType):
 		self.modelType = modelType
 		self.getoid()
 
+class DR5000(ird):
+	""" ATEME DR5000 version 1.0.2.2 """
+	def __init__(self, equipmentId, ip, name):
+		self.equipmentId = equipmentId
+		self.ip = ip
+		self.name = name
+		self.modelType = "DR5000"
+		super( DR5000, self ).__init__()
+	def getAspectRatio(self):
+		""" TODO """
+		d = {"2":"16:9","3":"4:3"}
+		return self.lookup_replace('aspect ratio', d)
+	
+	def getServiceName(self):
+		try:
+			Table_Service_ID = list(self.snmp_res_dict["Table_Service_ID"])
+			Table_Service_Name = list(self.snmp_res_dict["Table_Service_Name"])
+			ServiceID = getServiceId()
+		except KeyError:
+			return  ""
+		for x in xrange(len(Table_Service_ID)):
+			try:
+				v = Table_Service_ID[x]
+				v = v.replace('"','')
+				v = v.replace('\n','')
+				v = v.replace(' ','')
+				Table_Service_ID[x] = int(v)
+			except ValueError:
+				Table_Service_ID[x] = -1
+		try:
+			pos = Table_Service_ID.index(int(ServiceID))
+			serviceName = Table_Service_Name[pos]
+			return self.processServiceName(serviceName)
+		except:
+			return ""
+	
+	def getServiceId(self):
+		""" TODO """
+		pass
+	
+	def getEbno(self):
+		""" 0 = unlock
+		164 = 16.4db """
+		ebno = self.lookup('Eb / No')
+		try:
+			ebno = float(ebno)
+		except ValueError:
+			ebno = 0
+		
+		return "%sdb"%ebno/10
+	
+	def getPol(self):
+		d = {"1":"Y","2":"X"}
+		return self.lookup_replace('polarisation', d)
+	
+	def getCAStatus(self):
+		""" True or False """
+		"""Syntax	 TruthValue 1 true 2 false"""
+		return  self.lookup("dr5000StatusDecodeCurrentProgramScrambled") == "1"
+
+	def getBissStatus(self):
+		
+		"""biss1(2),
+		bisse1(3),
+		bisse2(4)
+		"""
+		d = {"1":"Off","2":"On","3":"On","4":"On"}
+		if getCAStatus():
+			return self.lookup_replace('Biss Status', d)
+		else:
+			return "Off"
+	
+
+	def getFrameRate(self):
+		try:
+			numerator = int( self.lookup('frame rate num') )
+		except ValueError:
+			numerator = 0.0
+		try:
+			denominator = int( self.lookup('frame rate den') )
+		except ValueError:
+			denominator = 1.0
+		try:
+			return float(numerator / denominator)
+		except ZeroDivisionError:
+			return 0
+		
+		
+	def getVResol(self):
+		
+		return self.lookup('video vertical resolution')
+	
+	def getinput_selection(self):
+		""" Input type"""
+		k = "dr5000StatusInputType"
+		d = {"1":"ip", "2":"asi", "3":"sat", "4":"ds3"}
+		return self.lookup_replace(k,d)
+
+	def getlockState(self):
+		""" return True on Bitrate when not using SAT"""
+		if self.getinput_selection() == "sat":
+			d = {"1":"Lock","0":"Unlock"}
+			return self.lookup_replace('LockState', d)
+		else:
+			stat = ["Unlock", "Lock"] 
+			return stat[int(self.getinputTsBitrate()) > 0]
+
+	def getinputTsBitrate(self):
+		""" TO BE CHECKED """
+		key = 'inputtsbitrate '
+		s = self.lookup(key) + "000" #kbps to bps
+		return s
+
+		
 
 
+
+
+	def getinSatSetupModType(self):
+		key = 'dr5000StatusInputSatModulation'
+		d = {"1":"unknown","2":"qpsk","3":"8psk","4":"16apsk","5":"32apsk"}
+		return self.lookup_replace(key, d)
+
+	def getinSatSetupInputSelect(self):
+		""" DR5000 """
+		key = 'dr5000ChannelConfigurationInputSatInterface'
+		inp = self.lookup(key)
+		try:
+			return int(inp)  
+		except ValueError:
+			return 1
+	def getinSatSetupRollOff(self):
+		
+		d = {"4":"0.20","2":"0.35","3":"0.25"}
+		return self.lookup_replace('dr5000StatusInputSatRollOff', d)    
+
+
+	def getVState(self):
+		d = {"1":"Running","2":"Stopped"}
+		return self.lookup_replace('video state', d)
+	
+	def getAsioutMode(self):
+			d = {"1":"Decrypted","2":"Encrypted" }
+			return self.lookup_replace('asi output mode', d)
+	def getinSatSetupSatelliteFreq(self):
+		""" Take kHz Return MHz """
+		hz = 100000
+		khz = 1000
+		try:
+			SatelliteFreqFloat = float(self.lookup('inSatSetupSatelliteFreq'))
+		except ValueError: 
+			SatelliteFreqFloat = 0
+						
+		SatelliteFreqFloat = (SatelliteFreqFloat / khz)
+		finalSatelliteFreq = str(SatelliteFreqFloat)
+						##print finalsymrate
+						# This code is to compensate for inconsistencies in the D2S frequency table where
+						# sometimes we have .0 at the end sometimes we don't
+						# services.py then uses LIKE ...% to get it to match
+		if(finalSatelliteFreq[(len(finalSatelliteFreq)-2):] == ".0"):
+				finalSatelliteFreq = finalSatelliteFreq[:(len(finalSatelliteFreq)-2)]
+		return finalSatelliteFreq
+	def getinSatSetupSymbolRate(self):
+			""" Take KSPS return KSPS """
+			key = "inSatSetupSymbolRate"
+			try:
+				symbolRateFloat = float(self.lookup(key))
+			except ValueError:
+				symbolRateFloat = 0
+			symbolRateFloat = (symbolRateFloat )
+			finalsymrate = str(symbolRateFloat)
+			##print finalsymrate
+			if(finalsymrate[(len(finalsymrate)-2):] == ".0"):
+					finalsymrate = finalsymrate[:(len(finalsymrate)-2)]
+			return finalsymrate
+	def getinSatSetupFecRate(self):
+		"""Return FEC rate. Normally Auto"""
+		
+		d = {"1":"unknown","2":"1/4","3":"1/3","4":"2/5","5":"1/2","6":"3/5","7":"2/3",
+			 "8":"3/4","9":"4/5","10":"5/6","11":"6/7","12":"7/8","13":"8/9","14":"9/10"}
+		return self.lookup_replace('inSatSetupFecRate', d) 
+	def updatesql(self):
+		sql =  "UPDATE status SET status = '%s' , "% self.getStatus()
+		sql += "servicename = '%s', "% self.getServiceName()
+		sql += "aspectratio ='%s', "% self.getAspectRatio()
+		sql += "ebno='%s', "% self.getEbno()
+		sql += "pol='%s', "% self.getPol()
+		sql += "bissstatus='%s', "% self.getBissStatus()
+		sql += "videoresolution='%s', "% self.getVResol()
+		sql += "framerate='%s', "% self.getFrameRate()
+		sql += "videostate='%s',"% self.getVState()
+		sql += "asioutmode='%s',"% self.getAsioutMode()
+		sql += "frequency='%s',"% self.getinSatSetupSatelliteFreq()
+		sql += "symbolrate='%s',"% self.getinSatSetupSymbolRate()
+		sql += "fec='%s',"% self.getinSatSetupFecRate()
+		sql += "rolloff='%s',"% self.getinSatSetupRollOff()
+		sql += "modulationtype='%s',"% self.getinSatSetupModType()
+		sql += "asi='%s',"% self.getinput_selection()
+		sql += "muxbitrate='%s', "% self.getinputTsBitrate()
+		sql += "muxstate='%s' ,"% self.getlockState()
+		sql += "sat_input='%i'"% self.getinSatSetupInputSelect()
+		sql += "WHERE id = %i; " %self.getId()
+		return sql
 class TVG420(plugin_tvips.TVG420):
 	def __init__(self, equipmentId, ip, name):
 		self.equipmentId = equipmentId
@@ -966,8 +1178,8 @@ class TVG420(plugin_tvips.TVG420):
 		except:
 			return True
 	def set_offline(self):
-	    self.online = False
-	    
+		self.online = False
+		
 	def refresh(self):
 		self.get_enable_only()
 	
@@ -1050,8 +1262,8 @@ class IPGridport(OmneonHelper):
 	def get_offline(self):
 		return self.offline
 	def set_offline(self):
-	    self.offline = True
-	    
+		self.offline = True
+		
 	def determine_type(self):
 		import httpcaller
 		#response, stringfromserver = httpcaller.get(self.ip, '9980', "csvoutput?--login=auto")

@@ -1,2 +1,4 @@
 *.pyc
 server/pysnmp/
+*.old
+*.txt
