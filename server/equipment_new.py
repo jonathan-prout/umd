@@ -102,6 +102,10 @@ class equipment(object):
 				{'DeviceType': ".1.3.6.1.4.1.37576.2.3.1.5.1.2.1"} #This is not the best but then that is not on older versions of NS mib
 				 ,"testing whether it's a  Novelsat",
 				"NS2000"
+			],[
+				{'DeviceType': ".1.3.6.1.4.1.27338.5.2.2.0"} 
+				 ,"testing whether it's a  Novelsat",
+				"DR5000"
 			]
 		]
 		
@@ -545,10 +549,7 @@ class RX8200(IRD):
 		s = self.lookup(key) + "000" #kbps to bps
 		return s
 
-		
-	key = 'inputtsbitrate '
-	s = self.lookup(key) + "000" #kbps to bps
-	return s
+
 
 	def updatesql(self):
 		sql =  "UPDATE status SET status = '%s' , "% self.getStatus()
@@ -655,14 +656,14 @@ class RX8200(IRD):
 	def getFrameRate(self):
 		#d = {"1":"Unknown","2":"25Hz","3":"30Hz","4":"50Hz","5":"60Hz","6":"29.97Hz","7":"59.97Hz"}
 		fr = self.lookup('video frame rate')
-	try:
-		fr = float(fr)
-	except:
-		fr = 0
-	fr = fr/1000
-	st = "%sHz"% fr
-	st = st.replace(".0", "")
-	return st
+		try:
+			fr = float(fr)
+		except:
+			fr = 0
+		fr = fr/1000
+		st = "%sHz"% fr
+		st = st.replace(".0", "")
+		return st
 
 
 		
@@ -959,7 +960,7 @@ class oidWorkaround(equipment):
 		self.modelType = modelType
 		self.getoid()
 
-class DR5000(ird):
+class DR5000(IRD):
 	""" ATEME DR5000 version 1.0.2.2 """
 	def __init__(self, equipmentId, ip, name):
 		self.equipmentId = equipmentId
@@ -968,47 +969,55 @@ class DR5000(ird):
 		self.modelType = "DR5000"
 		super( DR5000, self ).__init__()
 	def getAspectRatio(self):
-		""" TODO """
-		d = {"2":"16:9","3":"4:3"}
-		return self.lookup_replace('aspect ratio', d)
+		""" NOT IMPLIMENTED ON ATEME """
+		#d = {"2":"16:9","3":"4:3"}
+		#return self.lookup_replace('aspect ratio', d)
+		return ""
 	
 	def getServiceName(self):
 		try:
 			Table_Service_ID = list(self.snmp_res_dict["Table_Service_ID"])
 			Table_Service_Name = list(self.snmp_res_dict["Table_Service_Name"])
-			ServiceID = getServiceId()
+			ServiceID = self.getServiceId()
 		except KeyError:
 			return  ""
 		for x in xrange(len(Table_Service_ID)):
 			try:
-				v = Table_Service_ID[x]
-				v = v.replace('"','')
-				v = v.replace('\n','')
-				v = v.replace(' ','')
-				Table_Service_ID[x] = int(v)
+				Table_Service_ID[x] = int(Table_Service_ID[x])
 			except ValueError:
-				Table_Service_ID[x] = -1
+				try:
+					v = Table_Service_ID[x]
+					v = v.replace('"','')
+					v = v.replace('\n','')
+					v = v.replace(' ','')
+					Table_Service_ID[x] = int(v)
+				except ValueError:
+					Table_Service_ID[x] = -1
 		try:
-			pos = Table_Service_ID.index(int(ServiceID))
-			serviceName = Table_Service_Name[pos]
+			
+			d = dict(zip(Table_Service_ID, Table_Service_Name))
+			
+			serviceName = d[ServiceID]
 			return self.processServiceName(serviceName)
 		except:
 			return ""
 	
 	def getServiceId(self):
-		""" TODO """
-		pass
+		try:
+			return int(self.lookup('service_id'))
+		except ValueError:
+			return 0
 	
 	def getEbno(self):
 		""" 0 = unlock
 		164 = 16.4db """
 		ebno = self.lookup('Eb / No')
 		try:
-			ebno = float(ebno)
+			ebno = float(ebno)/10
 		except ValueError:
-			ebno = 0
-		
-		return "%sdb"%ebno/10
+			ebno = 0.0
+		val = "%.1fdb"%ebno
+		return str(val)
 	
 	def getPol(self):
 		d = {"1":"Y","2":"X"}
@@ -1026,7 +1035,7 @@ class DR5000(ird):
 		bisse2(4)
 		"""
 		d = {"1":"Off","2":"On","3":"On","4":"On"}
-		if getCAStatus():
+		if self.getCAStatus():
 			return self.lookup_replace('Biss Status', d)
 		else:
 			return "Off"
@@ -1060,17 +1069,24 @@ class DR5000(ird):
 	def getlockState(self):
 		""" return True on Bitrate when not using SAT"""
 		if self.getinput_selection() == "sat":
-			d = {"1":"Lock","0":"Unlock"}
-			return self.lookup_replace('LockState', d)
+			d = {"1":"Lock","2":"Unlock"}
+			return self.lookup_replace('SatLockState', d)
 		else:
 			stat = ["Unlock", "Lock"] 
 			return stat[int(self.getinputTsBitrate()) > 0]
 
 	def getinputTsBitrate(self):
-		""" TO BE CHECKED """
-		key = 'inputtsbitrate '
-		s = self.lookup(key) + "000" #kbps to bps
-		return s
+		""" in kbps """
+		
+		key = 'inputtsbitrate'
+		try:
+			d = int(self.lookup(key)) * 1000 #kbps to bps
+		except ValueError:
+			d = 0
+		return d
+		
+		
+		#return int(self.lookup("inputtsbitrate")) * 1000 #kbps to bps
 
 		
 
@@ -1092,7 +1108,7 @@ class DR5000(ird):
 			return 1
 	def getinSatSetupRollOff(self):
 		
-		d = {"4":"0.20","2":"0.35","3":"0.25"}
+		d = {"4":"0.20","2":"0.35","3":"0.25","1":"0"}
 		return self.lookup_replace('dr5000StatusInputSatRollOff', d)    
 
 
@@ -1139,7 +1155,7 @@ class DR5000(ird):
 		
 		d = {"1":"unknown","2":"1/4","3":"1/3","4":"2/5","5":"1/2","6":"3/5","7":"2/3",
 			 "8":"3/4","9":"4/5","10":"5/6","11":"6/7","12":"7/8","13":"8/9","14":"9/10"}
-		return self.lookup_replace('inSatSetupFecRate', d) 
+		return self.lookup_replace('SatStatusFEC', d) 
 	def updatesql(self):
 		sql =  "UPDATE status SET status = '%s' , "% self.getStatus()
 		sql += "servicename = '%s', "% self.getServiceName()

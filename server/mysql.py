@@ -15,13 +15,13 @@ class mysql:
 		self.DBBAD = "oppps"
 		try:
 			#print "Opening Database Connection...."
-
 			self.db = MySQLdb.Connection(self.dhost,self.duser,self.dpass,self.dname)
 			self.cursor = self.db.cursor()
 
-		except:
+		except Exception as e:
 			print "Database Connection Error"
 			#raise mysql.DBBAD
+			raise e
 		
 		#self.db.query("DO 0;")
 		#self.db.commit()
