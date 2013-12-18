@@ -1051,9 +1051,10 @@ class DR5000(IRD):
 		except ValueError:
 			denominator = 1.0
 		try:
-			return float(numerator / denominator)
+			qty =  float(numerator / denominator)
 		except ZeroDivisionError:
-			return 0
+			qty = 0
+		return ("%.2fHz"%qty).replace(".00","")
 		
 		
 	def getVResol(self):
@@ -1063,12 +1064,12 @@ class DR5000(IRD):
 	def getinput_selection(self):
 		""" Input type"""
 		k = "dr5000StatusInputType"
-		d = {"1":"ip", "2":"asi", "3":"sat", "4":"ds3"}
+		d = {"1":"IP", "2":"ASI", "3":"SAT", "4":"DS3"}
 		return self.lookup_replace(k,d)
 
 	def getlockState(self):
 		""" return True on Bitrate when not using SAT"""
-		if self.getinput_selection() == "sat":
+		if self.getinput_selection() == "SAT":
 			d = {"1":"Lock","2":"Unlock"}
 			return self.lookup_replace('SatLockState', d)
 		else:
