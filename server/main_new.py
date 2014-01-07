@@ -93,19 +93,25 @@ def determine_type(args):
 	
 	name = gv.equipmentDict[equipmentID].name
 	
-	if  "TT1260" in Type:
-		newird = equipment_new.TT1260(equipmentID, ip, name)
-		newird.lastRefreshTime = 0
-		gv.addEquipment(newird)
-		t = "TT1260"
+	# Equipment Types without subtype
+	simpleTypes = {
+		"TT1260":equipment_new.TT1260,
+		"RX1290":equipment_new.Rx1290,
+		"DR5000":equipment_new.DR5000,
+		"TVG420":equipment_new.TVG420,
+		"IP Gridport":equipment_new.IPGridport,
 		
-	elif  "RX1290" in Type:
-		newird = equipment_new.RX1290(equipmentID, ip, name)
-		newird.lastRefreshTime = 0
-		gv.addEquipment(newird)
-		t = "RX1290"
-		
-	elif "Rx8000"in Type:
+	}
+	
+	for key in simpleTypes.keys():
+		if  key in Type:
+			newird = simpleTypes[key](equipmentID, ip, name)
+			newird.lastRefreshTime = 0
+			gv.addEquipment(newird)
+			t = key
+			break
+	# Equipment Type with subtype
+	if "Rx8000"in Type:
 		newird = equipment_new.RX8200(equipmentID, ip, name)
 		subtype = newird.determine_subtype()
 		if subtype == "RX8200-4RF":
@@ -116,17 +122,6 @@ def determine_type(args):
 		gv.addEquipment(newird)
 		t = "Rx8200"
 		
-	elif "TVG420"in Type:
-		newird = equipment_new.TVG420(equipmentID, ip, name)
-		newird.lastRefreshTime = 0
-		gv.addEquipment(newird)
-		t = "TVG420"
-		newird.lastRefreshTime = 0
-	elif "IP Gridport"in Type:
-		newird = equipment_new.IPGridport(equipmentID, ip, name)
-		newird.lastRefreshTime = 0
-		gv.addEquipment(newird)
-		t = "IP Gridport"
 	elif "NS2000"in Type:
 		newird = equipment_new.NS2000(equipmentID, ip, name)
 		subtype = newird.determine_subtype()
