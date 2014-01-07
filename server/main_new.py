@@ -96,7 +96,7 @@ def determine_type(args):
 	# Equipment Types without subtype
 	simpleTypes = {
 		"TT1260":equipment_new.TT1260,
-		"RX1290":equipment_new.Rx1290,
+		"RX1290":equipment_new.RX1290,
 		"DR5000":equipment_new.DR5000,
 		"TVG420":equipment_new.TVG420,
 		"IP Gridport":equipment_new.IPGridport,
