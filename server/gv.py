@@ -21,6 +21,7 @@ exceptions = []
 """Keeping track of theads"""
 ThreadCommandQueue = Queue.Queue()
 offlineQueue = Queue.Queue()
+offlineEquip = []
 threads = []
 threadTerminationFlag = False
 threadJoinFlag = False

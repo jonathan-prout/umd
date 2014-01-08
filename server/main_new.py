@@ -94,6 +94,10 @@ def start():
 def determine_type(args):
 	t = "ERROR"
 	equipmentID, autostart = args
+	try: #remove from offline equip list if it's in there
+		gv.offlineEquip.remove(equipmentID)
+	except ValueError:
+		pass
 	try:
 		Type = gv.equipmentDict[equipmentID].determine_type()
 	except:
@@ -297,7 +301,9 @@ def main(debugBreak = False):
 					for item in inactives:
 						if gv.loud:
 							print "Restarting UMD for ID %s" %item
-						gv.offlineQueue.put((determine_type, [item, True]))
+						if not k in gv.offlineEquip:
+							gv.offlineEquip.append(k)
+							gv.offlineQueue.put((determine_type, [item, True]))
 				except TypeError:
 					pass
 			loopcounter += 1
@@ -316,7 +322,9 @@ def main(debugBreak = False):
 		
 				for k in gv.equipmentDict.keys():
 					if gv.equipmentDict[k].get_offline():
-						gv.offlineQueue.put((determine_type, [k, True]))
+						if not k in gv.offlineEquip:
+							gv.offlineEquip.append(k)
+							gv.offlineQueue.put((determine_type, [k, True]))
 					else:
 						gv.ThreadCommandQueue.put((refresh, k))
 				loopcounter = 0
