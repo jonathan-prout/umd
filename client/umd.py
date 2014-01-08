@@ -46,27 +46,7 @@ streamcodes = []
 
 
 
-def socketing(host,msg):
-	
-	now = datetime.datetime.now()
-	
-	try:
-		
-		PORT = 13000			  # The same port as used by the server
-		s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-		s.connect((host, PORT))
-		s.send(msg)
-		data = s.recv(1024)
-		s.close()
-		if loud:
-			print host,msg
-	except:
-		now = datetime.datetime.now()
-		print "Socket error at ", now.strftime("%H:%M:%S")
-		pass
-	  #print 'Received', repr(data)
-	
-	 # print "Opening socket: ",host,msg
+
 
 
 def bitrateToStreamcode(muxbitrate):
@@ -380,7 +360,7 @@ def getrxes():
 						if ebnoint < 2:
 							ebnoalarm = True
 					
-					bottomumd +=  "/" + text1 + " " +" BS:" + rx["s.bissstatus"]
+					bottomumd +=  "/" + text1 + " " + biss_status_text(rx["s.bissstatus"]) 
 					
 					
 					
