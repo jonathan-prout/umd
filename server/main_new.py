@@ -381,7 +381,7 @@ def main(debugBreak = False):
 					print "Min refresh time now %s"%gv.min_refresh_time
 				assert oncount > offcount, "More equipment off than on. Most likely an error there"
 				assert len(gv.exceptions) < 20, "Program has errors"
-				assert aj < 15, "Program is running slowly so quitting"
+				assert aj < (gv.min_refresh_time * 2 + 10), "Program is running slowly so quitting"
 				assert gv.programChrashed == False, "Program Crashed flag has been raised so quitting"
 				"""
 				if gv.loud:
