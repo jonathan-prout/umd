@@ -1034,11 +1034,15 @@ class DR5000(IRD):
 		bisse1(3),
 		bisse2(4)
 		"""
+		
+		"""JP 08/01/2013 IRD does not return the correct result on SNMP Poll
 		d = {"1":"Off","2":"On","3":"On","4":"On"}
 		if self.getCAStatus():
 			return self.lookup_replace('Biss Status', d)
 		else:
 			return "Off"
+		"""
+		return ""
 	
 
 	def getFrameRate(self):
