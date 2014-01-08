@@ -213,7 +213,7 @@ class IRD(equipment):
 			serviceName = self.snmp_res_dict["service name"]
 		except KeyError:
 			serviceName = ""
-			return self.processServiceName(serviceName)
+		return self.processServiceName(serviceName)
 	
 	def processServiceName(self, servicename):
 		servicename = servicename.strip()
