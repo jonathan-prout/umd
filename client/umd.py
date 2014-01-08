@@ -110,12 +110,13 @@ def main(loop):
 	threadcounter = 0
 	cmd = 'SELECT `value` FROM `management` where `key` = "current_status";'
 	pollstatus = gv.sql.qselect(cmd)[0][0]
+	# Get multiviewers
 	for line in res:
-		mul = getMultiviewer(line[ d["Protocol"]], line[ d["IP"]])
+		mul = getMultiviewer(line[ d["Protocol"]], line[ d["IP"]]) # returns mv instance
 		
-		mul.lookuptable = getAddresses(line[ d["IP"]])
-		mv[line[ d["IP"]]] = mul
-		bg = myThread(threadcounter, line[d["Name"]], threadcounter, mv[line[ d["IP"]]])
+		mul.lookuptable = getAddresses(line[ d["IP"]]) #multiviewer input table
+		mv[line[ d["IP"]]] = mul 
+		bg = myThread(threadcounter, line[d["Name"]], threadcounter, mv[line[ d["IP"]]]) #put multivier in thread
 		bg.daemon = True
 		mythreads.append(bg)
 		bg.start()
@@ -286,6 +287,7 @@ def writeStatus(status):
 		
 
 def getrxes():
+	""" Writes receiver results to multiviwer """
 	res, commands, cmap = getdb()
 	rxes = {}
 	#print "%s RXES" % len(res)
@@ -310,12 +312,15 @@ def getrxes():
 			ebnoalarm = False
 			#if unrx["s.muxstate"], rx either shows .-1 or 100.10db. For some reason TS lock state is not reliable so we work it out
 			lockstate = "True"
-			if (rx["s.ebno"] == ".-1dB"):
-				lockstate = "False"
-			elif ('-' in rx["s.ebno"]):
-				lockstate = "False"
-			elif (rx["s.ebno"] == "100.10dB"):
-				lockstate = "False"
+			if any((rx["e.Demod"] != 0 , rx["s.asi"] == "SAT")):
+				if (rx["s.ebno"] == ".-1dB"):
+					lockstate = "False"
+				elif ('-' in rx["s.ebno"]):
+					lockstate = "False"
+				elif (rx["s.ebno"] == "100.10dB"):
+					lockstate = "False"
+				elif (rx["s.ebno"] == "0.0dB"):
+					lockstate = "False"
 			if (len(rx["s.servicename"]) != 0): #clearly if there is a service name it is rx["s.muxstate"]
 				lockstate = "True"
 			if (rx["s.videostate"] == "Running"):
@@ -338,10 +343,10 @@ def getrxes():
 						HD = True
 					elif (rx["s.videoresolution"] == "576"):
 						HD = False
-						SD = "6"
+						SD = "625"
 					elif (rx["s.videoresolution"] == "480"):
 						HD = False
-						SD = "5"
+						SD = "525"
 					else:
 						HD = False
 						SD = ""
@@ -352,8 +357,10 @@ def getrxes():
 					if (HD == True):
 						bottomumd +=  rx["s.videoresolution"] + "/" + framerate
 					else:
-						bottomumd +=   SD + "_"+rx["s.aspectratio"]
-					
+						if rx["s.aspectratio"] != "":
+							bottomumd +=   SD[0] + "_"+rx["s.aspectratio"]
+						else:
+							bottomumd +=   SD
 					
 					if(rx["s.asi"] in ["ASI", "IP"]):
 						text1 = rx["s.asi"]

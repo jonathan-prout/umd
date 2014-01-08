@@ -20,10 +20,12 @@ exceptions = []
 
 """Keeping track of theads"""
 ThreadCommandQueue = Queue.Queue()
+offlineQueue = Queue.Queue()
 threads = []
 threadTerminationFlag = False
 threadJoinFlag = False
 bg_worker_threads =25
+offlineCheckThreads = 2
 parity = "1/1"
 
 loud = False
