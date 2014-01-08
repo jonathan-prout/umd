@@ -300,6 +300,14 @@ def main(debugBreak = False):
 				if gv.loud:
 					print inactives
 				try:
+					while 1:
+						gv.offlineQueue.get_nowait() #Truncate Queue
+				except Queue.Empty:
+					pass
+				
+				gv.offlineEquip = []
+				
+				try:
 					for item in inactives:
 						if gv.loud:
 							print "Restarting UMD for ID %s" %item
@@ -315,7 +323,7 @@ def main(debugBreak = False):
 						gv.offlineQueue.get_nowait() #Truncate Queue
 				except Queue.Empty:
 					pass
-					
+				gv.offlineEquip = []
 				
 				if gv.loud:
 					print "Joining Queue"

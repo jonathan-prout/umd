@@ -63,7 +63,7 @@ def get_inactive():
 			list_of_timeouts.append(k)
 		"""	
 		try:
-			if equipmentDict[k].offline:
+			if equipmentDict[k].get_offline():
 				list_of_timeouts.append(k)
 				
 		except:
