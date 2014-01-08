@@ -207,8 +207,10 @@ def refresh(equipmentID):
 		# Add itself to end of queue
 		if gv.threadJoinFlag == False:
 			gv.ThreadCommandQueue.put((refresh, equipmentID))
-
-        
+	else:
+		updatesql = "UPDATE `UMD`.`status` SET `aspectratio` = '',`status` = 'Offline', `ebno` = '', `frequency` = '', `symbolrate` = '', `asi` = '', `sat_input` = '', `bissstatus` = '', `videoresolution` = '', `framerate` = '', `videostate` = '', `asioutmode` = '', `framerate` = '',`muxbitrate` = '', `muxstate` = '' WHERE `status`.`id` = '%i'"%equipmentID
+		gv.sql.qselect(updatesql)
+		
 def backgroundworker(myQ):
 	import time
 	item = 1
