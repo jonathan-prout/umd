@@ -301,7 +301,7 @@ def main(debugBreak = False):
 				except TypeError:
 					pass
 			loopcounter += 1
-			if loopcounter > 10: # Restart all threads every 5 minutes
+			if loopcounter > 20: # Restart all threads every 10 minutes
 				try:
 					while 1:
 						gv.offlineQueue.get_nowait() #Truncate Queue
@@ -316,7 +316,7 @@ def main(debugBreak = False):
 		
 				for k in gv.equipmentDict.keys():
 					if gv.equipmentDict[k].get_offline():
-						gv.offlineQueue.put((determine_type, k))
+						gv.offlineQueue.put((determine_type, [k, True]))
 					else:
 						gv.ThreadCommandQueue.put((refresh, k))
 				loopcounter = 0
