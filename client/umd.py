@@ -338,7 +338,10 @@ def getrxes():
 						bottomumd +=  rx["s.videoresolution"] + "/" + framerate
 					else:
 						if rx["s.aspectratio"] != "":
-							bottomumd +=   SD[0] + "_"+rx["s.aspectratio"]
+							if SD != "":
+								bottomumd +=   SD[0] + "_"+rx["s.aspectratio"]
+							else:
+								bottomumd += rx["s.aspectratio"]
 						else:
 							bottomumd +=   SD
 					
