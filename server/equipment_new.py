@@ -1016,7 +1016,7 @@ class DR5000(IRD):
 			ebno = float(ebno)/10
 		except ValueError:
 			ebno = 0.0
-		val = "%.1fdb"%ebno
+		val = "%.1fdB"%ebno
 		return str(val)
 	
 	def getPol(self):
