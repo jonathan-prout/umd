@@ -104,27 +104,30 @@ class ird(object):
                 dal = ""
             return dal
         def getIDWEB(self):
-            import httpcaller
-            url ="http://%s/"%self.machine["ip"] +self.dalurl
-            h, body = httpcaller.geturl(url)
-            if h.has_key("status"):
-                if h["status"] == "200":
-                    snline = ""
-                    for line in body.split("\n"):
-                        if self.dalstr in line: # find the line with the SN
-                            snline = line
-                            for part in snline.split(","): #split it
-                                part = part.replace("'","") # clean it
-                                part = part.replace(" ","")
-                                try:
-                                    i = int(part)
-                                except ValueError:
-                                    i = 0
-                                if i > 1000: # sn appears as large number
-                                    return str(i)
+                import httpcaller
+                url ="http://%s/"%self.machine["ip"] +self.dalurl
+                try:
+                        h, body = httpcaller.geturl(url)
+                except:
+                        h, body = [{},""]
+                if h.has_key("status"):
+                    if h["status"] == "200":
+                        snline = ""
+                        for line in body.split("\n"):
+                            if self.dalstr in line: # find the line with the SN
+                                snline = line
+                                for part in snline.split(","): #split it
+                                    part = part.replace("'","") # clean it
+                                    part = part.replace(" ","")
+                                    try:
+                                        i = int(part)
+                                    except ValueError:
+                                        i = 0
+                                    if i > 1000: # sn appears as large number
+                                        return str(i)
                                 
                         
-            return ""
+                return ""
         def getSN_SNMP(self):
             import snmp
             snmp_par = {"SN":".1.3.6.1.4.1.1773.1.1.3.1.8.0"}
@@ -140,7 +143,10 @@ class ird(object):
         def getSN_WEB(self):
             import httpcaller
             url ="http://%s/"%self.machine["ip"] + sel.snurl
-            h, body = httpcaller.geturl(url)
+            try:
+                h, body = httpcaller.geturl(url)
+            except:
+                        h, body = [{},""]
             if h.has_key("status"):
                 if h["status"] == "200":
                     snline = ""
@@ -161,7 +167,10 @@ class ird(object):
         def getWebTitle(self):
                 import httpcaller
                 url ="http://%s/"%self.machine["ip"]
-                h, body = httpcaller.geturl(url)
+                try:
+                        h, body = httpcaller.geturl(url)
+                except:
+                        h, body = [{},""]
                 if h.has_key("status"):
                     if h["status"] == "200":
                        t = readWebTitle()
@@ -172,6 +181,12 @@ class rx8200(ird):
         dalurl ="tcf?cgi=show&$path=/Customization"
         snurl = "tcf?cgi=show&%24record=@Slot%5E0&%24path0=/Device%20Info/Modules&%24path=/Device%20Info/Modules"
         dalstr = "serial number"
+        def getID(self):
+                
+                try:
+                        return self.getIDWEB()
+                except:
+                        return 0
         
 def getIRD(machine):
         if machine["model_id"] == "Rx8200":
