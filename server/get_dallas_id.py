@@ -106,7 +106,7 @@ def getSN(machine):
         dal = ""
     return dal
 
-def getWebTitle():
+def getWebTitle(machine):
         import httpcaller
         url ="http://%s/"%machine["ip"]
         h, body = httpcaller.geturl(url)
@@ -131,6 +131,8 @@ def main(filename, equipmentList):
     for i in range(len(equipmentList)):
         pb.progressbar(i, len(equipmentList), headding="Progress", cls="True")
         equipmentList[i]["sn"] = getSN(equipmentList[i])
+        if equipmentList[i]["labelnamestatic"] == "auto":
+                equipmentList[i]["labelnamestatic"] = getWebTitle(equipmentList[i])
         if equipmentList[i]["model_id"] == "Rx8200":
             equipmentList[i]["dallas"] = getIDWEB(equipmentList[i])
         else:
