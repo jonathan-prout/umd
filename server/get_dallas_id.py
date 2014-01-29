@@ -71,11 +71,11 @@ class ird(object):
         
         def getSN(self):
                 if not self.sn:
-                     dal = getSN_SNMP()
+                     dal = self.getSN_SNMP()
                      if dal == "":
                         self.canSNMP = False
                         try:
-                                dal = getSN_WEB()
+                                dal = self.getSN_WEB()
                         except:
                                 dal = ""
                         if dal == "": dal = 0
