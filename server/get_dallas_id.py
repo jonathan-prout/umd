@@ -4,13 +4,29 @@
     Does not work witn RX8200
 """
 
+from HTMLParser import HTMLParser
 
-
+# create a subclass and override the handler methods
+class readWebTitle(HTMLParser):
+        intitle = False
+        titleText = ""
+        def handle_starttag(self, tag, attrs):
+                if tag == "title":
+                        self.intitle=True
+                else:
+                        self.intitle=False
+        def handle_endtag(self, tag):
+                if tag == "title":
+                        self.intitle=False
+                
+        def handle_data(self, data):
+                if self.intitle:
+                        self.titleText = data
 
 
 def getEquipmentListCSV(filename):
         import csv
-        fn = ["labelnamestatic", "ip", "model_id", "labelnamestatic"]
+        fn = [ "ip", "model_id", "labelnamestatic"]
         #csv.register_dialect('dreams', quoting=csv.QUOTE_NONE, delimiter=',', lineterminator="\n",escapechar= "+" )
         #csvDialect = csv.get_dialect('dreams')
         try:	
@@ -90,6 +106,17 @@ def getSN(machine):
         dal = ""
     return dal
 
+def getWebTitle():
+        import httpcaller
+        url ="http://%s/"%machine["ip"]
+        h, body = httpcaller.geturl(url)
+        if h.has_key("status"):
+            if h["status"] == "200":
+               t = readWebTitle()
+               t.feed(body)
+               return t.titleText
+        return ""
+
 def writecsv(filename, equipmentList):
     import csv
     fn = ["ip","labelnamestatic", "sn", "model_id", "dallas"]
@@ -105,7 +132,7 @@ def main(filename, equipmentList):
         pb.progressbar(i, len(equipmentList), headding="Progress", cls="True")
         equipmentList[i]["sn"] = getSN(equipmentList[i])
         if equipmentList[i]["model_id"] == "Rx8200":
-            equipmentList[i]["dallas"] = getIDWEB(equipmentList[i]
+            equipmentList[i]["dallas"] = getIDWEB(equipmentList[i])
         else:
             
             equipmentList[i]["dallas"] = getIDSNMP(equipmentList[i])
