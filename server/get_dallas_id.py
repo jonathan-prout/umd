@@ -48,7 +48,7 @@ def getEquipmentListCSV(filename):
             print e
             rowlist = None
         return rowlist
-            
+
 def getEquipmentListSQL():
     import mysql, gv
     res = gv.sql.qselect("select ip, model_id, labelnamestatic from equipment")
@@ -60,63 +60,126 @@ def getEquipmentListSQL():
             equipmentList.append(d)
     return equipmentList
 
-def getIDSNMP(machine):
-    import snmp
-    snmp_par = {"DallasID":".1.3.6.1.4.1.1773.1.3.200.3.7.1.8.2.0"}
-    snmp_res = snmp.get(snmp_par, machine["ip"])
-    if snmp_res.has_key("DallasID"):
-        dal = snmp_res["DallasID"]
-        dal = dal.strip()
-        dal = dal.replace('"','')
-        dal = dal.replace(" ", "")
-    else:
-        dal = ""
-    return dal
-def getIDWEB(machine):
-    import httpcaller
-    url ="http://%s/tcf?cgi=show&$path=/Customization"%machine["ip"]
-    h, body = httpcaller.geturl(url)
-    if h.has_key("status"):
-        if h["status"] == "200":
-            snline = ""
-            for line in body.split("\n"):
-                if "serial number" in line: # find the line with the SN
-                    snline = line
-                    for part in snline.split(","): #split it
-                        part = part.replace("'","") # clean it
+class ird(object):
+        snurl = "tcf?cgi=show&%24record=@Slot%5E0&%24path0=/Device%20Info/Modules&%24path=/Device%20Info/Modules"
+        dalurl = "tcf?cgi=show&$path=/Conditional%20Access"
+        dalstr = "m_caDir5UniqueId"
+        sn = 0
+        canSNMP = True
+        def __init__(self, machine):
+                self.machine = machine
+        
+        def getSN(self):
+                if not self.sn:
+                     dal = getSN_SNMP()
+                     if dal == "":
+                        self.canSNMP = False
                         try:
-                            i = int(part)
-                        except ValueError:
-                            i = 0
-                        if i > 1000: # sn appears as large number
-                            return str(i)
+                                dal = getSN_WEB()
+                        except:
+                                dal = ""
+                        if dal == "": dal = 0
+                self.sn = dal
+                return self.sn
+        
+        def getID(self):
+                if self.canSNMP:
+                        return self.getIDSNMP()
+                else:
+                        try:
+                                return self.getIDWEB()
+                        except:
+                                return 0
+                                
+        def getIDSNMP(self):
+            import snmp
+            snmp_par = {"DallasID":".1.3.6.1.4.1.1773.1.3.200.3.7.1.8.2.0"}
+            snmp_res = snmp.get(snmp_par, self.machine["ip"])
+            if snmp_res.has_key("DallasID"):
+                dal = snmp_res["DallasID"]
+                dal = dal.strip()
+                dal = dal.replace('"','')
+                dal = dal.replace(" ", "")
+            else:
+                dal = ""
+            return dal
+        def getIDWEB(self):
+            import httpcaller
+            url ="http://%s/"%self.machine["ip"] +self.dalurl
+            h, body = httpcaller.geturl(url)
+            if h.has_key("status"):
+                if h["status"] == "200":
+                    snline = ""
+                    for line in body.split("\n"):
+                        if self.dalstr in line: # find the line with the SN
+                            snline = line
+                            for part in snline.split(","): #split it
+                                part = part.replace("'","") # clean it
+                                part = part.replace(" ","")
+                                try:
+                                    i = int(part)
+                                except ValueError:
+                                    i = 0
+                                if i > 1000: # sn appears as large number
+                                    return str(i)
+                                
                         
-                
-    return ""
-def getSN(machine):
-    import snmp
-    snmp_par = {"SN":".1.3.6.1.4.1.1773.1.1.3.1.8.0"}
-    snmp_res = snmp.get(snmp_par, machine["ip"])
-    if snmp_res.has_key("SN"):
-        dal = snmp_res["SN"]
-        dal = dal.strip()
-        dal = dal.replace('"','')
-        dal = dal.replace(" ", "")
-    else:
-        dal = ""
-    return dal
-
-def getWebTitle(machine):
-        import httpcaller
-        url ="http://%s/"%machine["ip"]
-        h, body = httpcaller.geturl(url)
-        if h.has_key("status"):
-            if h["status"] == "200":
-               t = readWebTitle()
-               t.feed(body)
-               return t.titleText
-        return ""
-
+            return ""
+        def getSN_SNMP(self):
+            import snmp
+            snmp_par = {"SN":".1.3.6.1.4.1.1773.1.1.3.1.8.0"}
+            snmp_res = snmp.get(snmp_par, self.machine["ip"])
+            if snmp_res.has_key("SN"):
+                dal = snmp_res["SN"]
+                dal = dal.strip()
+                dal = dal.replace('"','')
+                dal = dal.replace(" ", "")
+            else:
+                dal = ""
+            return dal
+        def getSN_WEB(self):
+            import httpcaller
+            url ="http://%s/"%self.machine["ip"] + sel.snurl
+            h, body = httpcaller.geturl(url)
+            if h.has_key("status"):
+                if h["status"] == "200":
+                    snline = ""
+                    for line in body.split("\n"):
+                        if "serial number" in line: # find the line with the SN
+                            snline = line
+                            for part in snline.split(","): #split it
+                                part = part.replace("'","") # clean it
+                                try:
+                                    i = int(part)
+                                except ValueError:
+                                    i = 0
+                                if i > 1000: # sn appears as large number
+                                    return str(i)
+                                
+                        
+            return ""
+        def getWebTitle(self):
+                import httpcaller
+                url ="http://%s/"%self.machine["ip"]
+                h, body = httpcaller.geturl(url)
+                if h.has_key("status"):
+                    if h["status"] == "200":
+                       t = readWebTitle()
+                       t.feed(body)
+                       return t.titleText
+                return ""
+class rx8200(ird):
+        dalurl ="tcf?cgi=show&$path=/Customization"
+        snurl = "tcf?cgi=show&%24record=@Slot%5E0&%24path0=/Device%20Info/Modules&%24path=/Device%20Info/Modules"
+        dalstr = "serial number"
+        
+def getIRD(machine):
+        if machine["model_id"] == "Rx8200":
+                return rx8200(machine)
+        else:
+                return ird(machine)
+        
+        
 def writecsv(filename, equipmentList):
     import csv
     fn = ["ip","labelnamestatic", "sn", "model_id", "dallas"]
@@ -130,14 +193,13 @@ def main(filename, equipmentList):
     
     for i in range(len(equipmentList)):
         pb.progressbar(i, len(equipmentList), headding="Progress", cls="True")
-        equipmentList[i]["sn"] = getSN(equipmentList[i])
+        curIrd = getIRD(equipmentList[i])
+        equipmentList[i]["sn"] = curIrd.getSN()
         if equipmentList[i]["labelnamestatic"] == "auto":
-                equipmentList[i]["labelnamestatic"] = getWebTitle(equipmentList[i])
-        if equipmentList[i]["model_id"] == "Rx8200":
-            equipmentList[i]["dallas"] = getIDWEB(equipmentList[i])
-        else:
-            
-            equipmentList[i]["dallas"] = getIDSNMP(equipmentList[i])
+                equipmentList[i]["labelnamestatic"] = curIrd.getWebTitle()
+        
+        equipmentList[i]["dallas"] = curIrd.getID()
+
         
     writecsv(filename, equipmentList)
     
