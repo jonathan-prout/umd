@@ -229,7 +229,8 @@ if __name__ == '__main__':
                 print "error in arguments get_dallas_id.py -o output filename -i if you want to specify an input CSV"
                                          
                 sys.exit(2)
-        for opt, arg in opts: 
+        for opt, arg in opts:
+                print "opt %s arg %s"%(opt,arg)
                 if opt in ("-o"):
                         outputCSV = arg
                 if opt in ("-i"):
