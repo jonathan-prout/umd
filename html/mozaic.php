@@ -1,5 +1,8 @@
 <?php
- error_reporting(E_ALL); 
+ // Remove unnecessary errors
+ //error_reporting(E_ALL);
+ // Report simple running errors
+ error_reporting(E_ERROR | E_WARNING | E_PARSE);
  ini_set( 'display_errors','1');
  require_once('umd.common.php');
  require_once ('config.inc.php');
