@@ -29,6 +29,7 @@ def get(commandDict, ip):
 
 def get_pysnmp(commandDict, ip):
 	from pysnmp.entity.rfc3413.oneliner import cmdgen
+	from pysnmp.proto import rfc1902 
 	import gv
 	if commandDict == {}:
 		return {}
@@ -41,9 +42,7 @@ def get_pysnmp(commandDict, ip):
 		commands.append(v)
 		invdict[v] = k
 	errorIndication, errorStatus, errorIndex, varBinds = cmdgen.CommandGenerator().getCmd(
-	cmdgen.CommunityData('my-agent', 'public', 0), cmdgen.UdpTransportTarget((ip, 161)),
-	*commands
-	)
+	cmdgen.CommunityData('my-agent', 'public', 0), cmdgen.UdpTransportTarget((ip, 161)), *commands )
 	if errorStatus:
 		if gv.loud:
 			print "SNMP ERROR for %s" %  ip
@@ -73,7 +72,14 @@ def get_pysnmp(commandDict, ip):
 			
 			n = oidFromDict(str(item[0]) , invdict)
 			try:
-				returndict[invdict[ n ] ] = str(item[1])
+				if isinstance(v, rfc1902.Integer):
+					returndict[invdict[ n ] ] = int(item[1])
+				elif isinstance(v, rfc1902.Integer32):
+					returndict[invdict[ n ] ] = int(item[1])
+				elif isinstance(v, rfc1902.OctetString):
+					returndict[invdict[ n ] ] = str(item[1])
+				else:
+					returndict[invdict[ n ] ] = str(item[1])
 			except KeyError:
 				print invdict
 				print str(item[0]), str(item[1])
@@ -89,8 +95,10 @@ def process_netsnmp_line(outputLine):
 	
 	#format result
 	
-	if valtype == " INTEGER":
+	if valtype.strip() == "INTEGER":
 		value = int(value)
+	elif valtype.strip() == "STRING":
+		value = value.replace('"', '').strip()
 	else:
 		try:
 			s = value.split('"')[1] #ie  " +05.3 dB"
@@ -134,7 +142,8 @@ def get_subprocess(commandDict, ip):
 		oid, valtype, value = process_netsnmp_line(outputLine)
 		n = oidFromDict(oid , invdict)
 		try:
-			returndict[invdict[ n ] ] = str(value)
+			#returndict[invdict[ n ] ] = str(value) #To be checked
+			returndict[invdict[ n ] ] = value
 		except KeyError:
 			print "KeyError"
 			print invdict
