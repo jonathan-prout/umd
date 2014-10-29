@@ -77,7 +77,7 @@ class equipment(object):
 			return  self.snmp_res_dict[key]
 		except KeyError:
 			return ""
-	def lookupStr(self, key):
+	def lookupstr(self, key):
 		return str(self.lookup(key))
 	
 	def lookup_replace(self, key, d):
