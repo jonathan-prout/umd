@@ -77,16 +77,20 @@ class equipment(object):
 			return  self.snmp_res_dict[key]
 		except KeyError:
 			return ""
-		
+	def lookupStr(self, key):
+		return str(self.lookup(key))
+	
 	def lookup_replace(self, key, d):
 		try:
 			r = self.snmp_res_dict[key]
 		except KeyError:
 			r = ""
-		try:
-			return d[r]
-		except KeyError:
-			return ""
+		for v in (str(r), int(r)):
+			try:
+				return d[v]
+			except KeyError:
+				continue
+		return ""
 
 	def determine_type(self):
 		""" determine Type. Returns string and
@@ -249,7 +253,7 @@ class IRD(equipment):
 	
 	def getAspectRatio(self):
 		
-		d = {"2":"16:9","3":"4:3"}
+		d = {2:"16:9",3:"4:3"}
 		return self.lookup_replace('aspect ratio', d)
 
 	def getStatus(self):
@@ -260,7 +264,7 @@ class IRD(equipment):
 	
 	def getEbno(self):
 	
-			ebno = self.lookup('Eb / No')
+			ebno = self.lookupstr('Eb / No')
 			ebno = ebno.replace(' ', '')
 			ebno = ebno.replace('"', '')
 			try:
@@ -274,11 +278,11 @@ class IRD(equipment):
 			return final
 
 	def getPol(self):
-		d = {"1":"Y","2":"X"}
+		d = {1:"Y",2:"X"}
 		return self.lookup_replace('polarisation', d)
 	
 	def getBissStatus(self):
-		d = {"1":"Off","2":"On"}
+		d = {1:"Off",2:"On"}
 		return self.lookup_replace('Biss Status', d)
 	
 	
@@ -343,7 +347,7 @@ class IRD(equipment):
 		return "UPDATE status SET channel ='%s'WHERE id ='%i'" %(channel,self.getId())
 			
 	def getVResol(self):
-		return self.lookup('video vertical resolution')
+		return self.lookupstr('video vertical resolution')
 	
 	def getFrameRate(self):
 		#d = {"1":"Unknown","2":"25 Hz","3":"30 Hz","4":"50 Hz","5":"60 Hz","6":"29.97 Hz","7":"59.97 Hz"}
@@ -360,7 +364,7 @@ class IRD(equipment):
 	
 	def getinSatSetupModType(self):
 		key = 'inSatModType'
-		return self.lookup(key)
+		return self.lookupstr(key)
 
 	def getinSatSetupRollOff(self):
 		""" Overide for RX8200 """
@@ -371,7 +375,7 @@ class IRD(equipment):
 			""" Take SPS return KSPS """
 			key = "inSatSetupSymbolRate"
 			try:
-				symbolRateFloat = float(self.lookup(key))
+				symbolRateFloat = float(self.lookupstr(key))
 			except ValueError:
 				symbolRateFloat = 0
 			symbolRateFloat = (symbolRateFloat / 1000)
@@ -385,7 +389,7 @@ class IRD(equipment):
 			""" Take KHz Return MHz """
 			
 			try:
-				SatelliteFreqFloat = float(self.lookup('inSatSetupSatelliteFreq'))
+				SatelliteFreqFloat = float(self.lookupstr('inSatSetupSatelliteFreq'))
 			except ValueError: 
 				SatelliteFreqFloat = 0
 							
@@ -406,16 +410,16 @@ class IRD(equipment):
 		
 	def getinputTsBitrate(self):
 		key = 'inputtsbitrate '
-		return self.lookup(key)
+		return self.lookupstr(key)
 		
 	def getinSatSetupInputSelect(self):
 		"""For TT1260 and RX1290"""
 		key = 'inSatSetupInputSelect '
 		try:
-				return int(self.lookup(key)) -1 
+				return int(self.lookupstr(key)) -1 
 		except: 
 				#print "can't be int"
-				#print self.lookup(key)
+				#print self.lookupstr(key)
 				return 1
 		
 		
@@ -546,7 +550,7 @@ class RX8200(IRD):
 
 	def getinputTsBitrate(self):
 		key = 'inputtsbitrate '
-		s = self.lookup(key) + "000" #kbps to bps
+		s = self.lookupstr(key) + "000" #kbps to bps
 		return s
 
 
@@ -583,7 +587,7 @@ class RX8200(IRD):
 		"""For RX8200
 		# {channel_1(0),channel_2(1), channel_3(2), channel_4(3), channel_5(4), channel_6(5), channel_7(6), channel_8(7)}"""
 		key = 'inSatSetupInputSelect '
-		inp = self.lookup(key)
+		inp = self.lookupstr(key)
 		try:
 			return int(inp) +1   
 		except ValueError:
@@ -627,7 +631,7 @@ class RX8200(IRD):
 			return ""
 
 	def getEbno(self):
-		ebno = self.lookup('Eb / No')
+		ebno = self.lookupstr('Eb / No')
 		ebno = ebno.strip()
 		ebno = ebno.replace(' ', '')
 		ebno = ebno.replace('"', '')
@@ -655,7 +659,7 @@ class RX8200(IRD):
 		return self.lookup_replace('Biss Status', d)
 	def getFrameRate(self):
 		#d = {"1":"Unknown","2":"25Hz","3":"30Hz","4":"50Hz","5":"60Hz","6":"29.97Hz","7":"59.97Hz"}
-		fr = self.lookup('video frame rate')
+		fr = self.lookupstr('video frame rate')
 		try:
 			fr = float(fr)
 		except:
@@ -847,11 +851,11 @@ class NS2000_WEB(NS2000):
 	
 	
 	def getinSatSetupFecRate(self):
-		return self.lookup('fec')
+		return self.lookupstr('fec')
 	
 	def getinSatSetupRollOff(self):
 		if self.getlockState() == "Lock":
-			return self.lookup('rolloff')
+			return self.lookupstr('rolloff')
 		else:
 			d = {'1': '0.10', '0': '0.05', '3': '0.20', '2': '0.15', '5': '0.35', '4': '0.25'}
 			return self.lookup_replace('rolloff_set', d)
@@ -859,7 +863,7 @@ class NS2000_WEB(NS2000):
 	
 	def getEbno(self):
 	
-			ebno = self.lookup('margin')
+			ebno = self.lookupstr('margin')
 
 			ebno = ebno.replace(' ', '')
 			ebno = ebno.replace('"', '')
@@ -872,7 +876,7 @@ class NS2000_WEB(NS2000):
 	
 	def getinputTsBitrate(self):
 		key = 'datarate'
-		val =  self.lookup(key)
+		val =  self.lookupstr(key)
 		val = val.replace(" Mbit/Sec", "")
 		val = val.strip()
 		try:
@@ -883,7 +887,7 @@ class NS2000_WEB(NS2000):
 		return str( int( val )) #string of integer
 	def getinSatSetupSatelliteFreq(self):
 		key = 'freq'
-		val =  self.lookup(key)
+		val =  self.lookupstr(key)
 		val = val.replace(" MHz", "")
 		val = val.strip()
 		try:
@@ -893,7 +897,7 @@ class NS2000_WEB(NS2000):
 		#val = val * 1 #Already MHZ. Note this is the Lband freq
 		return str(  val ) #string of integer
 	def getinSatSetupSymbolRate(self):
-		val = self.lookup("symbolrate")
+		val = self.lookupstr("symbolrate")
 		val = val.replace(" MSPS", "")
 		val = val.strip()
 		try:
@@ -905,7 +909,7 @@ class NS2000_WEB(NS2000):
 	
 	def getinSatSetupModType(self):
 		if self.getlockState() == "Lock":
-			return self.lookup('inSatModType_actual')
+			return self.lookupstr('inSatModType_actual')
 		else:
 			d = {'1': 'DSNG', '0': 'DVB-S', '3': 'NS3', '2': 'DVB-S2'}
 			return self.lookup_replace('inSatModType_set', d)
@@ -919,7 +923,7 @@ class NS2000_SNMP(NS2000):
 		""" Take Hz Return MHz """
 		
 		try:
-			SatelliteFreqFloat = float(self.lookup('inSatSetupSatelliteFreq'))
+			SatelliteFreqFloat = float(self.lookupstr('inSatSetupSatelliteFreq'))
 		except ValueError: 
 			SatelliteFreqFloat = 0
 						
@@ -1004,14 +1008,14 @@ class DR5000(IRD):
 	
 	def getServiceId(self):
 		try:
-			return int(self.lookup('service_id'))
+			return int(self.lookupstr('service_id'))
 		except ValueError:
 			return 0
 	
 	def getEbno(self):
 		""" 0 = unlock
 		164 = 16.4db """
-		ebno = self.lookup('Eb / No')
+		ebno = self.lookupstr('Eb / No')
 		try:
 			ebno = float(ebno)/10
 		except ValueError:
@@ -1026,7 +1030,7 @@ class DR5000(IRD):
 	def getCAStatus(self):
 		""" True or False """
 		"""Syntax	 TruthValue 1 true 2 false"""
-		return  self.lookup("dr5000StatusDecodeCurrentProgramScrambled") == "1"
+		return  self.lookupstr("dr5000StatusDecodeCurrentProgramScrambled") == "1"
 
 	def getBissStatus(self):
 		
@@ -1047,11 +1051,11 @@ class DR5000(IRD):
 
 	def getFrameRate(self):
 		try:
-			numerator = int( self.lookup('frame rate num') )
+			numerator = int( self.lookupstr('frame rate num') )
 		except ValueError:
 			numerator = 0.0
 		try:
-			denominator = int( self.lookup('frame rate den') )
+			denominator = int( self.lookupstr('frame rate den') )
 		except ValueError:
 			denominator = 1.0
 		try:
@@ -1063,7 +1067,7 @@ class DR5000(IRD):
 		
 	def getVResol(self):
 		
-		return self.lookup('video vertical resolution')
+		return self.lookupstr('video vertical resolution')
 	
 	def getinput_selection(self):
 		""" Input type"""
@@ -1085,13 +1089,13 @@ class DR5000(IRD):
 		
 		key = 'inputtsbitrate'
 		try:
-			d = int(self.lookup(key)) * 1000 #kbps to bps
+			d = int(self.lookupstr(key)) * 1000 #kbps to bps
 		except ValueError:
 			d = 0
 		return d
 		
 		
-		#return int(self.lookup("inputtsbitrate")) * 1000 #kbps to bps
+		#return int(self.lookupstr("inputtsbitrate")) * 1000 #kbps to bps
 
 		
 
@@ -1106,7 +1110,7 @@ class DR5000(IRD):
 	def getinSatSetupInputSelect(self):
 		""" DR5000 """
 		key = 'dr5000ChannelConfigurationInputSatInterface'
-		inp = self.lookup(key)
+		inp = self.lookupstr(key)
 		try:
 			return int(inp)  
 		except ValueError:
@@ -1129,7 +1133,7 @@ class DR5000(IRD):
 		hz = 100000
 		khz = 1000
 		try:
-			SatelliteFreqFloat = float(self.lookup('inSatSetupSatelliteFreq'))
+			SatelliteFreqFloat = float(self.lookupstr('inSatSetupSatelliteFreq'))
 		except ValueError: 
 			SatelliteFreqFloat = 0
 						
@@ -1146,7 +1150,7 @@ class DR5000(IRD):
 			""" Take KSPS return KSPS """
 			key = "inSatSetupSymbolRate"
 			try:
-				symbolRateFloat = float(self.lookup(key))
+				symbolRateFloat = float(self.lookupstr(key))
 			except ValueError:
 				symbolRateFloat = 0
 			symbolRateFloat = (symbolRateFloat )
