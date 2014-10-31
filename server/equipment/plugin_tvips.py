@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 
 
-import httpcaller, xmlhelper
+import helpers
+from helpers import httpcaller, xmlhelper
 from xml.dom import minidom
 
 class tvips(object):
