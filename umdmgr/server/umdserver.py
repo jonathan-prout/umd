@@ -439,32 +439,3 @@ def main(debugBreak = False):
     
 
 	
-def usage():
-	print "v, verbose logs everything"
-	print "l, loop, loops every 10s"
-	print "e, errors, print errors"
-		
-if __name__ == "__main__":
-	try:                                
-		opts, args = getopt.getopt(sys.argv[1:], "vle", ["verbose", "loop", "errors"]) 
-	except getopt.GetoptError, err:
-		print str(err)	
-		print "error in arguments"
-		usage()                          
-		sys.exit(2) 
-	#verbose = False
-	loop = False
-	
-	for opt, arg in  opts:
-	
-		if opt in ("-v", "--verbose"):
-			gv.loud = True
-		elif opt in ("-e", "--errors"):
-			errors_in_stdout = True
-		else:
-			print opt
-			assert False, 'option not recognised' 
-
-	if gv.loud:
-		print "Starting in verbose mode"
-	main()
