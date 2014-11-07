@@ -92,7 +92,7 @@ class ird(object):
                                 return 0
                                 
         def getIDSNMP(self):
-            import snmp
+            from helpers import snmp
             snmp_par = {"DallasID":".1.3.6.1.4.1.1773.1.3.200.3.7.1.8.2.0"}
             snmp_res = snmp.get(snmp_par, self.machine["ip"])
             if snmp_res.has_key("DallasID"):
@@ -129,7 +129,7 @@ class ird(object):
                         
                 return ""
         def getSN_SNMP(self):
-            import snmp
+            from helpers import snmp
             snmp_par = {"SN":".1.3.6.1.4.1.1773.1.1.3.1.8.0"}
             snmp_res = snmp.get(snmp_par, self.machine["ip"])
             if snmp_res.has_key("SN"):

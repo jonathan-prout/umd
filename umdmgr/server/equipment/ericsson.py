@@ -1,5 +1,5 @@
 from generic import IRD, GenericIRD
-import gv
+from server import gv
 
 class TT1260(IRD):
 	
@@ -247,7 +247,8 @@ class RX8200(IRD):
 	def determine_subtype(self):
 		""" determine Sub Type. Returns string and
 		should be processed outside the class as the idea is to replace with the correct device class"""
-		import snmp
+		from helpers import snmp
+		snmp.gv = gv
 		#d = {'DeviceType':".1.3.6.1.4.1.1773.1.1.1.7.0"}
 		d = {'inputCardType':".1.3.6.1.4.1.1773.1.3.208.2.1.1.0"} #
 		# Integer32 {unknown(0); asi(1); sat_qpsk(2); ofdm(3); sat_16Qam(4); g057(5); sat_turbo_demod1(6); sat_hd(7);ip_input_g037(8); ipi_input(9); local_asi(10); atm_e3(11); atm_ds3(12); ip_input_g036(13);vsbCard_g062(14); 

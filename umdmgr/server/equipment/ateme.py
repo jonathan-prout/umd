@@ -1,5 +1,5 @@
 from generic import IRD, GenericIRD
-import gv
+from server import gv
 class DR5000(IRD):
 	""" ATEME DR5000 version 1.0.2.2 """
 	def __init__(self, equipmentId, ip, name):

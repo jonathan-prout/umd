@@ -2,3 +2,5 @@
 server/pysnmp/
 *.old
 *.txt
+umdmgr/server/pysnmp/
+umdmgr/helpers/pysnmp/

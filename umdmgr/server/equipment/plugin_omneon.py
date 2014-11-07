@@ -7,8 +7,8 @@ class OmneonHelper(object):
 		streams = []
 		from xml.dom import minidom
 		import StringIO
-		import xmlhelper
-		import httpcaller
+		from helpers import xmlhelper
+		from helpers import httpcaller
 		import os.path
 
 		document = 'ipgp.nodes.rec.xml'
@@ -67,8 +67,8 @@ class OmneonHelper(object):
 		streams = []
 		from xml.dom import minidom
 		import StringIO
-		import xmlhelper
-		import httpcaller
+		from helpers import xmlhelper
+		from helpers import httpcaller
 		import os.path
 		if use == "rec":
 
@@ -128,7 +128,8 @@ class OmneonHelper(object):
 		# http://10.72.0.9:9998/streamsinks/GW-2
 		# because I want to neatly index everything..
 		
-		import httpcaller, xmlhelper
+		from helpers import xmlhelper
+		from helpers import httpcaller
 		streams = streams_dict.keys()
 		#players = 	players_dict.keys()
 		totallength = len(streams)

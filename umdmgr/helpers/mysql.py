@@ -1,5 +1,5 @@
 #!/usr/bin/python
-import os, re, sys
+import os, re, sys,time,datetime
 import threading, MySQLdb
 
 class mysql:
@@ -18,13 +18,13 @@ class mysql:
 			self.db = MySQLdb.Connection(self.dhost,self.duser,self.dpass,self.dname)
 			self.cursor = self.db.cursor()
 
-		except Exception as e:
-			print "Database Connection Error"
-			#raise mysql.DBBAD
+		except MySQLdb.Error, e:
+			now = datetime.datetime.now()
+			print "Database error at ", now.strftime("%H:%M:%S")
+			print "Error %d: %s" % (e.args[0], e.args[1])
+			self.db.close()
+			#sys.exit(1)
 			raise e
-		
-		#self.db.query("DO 0;")
-		#self.db.commit()
 		
 	def qselect(self,sql):
 		""" semaphore & mutex lock to access share database takes sql command as string. Returns list"""

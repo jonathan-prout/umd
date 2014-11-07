@@ -1,5 +1,5 @@
 from generic import IRD, GenericIRD
-import gv
+from server import gv
 class NS2000(IRD):
 	def __init__(self, equipmentId, ip, name):
 		self.equipmentId = equipmentId
@@ -12,8 +12,8 @@ class NS2000(IRD):
 	def determine_type(self):
 		return "NS2000"
 	def determine_subtype(self):
-		import snmp
-
+		from helpers import snmp
+		snmp.gv = gv
 		nov_soft_ver = {'ver': ".1.3.6.1.4.1.37576.2.3.1.5.1.2.1"} #This is not the best but then that is not on older versions of NS mib
 
 		try:

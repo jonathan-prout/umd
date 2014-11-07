@@ -10,7 +10,7 @@ def oidFromDict(n , invdict):
 	return n
 
 def get(commandDict, ip):
-	import gv
+	#import gv
 	
 	try:
 		return get_subprocess(commandDict, ip)
@@ -30,7 +30,7 @@ def get(commandDict, ip):
 def get_pysnmp(commandDict, ip):
 	from pysnmp.entity.rfc3413.oneliner import cmdgen
 	from pysnmp.proto import rfc1902 
-	import gv
+	#import gv
 	if commandDict == {}:
 		return {}
 	commands = []
@@ -112,7 +112,7 @@ def process_netsnmp_line(outputLine):
 def get_subprocess(commandDict, ip):
 	""" Uses subporcess.popen to getch snmp rather than PYSNMP """
 	import subprocess
-	import gv
+	#import gv
 	if commandDict == {}:
 		return {}
 	commands = []
@@ -152,7 +152,7 @@ def get_subprocess(commandDict, ip):
 
 
 def getnext(commandDict, ip):
-	import gv
+	#import gv
 	
 	try:
 		return getnext_subprocess(commandDict, ip)
@@ -169,7 +169,7 @@ def getnext(commandDict, ip):
 def getnext_subprocess(commandDict, ip):
 	""" Uses subporcess.popen to getch snmp rather than PYSNMP """
 	import subprocess
-	import gv
+	#import gv
 	if commandDict == {}:
 		return {}
 	commands = []

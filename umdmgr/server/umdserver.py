@@ -2,9 +2,12 @@
 
 import os, re, sys
 import string,threading,time, Queue, getopt
-import equipment_new
-import mysql, gv
+import equipment
+import gv
+from helpers import snmp
+snmp.gv = gv #in theory we don't want to import explictly the server's version of gv
 
+from helpers import mysql
 #gv.loud = False
 errors_in_stdout = False
 

@@ -1,4 +1,4 @@
-import gv
+from server import gv
 class equipment(object):
 	def getoid(self):
 		""" Obtains SNMP Paramaters for ModelType according to database"""
@@ -38,7 +38,8 @@ class equipment(object):
 		
 	def refresh(self):
 		""" Refresh method of class """
-		import snmp
+		from helpers import snmp
+		snmp.gv = gv #in theory we don't want to import explictly the server's version of gv
 		try:
 			self.snmp_res_dict  = snmp.get(self.getoids(), self.ip)
 		except:
@@ -85,7 +86,8 @@ class equipment(object):
 	def determine_type(self):
 		""" determine Type. Returns string and
 		should be processed outside the class as the idea is to replace with the correct device class"""
-		import snmp
+		from helpers import snmp
+		snmp.gv = gv #in theory we don't want to import explictly the server's version of gv
 		#d = {'DeviceType':".1.3.6.1.4.1.1773.1.1.1.7.0"}
 		equipTypes = [
 			[

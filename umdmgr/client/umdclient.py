@@ -1,12 +1,12 @@
 #!/usr/bin/python
 import os, re, string,threading
 import sys,time,datetime
-import mysql
+
 import socket
 import getopt
 import time
 
-
+from helpers import mysql
 import multiviewer
 import gv
 
