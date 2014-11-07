@@ -9,10 +9,10 @@ class DR5000(IRD):
 		self.modelType = "DR5000"
 		super( DR5000, self ).__init__()
 	def getAspectRatio(self):
-		""" NOT IMPLIMENTED ON ATEME """
-		#d = {"2":"16:9","3":"4:3"}
-		#return self.lookup_replace('aspect ratio', d)
-		return ""
+		
+		d = {1:"16:9",2:"4:3"}
+		return self.lookup_replace('aspect ratio', d)
+		
 	
 	def getServiceName(self):
 		try:
@@ -66,7 +66,7 @@ class DR5000(IRD):
 	def getCAStatus(self):
 		""" True or False """
 		"""Syntax	 TruthValue 1 true 2 false"""
-		return  self.lookupstr("dr5000StatusDecodeCurrentProgramScrambled") == "1"
+		return  self.lookupstr("dr5000StatusDecodeCurrentProgramScrambled") in ["1",1]
 
 	def getBissStatus(self):
 		
@@ -130,14 +130,6 @@ class DR5000(IRD):
 			d = 0
 		return d
 		
-		
-		#return int(self.lookupstr("inputtsbitrate")) * 1000 #kbps to bps
-
-		
-
-
-
-
 	def getinSatSetupModType(self):
 		key = 'dr5000StatusInputSatModulation'
 		d = {"1":"unknown","2":"qpsk","3":"8psk","4":"16apsk","5":"32apsk"}
@@ -156,12 +148,11 @@ class DR5000(IRD):
 		d = {"4":"0.20","2":"0.35","3":"0.25","1":"0"}
 		return self.lookup_replace('dr5000StatusInputSatRollOff', d)    
 
-
 	def getVState(self):
 		d = {"1":"Running","2":"Stopped"}
 		return self.lookup_replace('video state', d)
 	
-	def getAsioutMode(self):
+	def getAsiOutEncrypted(self):
 			d = {"1":"Decrypted","2":"Encrypted" }
 			return self.lookup_replace('asi output mode', d)
 	def getinSatSetupSatelliteFreq(self):
@@ -195,23 +186,43 @@ class DR5000(IRD):
 			if(finalsymrate[(len(finalsymrate)-2):] == ".0"):
 					finalsymrate = finalsymrate[:(len(finalsymrate)-2)]
 			return finalsymrate
+	
+	def getIPoutEncrypted(self):
+		""" IP output encrypted"""
+		d = {"1":"Decrypted","2":"Encrypted" }
+		return self.lookup_replace('ip output scramble', d)
+	
 	def getinSatSetupFecRate(self):
 		"""Return FEC rate. Normally Auto"""
 		
 		d = {"1":"unknown","2":"1/4","3":"1/3","4":"2/5","5":"1/2","6":"3/5","7":"2/3",
 			 "8":"3/4","9":"4/5","10":"5/6","11":"6/7","12":"7/8","13":"8/9","14":"9/10"}
 		return self.lookup_replace('SatStatusFEC', d) 
+	
+	def getIPInputUsesVlan(self):
+		return  self.lookupstr("ip input has vlan") in ["1",1]
+	
+	def getIPInputVlanID(self):
+		return  self.lookupstr("ip input vlan ID")
+	
+	def getIPInputAddress(self):
+		return  self.lookupstr("ip input multicast address")
+	
+	def getIPInputUDPPort(self):
+		return  self.lookupstr("ip input udp port")
+	
+	
 	def updatesql(self):
 		sql =  "UPDATE status SET status = '%s' , "% self.getStatus()
 		sql += "servicename = '%s', "% self.getServiceName()
 		sql += "aspectratio ='%s', "% self.getAspectRatio()
 		sql += "ebno='%s', "% self.getEbno()
 		sql += "pol='%s', "% self.getPol()
-		sql += "bissstatus='%s', "% self.getBissStatus()
+		sql += "castatus='%s', "% self.getBissStatus()
 		sql += "videoresolution='%s', "% self.getVResol()
 		sql += "framerate='%s', "% self.getFrameRate()
 		sql += "videostate='%s',"% self.getVState()
-		sql += "asioutmode='%s',"% self.getAsioutMode()
+		sql += "asioutencrypted='%s',"% self.getAsiOutEncrypted()
 		sql += "frequency='%s',"% self.getinSatSetupSatelliteFreq()
 		sql += "symbolrate='%s',"% self.getinSatSetupSymbolRate()
 		sql += "fec='%s',"% self.getinSatSetupFecRate()
@@ -220,6 +231,10 @@ class DR5000(IRD):
 		sql += "asi='%s',"% self.getinput_selection()
 		sql += "muxbitrate='%s', "% self.getinputTsBitrate()
 		sql += "muxstate='%s' ,"% self.getlockState()
-		sql += "sat_input='%i'"% self.getinSatSetupInputSelect()
+		sql += "sat_input='%i' ,"% self.getinSatSetupInputSelect()
+		
+		sql += "ipoutencrypted='%s' ,"%self.getIPoutMode()
+		sql += "ipinaddr='%s' ,"%self.getIPInputAddress()
+		
 		sql += "WHERE id = %i; " %self.getId()
 		return sql

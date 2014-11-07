@@ -272,7 +272,7 @@ class IRD(equipment):
 		return self.lookup_replace('polarisation', d)
 	
 	def getBissStatus(self):
-		d = {1:"Off",2:"On"}
+		d = {1:"CLEAR",2:"BISS"}
 		return self.lookup_replace('Biss Status', d)
 	
 	
@@ -348,7 +348,7 @@ class IRD(equipment):
 		d = {"1":"Running","2":"Stopped","3":"Errors"}
 		return self.lookup_replace('video state', d)
 	
-	def getAsioutMode(self):
+	def getAsiOutEncrypted(self):
 		d = {"1":"Disabled","2":"Encrypted","3":"Patrially Decrypted","4":"Decrypted" }
 		return self.lookup_replace('asi output mode', d)
 	
@@ -443,43 +443,3 @@ class GenericIRD(IRD):
 
 	def updatesql(self):
 		return "DO 0;" #DO NOTHING 
-class TT1260(IRD):
-	
-	
-	def __init__(self, equipmentId, ip, name):
-		self.equipmentId = equipmentId
-		self.ip = ip
-		self.name = name
-		self.modelType = "TT1260"
-		super( TT1260, self ).__init__()
-
-	def getinSatSetupModType(self):
-		key = 'inSatModType'
-		d = {"5":"DVB-S2","2":"DVB-S"}
-		return self.lookup_replace(key, d)
-	""" Done in IRD class
-	def getoids(self):
-		
-	dic =  self.oid_get.copy()
-	if self.getinSatSetupInputSelect() == 5:
-		for k, v in dic.items():
-		if "X" in v:
-			del dic[k]
-		
-	for k, v in dic.items():
-		v = v.replace('enterprises.','.1.3.6.1.4.1.')
-		v = v.replace('X', str(self.getinSatSetupInputSelect()))
-		dic[k] = v
-	#if self.getinSatSetupInputSelect() = 1:
-	#    print "%s is on imput %s"%(self.name, self.getinSatSetupInputSelect())
-		return dic
-	"""
-	def updatesql(self):
-		return  "UPDATE status SET status = '%s' , servicename = '%s', aspectratio ='%s', ebno='%s', pol='%s', bissstatus='%s', videoresolution='%s', framerate='%s',videostate='%s',asioutmode='%s',frequency='%s',symbolrate='%s',fec='%s',rolloff='%s',modulationtype='%s',muxbitrate='%s',muxstate='%s', asi='%s', sat_input='%i' WHERE id = %i; " %(self.getStatus(),self.getServiceName(),self.getAspectRatio(),self.getEbno(),self.getPol(),self.getBissStatus(),self.getVResol(),self.getFrameRate(),self.getVState(),self.getAsioutMode(),self.getinSatSetupSatelliteFreq(),self.getinSatSetupSymbolRate(),self.getinSatSetupFecRate(),self.getinSatSetupRollOff(),self.getinSatSetupModType(),self.getinputTsBitrate(),self.getlockState(),self.getinput_selection(),self.getinSatSetupInputSelect(),self.getId())
-
-	def getinput_selection(self):
-		""" Sat or ASI Different on each"""
-		if self.getinSatSetupSatelliteFreq() == "0":
-			return "ASI"
-		else:
-			return "SAT"

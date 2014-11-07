@@ -294,7 +294,7 @@ WHERE (`status`.`status` like  "Offline") AND `equipment`.`id`= `status`.`id`';
 		$videostate=mysql_result($result,$i,"status.videostate");
 		$modulation=mysql_result($result,$i,"status.modulationtype");
 		$framerate=mysql_result($result,$i,"status.framerate");
-		$asioutmode=mysql_result($result,$i,"status.asioutmode");
+		$asioutencrypted=mysql_result($result,$i,"status.asioutencrypted");
 		if ($videostate == "Running")
 			$background = "lightgreen";
 		else

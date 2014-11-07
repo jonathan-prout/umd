@@ -3,11 +3,13 @@ import os, re, string,threading
 import sys,time,datetime
 import mysql
 import socket
-import socket
 import getopt
+import time
+
+
 import multiviewer
 import gv
-import time
+
 gv.display_server_status = "Starting"
 ASI_MODE_TEXT = "ASI"
 remove_hz = True
@@ -22,10 +24,10 @@ errors_in_stdout = False
 
 
 
-def biss_status_text(bissstatus):
-	if bissstatus == "On":
+def biss_status_text(castatus):
+	if castatus == "On":
 		return "BS:ON"
-	elif bissstatus == "Off":
+	elif castatus == "Off":
 		return "BS:Off"
 	else:
 		return ""
@@ -189,10 +191,10 @@ def getAddresses(ip):
 			
 	
 def getdb():
-#	request = "SELECT s.servicename,s.aspectratio,s.ebno,s.pol,s.bissstatus, e.matrixname,e.labeladdr2,e.kaleidoaddr,e.labeladdr,e.labelnamestatic,s.framerate FROM equipment e, status s WHERE e.id = s.id"
+#	request = "SELECT s.servicename,s.aspectratio,s.ebno,s.pol,s.castatus, e.matrixname,e.labeladdr2,e.kaleidoaddr,e.labeladdr,e.labelnamestatic,s.framerate FROM equipment e, status s WHERE e.id = s.id"
 	request = "SELECT "
 	commands = ["e.id","s.servicename","s.aspectratio","s.ebno","s.pol",
-		    "s.bissstatus","e.labeladdr2","e.kaleidoaddr",
+		    "s.castatus","e.labeladdr2","e.kaleidoaddr",
 		    "e.labeladdr","s.channel","s.framerate","e.labelnamestatic",
 		    "s.modulationtype","s.modtype2","s.asi","s.videoresolution",
 		    "e.model_id","s.muxbitrate","s.videostate", "s.status", "s.muxstate", "e.kid",
@@ -363,7 +365,7 @@ def getrxes():
 						if ebnoint < 2:
 							ebnoalarm = True
 					
-					bottomumd +=  "/" + text1 + " " + biss_status_text(rx["s.bissstatus"]) 
+					bottomumd +=  "/" + text1 + " " + biss_status_text(rx["s.castatus"]) 
 					
 					
 					
@@ -444,22 +446,22 @@ def getMultiviewer(mvType, host):
 	gv.sql.qselect('UPDATE `Multiviewer` SET `status` = "STARTING" WHERE `IP` = "%s";'%host)
 	if mvType in ["kaleido", "Kaleido"]:
 	    print "Starting Kaleido"
-	    return multiviewer.kaleido(host)
+	    return multiviewer.miranda.kaleido(host)
 	elif mvType in ["k2", "K2"]:
 	    print "Starting K2"
-	    return multiviewer.K2(host)
+	    return multiviewer.miranda.K2(host)
 	elif mvType in ["KX", "KX"]:
 	    print "Starting KX"
-	    return multiviewer.KX(host)
+	    return multiviewer.miranda.KX(host)
 	elif mvType in ["KX16", "KX-16"]:
 	    print "Starting KX-16"
-	    return multiviewer.KX16(host)
+	    return multiviewer.miranda.KX16(host)
 	elif mvType in ["KXQUAD", "KX-QUAD"]:
 	    print "Starting KX-QUAD"
-	    return multiviewer.KXQUAD(host)
+	    return multiviewer.miranda.KXQUAD(host)
 	else: #Harris/Zandar
 	    print "Starting Harris" 
-	    return multiviewer.zprotocol(host)
+	    return multiviewer.harris.zprotocol(host)
 
 
 class myThread (threading.Thread):

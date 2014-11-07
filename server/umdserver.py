@@ -158,7 +158,7 @@ def determine_type(args):
 	u = 'Online'
 	if t == 'OFFLINE':
 	    u = 'Offline'
-	query = "UPDATE `UMD`.`status` SET `aspectratio` = '',`status` = '%s', `ebno` = '', `frequency` = '', `symbolrate` = '', `asi` = '', `sat_input` = '', `bissstatus` = '', `videoresolution` = '', `framerate` = '', `videostate` = '', `asioutmode` = '', `framerate` = '',`muxbitrate` = '', `muxstate` = '' WHERE `status`.`id` = '%i'"%(u, equipmentID)
+	query = "UPDATE `UMD`.`status` SET `aspectratio` = '',`status` = '%s', `ebno` = '', `frequency` = '', `symbolrate` = '', `asi` = '', `sat_input` = '', `castatus` = '', `videoresolution` = '', `framerate` = '', `videostate` = '', `asioutencrypted` = '', `framerate` = '',`muxbitrate` = '', `muxstate` = '' WHERE `status`.`id` = '%i'"%(u, equipmentID)
 	gv.sql.qselect(query)
 	if autostart:
 		if gv.threadJoinFlag == False:
@@ -208,7 +208,7 @@ def refresh(equipmentID):
 		if gv.threadJoinFlag == False:
 			gv.ThreadCommandQueue.put((refresh, equipmentID))
 	else:
-		updatesql = "UPDATE `UMD`.`status` SET `aspectratio` = '',`status` = 'Offline', `ebno` = '', `frequency` = '', `symbolrate` = '', `asi` = '', `sat_input` = '', `bissstatus` = '', `videoresolution` = '', `framerate` = '', `videostate` = '', `asioutmode` = '', `framerate` = '',`muxbitrate` = '', `muxstate` = '' WHERE `status`.`id` = '%i'"%equipmentID
+		updatesql = "UPDATE `UMD`.`status` SET `aspectratio` = '',`status` = 'Offline', `ebno` = '', `frequency` = '', `symbolrate` = '', `asi` = '', `sat_input` = '', `castatus` = '', `videoresolution` = '', `framerate` = '', `videostate` = '', `asioutencrypted` = '', `framerate` = '',`muxbitrate` = '', `muxstate` = '' WHERE `status`.`id` = '%i'"%equipmentID
 		gv.sql.qselect(updatesql)
 		
 def backgroundworker(myQ):

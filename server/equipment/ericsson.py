@@ -1,5 +1,48 @@
 from generic import IRD, GenericIRD
 import gv
+
+class TT1260(IRD):
+	
+	
+	def __init__(self, equipmentId, ip, name):
+		self.equipmentId = equipmentId
+		self.ip = ip
+		self.name = name
+		self.modelType = "TT1260"
+		super( TT1260, self ).__init__()
+
+	def getinSatSetupModType(self):
+		key = 'inSatModType'
+		d = {"5":"DVB-S2","2":"DVB-S"}
+		return self.lookup_replace(key, d)
+	""" Done in IRD class
+	def getoids(self):
+		
+	dic =  self.oid_get.copy()
+	if self.getinSatSetupInputSelect() == 5:
+		for k, v in dic.items():
+		if "X" in v:
+			del dic[k]
+		
+	for k, v in dic.items():
+		v = v.replace('enterprises.','.1.3.6.1.4.1.')
+		v = v.replace('X', str(self.getinSatSetupInputSelect()))
+		dic[k] = v
+	#if self.getinSatSetupInputSelect() = 1:
+	#    print "%s is on imput %s"%(self.name, self.getinSatSetupInputSelect())
+		return dic
+	"""
+	def updatesql(self):
+		return  "UPDATE status SET status = '%s' , servicename = '%s', aspectratio ='%s', ebno='%s', pol='%s', castatus='%s', videoresolution='%s', framerate='%s',videostate='%s',asioutencrypted='%s',frequency='%s',symbolrate='%s',fec='%s',rolloff='%s',modulationtype='%s',muxbitrate='%s',muxstate='%s', asi='%s', sat_input='%i' WHERE id = %i; " %(self.getStatus(),self.getServiceName(),self.getAspectRatio(),self.getEbno(),self.getPol(),self.getBissStatus(),self.getVResol(),self.getFrameRate(),self.getVState(),self.getAsiOutEncrypted(),self.getinSatSetupSatelliteFreq(),self.getinSatSetupSymbolRate(),self.getinSatSetupFecRate(),self.getinSatSetupRollOff(),self.getinSatSetupModType(),self.getinputTsBitrate(),self.getlockState(),self.getinput_selection(),self.getinSatSetupInputSelect(),self.getId())
+
+	def getinput_selection(self):
+		""" Sat or ASI Different on each"""
+		if self.getinSatSetupSatelliteFreq() == "0":
+			return "ASI"
+		else:
+			return "SAT"
+		
+		
 class RX1290(IRD):
 	
 	def __init__(self, equipmentId, ip, name):
@@ -11,17 +54,17 @@ class RX1290(IRD):
 		super( RX1290, self ).__init__()
 
 	def updatesql(self):
-		#return  "UPDATE status SET status = '%s' , servicename = '%s', aspectratio ='%s', ebno='%s', pol='%s', bissstatus='%s', videoresolution='%s', framerate='%s',videostate='%s',asioutmode='%s',frequency='%s',symbolrate='%s',fec='%s',rolloff='%s',modulationtype='%s',asi='%s',muxbitrate='%s', sat_input='%i' WHERE id = %i; " %(self.getStatus(),self.getServiceName(),self.getAspectRatio(),self.getEbno(),self.getPol(),self.getBissStatus(),self.getVResol(),self.getFrameRate(),self.getVState(),self.getAsioutMode(),self.getinSatSetupSatelliteFreq(),self.getinSatSetupSymbolRate(),self.getinSatSetupFecRate(),self.getinSatSetupRollOff(),self.getinSatSetupModType(),self.getinput_selection(),self.getinputTsBitrate(),self.getinSatSetupInputSelect(),self.getId())
+		#return  "UPDATE status SET status = '%s' , servicename = '%s', aspectratio ='%s', ebno='%s', pol='%s', castatus='%s', videoresolution='%s', framerate='%s',videostate='%s',asioutencrypted='%s',frequency='%s',symbolrate='%s',fec='%s',rolloff='%s',modulationtype='%s',asi='%s',muxbitrate='%s', sat_input='%i' WHERE id = %i; " %(self.getStatus(),self.getServiceName(),self.getAspectRatio(),self.getEbno(),self.getPol(),self.getBissStatus(),self.getVResol(),self.getFrameRate(),self.getVState(),self.getAsiOutEncrypted(),self.getinSatSetupSatelliteFreq(),self.getinSatSetupSymbolRate(),self.getinSatSetupFecRate(),self.getinSatSetupRollOff(),self.getinSatSetupModType(),self.getinput_selection(),self.getinputTsBitrate(),self.getinSatSetupInputSelect(),self.getId())
 		sql =  "UPDATE status SET status = '%s' , "% self.getStatus()
 		sql += "servicename = '%s', "% self.getServiceName()
 		sql += "aspectratio ='%s', "% self.getAspectRatio()
 		sql += "ebno='%s', "% self.getEbno()
 		sql += "pol='%s', "% self.getPol()
-		sql += "bissstatus='%s', "% self.getBissStatus()
+		sql += "castatus='%s', "% self.getBissStatus()
 		sql += "videoresolution='%s', "% self.getVResol()
 		sql += "framerate='%s', "% self.getFrameRate()
 		sql += "videostate='%s',"% self.getVState()
-		sql += "asioutmode='%s',"% self.getAsioutMode()
+		sql += "asioutencrypted='%s',"% self.getAsiOutEncrypted()
 		sql += "frequency='%s',"% self.getinSatSetupSatelliteFreq()
 		sql += "symbolrate='%s',"% self.getinSatSetupSymbolRate()
 		sql += "fec='%s',"% self.getinSatSetupFecRate()
@@ -68,11 +111,11 @@ class RX8200(IRD):
 		sql += "aspectratio ='%s', "% self.getAspectRatio()
 		sql += "ebno='%s', "% self.getEbno()
 		sql += "pol='%s', "% self.getPol()
-		sql += "bissstatus='%s', "% self.getBissStatus()
+		sql += "castatus='%s', "% self.getBissStatus()
 		sql += "videoresolution='%s', "% self.getVResol()
 		sql += "framerate='%s', "% self.getFrameRate()
 		sql += "videostate='%s',"% self.getVState()
-		sql += "asioutmode='%s',"% self.getAsioutMode()
+		sql += "asioutencrypted='%s',"% self.getAsiOutEncrypted()
 		sql += "frequency='%s',"% self.getinSatSetupSatelliteFreq()
 		sql += "symbolrate='%s',"% self.getinSatSetupSymbolRate()
 		sql += "fec='%s',"% self.getinSatSetupFecRate()
@@ -136,7 +179,30 @@ class RX8200(IRD):
 			return self.processServiceName(serviceName)
 		except:
 			return ""
-
+	def getCAStatus(self):
+		
+		try:
+			Table_Service_ID = list(self.snmp_res_dict["Table_Service_ID"])
+			tableEncryptionType = list(self.snmp_res_dict["tableEncryptionType"])
+			ServiceID = self.snmp_res_dict["ServiceID"]
+		except KeyError:
+			return  self.getBissStatus()
+		for x in xrange(len(Table_Service_ID)):
+			try:
+				v = Table_Service_ID[x]
+				v = v.replace('"','')
+				v = v.replace('\n','')
+				v = v.replace(' ','')
+				Table_Service_ID[x] = int(v)
+			except ValueError:
+				Table_Service_ID[x] = -1
+		try:
+			pos = Table_Service_ID.index(int(ServiceID))
+			encType = tableEncryptionType[pos].strip()
+			return encType
+		except:
+			return self.getBissStatus()
+		
 	def getEbno(self):
 		ebno = self.lookupstr('Eb / No')
 		ebno = ebno.strip()
@@ -162,7 +228,7 @@ class RX8200(IRD):
 		return self.lookup_replace('polarisation', d)
 	
 	def getBissStatus(self):
-		d = {"0":"Off","1":"On"}
+		d = {"0":"Off","1":"BISS"}
 		return self.lookup_replace('Biss Status', d)
 	def getFrameRate(self):
 		#d = {"1":"Unknown","2":"25Hz","3":"30Hz","4":"50Hz","5":"60Hz","6":"29.97Hz","7":"59.97Hz"}
