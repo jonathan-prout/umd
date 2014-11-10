@@ -50,16 +50,16 @@ class equipment(object):
 			self.oid_mask()
 
 		if len(self.snmp_res_dict) == 0:
-			self.offline = True
+			self.set_offline()
 		if len(self.oid_getBulk) !=0:
-			self.snmp_res_dict.update( snmp.getnext(self.bulkoids(), self.ip) )
+			self.snmp_res_dict.update( snmp.walk(self.bulkoids(), self.ip) )
 	def getId(self):
 		return self.equipmentId       
 	def oid_mask(self):
 		pass
 
 	def getoids(self):
-		return self.oid_get
+		return dict(self.oid_get)
 	def oid_get_function(self):
 		return self.oid_get2
 	def bulkoids(self):
@@ -78,10 +78,13 @@ class equipment(object):
 			r = self.snmp_res_dict[key]
 		except KeyError:
 			r = ""
-		for v in (str(r), int(r)):
+		for func in (str, int):
 			try:
-				return d[v]
+				
+				return d[func(r)]
 			except KeyError:
+				continue
+			except ValueError:
 				continue
 		return ""
 
@@ -181,6 +184,8 @@ class IRD(equipment):
 			masks = []
 		for key in self.oid_get.keys():
 			if not self.snmp_res_dict.has_key(key):
+				if gv.loud:
+					print "Unit returned no such name for %s so masking"%key
 				masks.append(key)
 		self.masked_oids[self.getinSatSetupInputSelect()] = masks
 		

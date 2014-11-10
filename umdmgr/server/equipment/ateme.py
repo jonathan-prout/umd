@@ -1,5 +1,6 @@
 from generic import IRD, GenericIRD
 from server import gv
+from helpers import snmp
 class DR5000(IRD):
 	""" ATEME DR5000 version 1.0.2.2 """
 	def __init__(self, equipmentId, ip, name):
@@ -206,11 +207,43 @@ class DR5000(IRD):
 		return  self.lookupstr("ip input vlan ID")
 	
 	def getIPInputAddress(self):
-		return  self.lookupstr("ip input multicast address")
-	
+		ip = self.lookupstr("ip input multicast address")
+		octets = []
+		for octet in ip.split(" "):
+			try:
+				octets.append(int(octet,16))
+			except ValueError:
+				continue
+		if len(octets) != 4:
+			return "0.0.0.0"
+		return "%d.%d.%d.%d"%tuple(octets)
+
 	def getIPInputUDPPort(self):
 		return  self.lookupstr("ip input udp port")
 	
+
+	def getNumberServices(self):
+		n = self.lookupstr("ip input udp port")
+		try:
+			n = int(n)
+		except:
+			n = 0
+		return n
+	def refresh(self):
+		""" Refresh method of Dr5000 """
+		
+		try:
+			self.snmp_res_dict  = snmp.get(self.getoids(), self.ip)
+		except:
+			self.set_offline()
+		if len(self.snmp_res_dict.keys()) < len(self.getoids().keys()):
+			self.oid_mask()
+
+		if len(self.snmp_res_dict) == 0:
+			self.set_offline()
+		if len(self.oid_getBulk) !=0:
+			if self.getNumberServices(): 
+				self.snmp_res_dict.update( snmp.getbulk(self.bulkoids(), self.ip, self.getNumberServices() ) )
 	
 	def updatesql(self):
 		sql =  "UPDATE status SET status = '%s' , "% self.getStatus()
@@ -232,7 +265,7 @@ class DR5000(IRD):
 		sql += "muxbitrate='%s', "% self.getinputTsBitrate()
 		sql += "muxstate='%s' ,"% self.getlockState()
 		sql += "sat_input='%i' ,"% self.getinSatSetupInputSelect()
-		
+		sql += "ipinusesvlan='%d' ,"% self.getIPInputUsesVlan()
 		sql += "ipoutencrypted='%s' ,"%self.getIPoutEncrypted()
 		sql += "ipinaddr='%s' "%self.getIPInputAddress()
 		

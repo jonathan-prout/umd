@@ -151,22 +151,69 @@ def get_subprocess(commandDict, ip):
 	return returndict
 
 
-def getnext(commandDict, ip):
+def walk(commandDict, ip):
 	#import gv
 	
 	try:
-		return getnext_subprocess(commandDict, ip)
+		return walk_subprocess(commandDict, ip)
 	except Exception as e:
 		if isinstance(e, AssertionError):
-		    if gv.loud:
-			    print "NETSNP Errored so using PYSNMP on %s"% ip
-		    return getnext_pysnmp(commandDict, ip)
+			if gv.loud:
+				print "NETSNP WALK Errored so using PYSNMP on %s"% ip
+				return walk_pysnmp(commandDict, ip)
 		else:
-			print "snmp.getnext: %s Error on %s"% (type(e),ip)
-			
+			print "snmp.walk: %s Error on %s"% (type(e),ip)
+def getbulk(commandDict, ip, numItems):
+	
+	try:
+		return getbulk_subprocess(commandDict, ip, numItems)
+	except Exception as e:
+		if isinstance(e, AssertionError):
+			if gv.loud:
+				print "NETSNP GETBULK Errored so using PYSNMP on %s"% ip
+				return walk_pysnmp(commandDict, ip)
+		else:
+			print "snmp.getbulk: %s Error on %s"% (type(e),ip)
+def getbulk_subprocess(commandDict, ip, numItems):
+	""" Uses subporcess.popen to getch snmp rather than PYSNMP """
+	import subprocess
+	#import gv
+	if commandDict == {}:
+		return {}
+	commands = []
+	invdict = {}
+	returndict = {}
+	for k,v in commandDict.items():
+		v = v.replace('enterprises.','.1.3.6.1.4.1.')
+		v = v.replace(' ', '' ) #no spaces
+		commands.append(v)
+		invdict[v] = k
+	for command in commands:
+		sub = subprocess.Popen(["/usr/bin/snmpbulkget", "-v2c","-Of", "-cpublic", "-Cr%d"%numItems, ip, command], stdout=subprocess.PIPE)
+		#/usr/bin/snmpbulkget -cpublic -v2c -Of -Cr3 192.168.1.111 .1.3.6.1.4.1.27338.5.5.1.5.1.1.9
 
+		returncode = sub.wait() #Block here waiting for subprocess to return. Next thrad should execute from here
+		sout = sub.stdout.readlines()
+		try:
+			serr = sub.stderr.read()
+		except:
+			serr = ""
+		if returncode != 0:
+			if gv.loud:
+				print returncode
+				print sout
+				print serr
+		del(sub)
+		assert(returncode == 0) #Error if NET SNMP has an error. Fall back to PYSNMP which is slower but with better error handling
+		results = []
+		for outputLine in sout:	
+			oid, valtype, value = process_netsnmp_line(outputLine)
+			results.append(value)
+		n = oidFromDict(command , invdict)
+		returndict[invdict[n]] = results
+	return returndict
 		
-def getnext_subprocess(commandDict, ip):
+def walk_subprocess(commandDict, ip):
 	""" Uses subporcess.popen to getch snmp rather than PYSNMP """
 	import subprocess
 	#import gv
@@ -203,7 +250,7 @@ def getnext_subprocess(commandDict, ip):
 		returndict[invdict[n]] = results
 	return returndict
 	
-def getnext_pysnmp(commandDict, ip):
+def walk_pysnmp(commandDict, ip):
 	from pysnmp.entity.rfc3413.oneliner import cmdgen
 	commands = []
 	invdict = {}
