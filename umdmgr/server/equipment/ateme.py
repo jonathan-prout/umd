@@ -233,8 +233,8 @@ class DR5000(IRD):
 		sql += "muxstate='%s' ,"% self.getlockState()
 		sql += "sat_input='%i' ,"% self.getinSatSetupInputSelect()
 		
-		sql += "ipoutencrypted='%s' ,"%self.getIPoutMode()
-		sql += "ipinaddr='%s' ,"%self.getIPInputAddress()
+		sql += "ipoutencrypted='%s' ,"%self.getIPoutEncrypted()
+		sql += "ipinaddr='%s' "%self.getIPInputAddress()
 		
 		sql += "WHERE id = %i; " %self.getId()
 		return sql

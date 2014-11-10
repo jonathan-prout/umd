@@ -1,8 +1,9 @@
 from plugin_omneon import OmneonHelper
-import gv
+from server import gv
+from helpers import httpcaller
 class IPGridport(OmneonHelper):
 	def __init__(self, equipmentId, ip, name):
-		import httpcaller
+		
 		self.equipmentId = equipmentId
 		self.ip = ip
 		self.name = name

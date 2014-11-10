@@ -31,7 +31,7 @@ class kaleido(telnet_multiviewer):
         signal.alarm(5)
         """
         try:
-            import gv
+            from client import gv
             assert(gv.programTerminationFlag == False)
             self.tel = telnetlib.Telnet(self.host, self.port)
             self.tel.write("\n")

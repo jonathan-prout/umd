@@ -84,11 +84,11 @@ def start():
 	for equipmentID, ip, name in retrivalList():
 		#print equipmentID, ip, name
 		if name == "IP Gridport": #NOT SNMP
-			newird = equipment_new.IPGridport(int(equipmentID), ip, name)
+			newird = equipment.omneon.IPGridport(int(equipmentID), ip, name)
 		#elif "NS2000" in name: #Method not supported yet
 		#	newird = equipment_new.NS2000(int(equipmentID), ip, name)
 		else:
-			newird = equipment_new.GenericIRD(int(equipmentID), ip, name)
+			newird = equipment.generic.GenericIRD(int(equipmentID), ip, name)
 		gv.addEquipment(newird)
 	#print gv.equipmentDict
 	for equipmentID in gv.equipmentDict.keys():
@@ -112,11 +112,11 @@ def determine_type(args):
 	
 	# Equipment Types without subtype
 	simpleTypes = {
-		"TT1260":equipment_new.TT1260,
-		"RX1290":equipment_new.RX1290,
-		"DR5000":equipment_new.DR5000,
-		"TVG420":equipment_new.TVG420,
-		"IP Gridport":equipment_new.IPGridport,
+		"TT1260":equipment.ericsson.TT1260,
+		"RX1290":equipment.ericsson.RX1290,
+		"DR5000":equipment.ateme.DR5000,
+		"TVG420":equipment.tvips.TVG420,
+		"IP Gridport":equipment.omneon.IPGridport,
 		
 	}
 	
@@ -129,23 +129,23 @@ def determine_type(args):
 			break
 	# Equipment Type with subtype
 	if "Rx8000"in Type:
-		newird = equipment_new.RX8200(equipmentID, ip, name)
+		newird = equipment.ericsson.RX8200(equipmentID, ip, name)
 		subtype = newird.determine_subtype()
 		if subtype == "RX8200-4RF":
-		    newird = equipment_new.RX8200_4RF(equipmentID, ip, name)
+		    newird = equipment.ericsson.RX8200_4RF(equipmentID, ip, name)
 		elif subtype == "RX8200-2RF":
-		    newird = equipment_new.RX8200_2RF(equipmentID, ip, name)
+		    newird = equipment.ericsson.RX8200_2RF(equipmentID, ip, name)
 		newird.lastRefreshTime = 0
 		gv.addEquipment(newird)
 		t = "Rx8200"
 		
 	elif "NS2000"in Type:
-		newird = equipment_new.NS2000(equipmentID, ip, name)
+		newird = equipment.novelsat.NS2000(equipmentID, ip, name)
 		subtype = newird.determine_subtype()
 		if subtype == "NS2000_WEB":
-		    newird = equipment_new.NS2000_WEB(equipmentID, ip, name)
+		    newird = equipment.novelsat.NS2000_WEB(equipmentID, ip, name)
 		elif subtype == "NS2000_SNMP":
-		    newird = equipment_new.NS2000_SNMP(equipmentID, ip, name)
+		    newird = equipment.novelsat.NS2000_SNMP(equipmentID, ip, name)
 		newird.lastRefreshTime = 0
 		gv.addEquipment(newird)
 		t = "NS2000"

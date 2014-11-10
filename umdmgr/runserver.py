@@ -1,12 +1,16 @@
 #!/usr/bin/env python
 
-	
+#standard imports
+import getopt	
+import sys
+
 def usage():
 	print "v, verbose logs everything"
 	print "l, loop, loops every 10s"
 	print "e, errors, print errors"
 		
 if __name__ == "__main__":
+	#project imports
 	from server import umdserver
 	from server import gv
 	try:                                

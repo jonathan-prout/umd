@@ -10,8 +10,10 @@ class mysql:
 		self.dname="UMD"
 		self.db = None
 		self.cursor= None
-		self.semaphore = None
-		self.mutex = None
+		#self.semaphore = None
+		self.semaphore = threading.BoundedSemaphore(value=1)
+		self.mutex = threading.RLock()
+		#self.mutex = None
 		self.DBBAD = "oppps"
 		try:
 			#print "Opening Database Connection...."

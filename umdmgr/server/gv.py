@@ -1,11 +1,19 @@
 
-import collections, threading, datetime, time, Queue, mysql
+
+# Standard Imports
+import collections
+import threading 
+import datetime 
+import time 
+import Queue
+#Project imports 
+from helpers import mysql
 
 
 sql = mysql.mysql()
 sql.semaphore = threading.BoundedSemaphore(value=10)
 sql.mutex = threading.RLock()
-min_refresh_time = 10 #Force 5 seconds between refreshes
+min_refresh_time = 10 #Force 10 seconds between refreshes. Gets overidden by min refresh time parameter on matrix
 
 
 last_refresh_dict = {}

@@ -1,5 +1,5 @@
 import plugin_tvips
-import gv
+from server import gv
 
 class TVG420(plugin_tvips.TVG420):
 	def __init__(self, equipmentId, ip, name):

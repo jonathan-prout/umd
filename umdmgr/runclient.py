@@ -1,4 +1,9 @@
 #!/usr/bin/env python
+
+import getopt
+import sys
+import datetime
+
 def usage():
 	print "v, verbose logs everything"
 	print "l, loop, loops every 10s"
@@ -23,7 +28,7 @@ if __name__ == '__main__':
 	for opt, arg in  opts:
 	
 		if opt in ("-v", "--verbose"):
-			loud = True
+			#loud = True
 			gv.loud = True
 		elif opt in ("-l", "--loop"):
 			loop = True
@@ -33,18 +38,18 @@ if __name__ == '__main__':
 			print opt
 			assert False, 'option not recognised' 
 
-	if loud:
+	if gv.loud:
 		print "Starting in verbose mode"
 
 
 
 			
 	now = datetime.datetime.now()
-	if loud:
+	if gv.loud:
 		print "starting " + now.strftime("%d-%m-%Y %H:%M:%S")
 	umdclient.main(loop)
 	now = datetime.datetime.now()
-	if loud:
+	if gv.loud:
 		print "Done " + now.strftime("%d-%m-%Y %H:%M:%S")
 		
 	
