@@ -105,7 +105,7 @@ WHERE (`equipment`.`labelnamestatic` like  "%'. $sat .'%") AND `equipment`.`id`=
 		$videostate=mysql_result($result,$i,"status.videostate");
 		$modulation=mysql_result($result,$i,"status.modulationtype");
 		$framerate=mysql_result($result,$i,"status.framerate");
-		$asioutmode=mysql_result($result,$i,"status.asioutmode");
+		$asioutencrypted=mysql_result($result,$i,"status.asioutencrypted");
 		if ($videostate == "Running")
 			$background = "lightgreen";
 		else
@@ -117,7 +117,7 @@ WHERE (`equipment`.`labelnamestatic` like  "%'. $sat .'%") AND `equipment`.`id`=
 		echo '<td bgcolor="'. $background .'">'. $modulation . '</td>';
 		echo '<td bgcolor="'. $background .'">'. $videoresolution . ', '. $aspectratio .', '. $framerate . '</td>';
 		echo '<td bgcolor="'. $background .'">'. $servicename . '</td>';
-		echo '<td bgcolor="'. $background .'">'. $asioutmode . '</td>';
+		echo '<td bgcolor="'. $background .'">'. $asioutencrypted . '</td>';
 		echo '</tr>';
 	
 	
