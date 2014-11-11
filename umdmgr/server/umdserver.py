@@ -334,6 +334,8 @@ def main(debugBreak = False):
 							print "Restarting UMD for ID %s" %item
 						if not item in gv.offlineEquip:
 							gv.offlineEquip.append(item)
+							ip = gv.equipmentDict[item].ip
+							name = gv.equipmentDict[item].name
 							newird = equipment.generic.GenericIRD(int(item), ip, name)
 							gv.addEquipment(newird)
 							gv.offlineQueue.put((determine_type, [item, True]))
@@ -356,6 +358,8 @@ def main(debugBreak = False):
 				for k in gv.equipmentDict.keys():
 					if gv.equipmentDict[k].get_offline():
 						if not k in gv.offlineEquip:
+							ip = gv.equipmentDict[k].ip
+							name = gv.equipmentDict[k].name
 							newird = equipment.generic.GenericIRD(int(k), ip, name)
 							gv.addEquipment(newird)
 							gv.offlineQueue.put((determine_type, [k, True]))
@@ -471,7 +475,7 @@ def main(debugBreak = False):
 			crashdump()
 		except Exception as e:
 			gv.exceptions.append(e)
-			print "%s Error."%str(e)
+			print "%s: %s."%(e,str(e))
 			crashdump()
 		
 
