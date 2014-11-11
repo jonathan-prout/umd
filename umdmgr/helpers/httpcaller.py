@@ -115,7 +115,8 @@ def getcache( ip, port, addr, cache_max_age='120'):
 	import time
 	import os
 	string = addr.split("/")
-	cachedir = "/var/spool/ipgp-player/"
+	cachedir = "cache"
+	
 	cachefile = cachedir + "cachefile." + ip
 	for part in string:
 		cachefile += "."
@@ -126,28 +127,34 @@ def getcache( ip, port, addr, cache_max_age='120'):
 		cachecreationtime = os.path.getmtime(cachefile)
 	except:
 		cachecreationtime = 0
-	
+	cacheFileRead = False
 	if cachecreationtime > (time.time() - int(cache_max_age)):
 		# Newer than cache timeout.
 		# Open cache and return that
 		#debug("Returning cached file")
 		#print "returning cacched file"
-		fileobject = open(cachefile)
-		content = fileobject.read()
-		response = {
-			'status': '200',
-			'location': url,
-			'cached': 'true'
-			}
+		try:
+			fileobject = open(cachefile)
+			content = fileobject.read()
+			response = {
+				'status': '200',
+				'location': url,
+				'cached': 'true'
+				}
+			cacheFileRead = True
+		except IOError:
+			pass
 		
 	else:
 		# This ensures that subsequent calls to this function
 		# do not generate unneccesary HTTP requests
 		# while the file is building
-		file = open(cachefile, 'w')
-		file.write('<?xml version="1.0" encoding="UTF-8" standalone="yes"?>')
-		file.write('<Waiting />')
-		file.close()
+		try:
+			file = open(cachefile, 'w')
+			file.write('<?xml version="1.0" encoding="UTF-8" standalone="yes"?>')
+			file.write('<Waiting />')
+		finally:
+			file.close()
 		#debug("Getting new file for " + url)
 		#print "getting new file"
 		# Close file while processing. 
@@ -155,9 +162,11 @@ def getcache( ip, port, addr, cache_max_age='120'):
 		response, content = geturl(url)
 		#debug(response)
 		if response['status'] == '200':
-			file = open(cachefile, 'w')
-			file.write(content)
-			file.close()
+			try:
+				file = open(cachefile, 'w')
+				file.write(content)
+			finally:
+				file.close()
 		
 	return response, content
 
