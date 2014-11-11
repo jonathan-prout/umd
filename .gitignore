@@ -4,3 +4,5 @@ server/pysnmp/
 *.txt
 umdmgr/helpers/pysnmp/
 umdmgr/cache/*
+server-crashdump*
+*.pickle
