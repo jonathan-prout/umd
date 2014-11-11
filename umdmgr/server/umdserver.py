@@ -12,13 +12,16 @@ from helpers import mysql
 errors_in_stdout = False
 
 
-def retrivalList():
-    #global gv.sql
-    globallist = []
-    #request = "select * FROM equipment"
-    request = "select id, ip, labelnamestatic FROM equipment"
-    
-    return  gv.sql.qselect(request)
+def retrivalList(_id = None):
+	#global gv.sql
+	globallist = []
+	#request = "select * FROM equipment"
+	if _id:
+		 "select id, ip, labelnamestatic FROM equipment WHERE id='%d'"%_id
+	else:
+		request = "select id, ip, labelnamestatic FROM equipment"
+	
+	return  gv.sql.qselect(request)
 
 
 class myThread (threading.Thread):
@@ -77,12 +80,12 @@ def beginthreads():
 		bg.start()
 	
 
-def start():
+def start(_id=None):
 	#Begin background worker threads
 	beginthreads()
 	
 
-	for equipmentID, ip, name in retrivalList():
+	for equipmentID, ip, name in retrivalList(_id):
 		#print equipmentID, ip, name
 		if name == "IP Gridport": #NOT SNMP
 			newird = equipment.omneon.IPGridport(int(equipmentID), ip, name)
