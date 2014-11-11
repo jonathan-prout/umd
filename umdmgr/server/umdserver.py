@@ -405,7 +405,7 @@ def main(debugBreak = False):
 				if gv.loud:
 					print "Min refresh time now %s"%gv.min_refresh_time
 				possibleErrors = []
-				possibleErrors.append( (oncount > offcount, "More equipment off than on. Most likely an error there"))
+				possibleErrors.append( (oncount < offcount, "More equipment off than on. Most likely an error there"))
 				possibleErrors.append( (len(gv.exceptions) < 20, "Program has errors"))
 				possibleErrors.append( (aj < (gv.min_refresh_time * 2 + 10), "Program is running slowly so quitting"))
 				possibleErrors.append((gv.programChrashed == False, "Program Crashed flag has been raised so quitting"))
