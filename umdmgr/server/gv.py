@@ -23,7 +23,7 @@ equipmentDict = {}
 def addEquipment(equipment):		
 	equipmentDict[equipment.getId()] = equipment
 
-programChrashed = False
+programCrashed = False
 exceptions = []
 
 """Keeping track of theads"""

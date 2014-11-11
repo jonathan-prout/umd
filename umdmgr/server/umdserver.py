@@ -17,9 +17,9 @@ def retrivalList(_id = None):
 	globallist = []
 	#request = "select * FROM equipment"
 	if _id:
-		request =  "select id, ip, labelnamestatic FROM equipment WHERE id='%d'"%_id
+		request =  "select id, ip, labelnamestatic, model_id FROM equipment WHERE id='%d'"%_id
 	else:
-		request = "select id, ip, labelnamestatic FROM equipment"
+		request = "select id, ip, labelnamestatic, model_id FROM equipment"
 	
 	return  gv.sql.qselect(request)
 
@@ -406,9 +406,9 @@ def main(debugBreak = False):
 					print "Min refresh time now %s"%gv.min_refresh_time
 				possibleErrors = []
 				possibleErrors.append( (oncount < offcount, "More equipment off than on. Most likely an error there"))
-				possibleErrors.append( (len(gv.exceptions) < 20, "Program has errors"))
-				possibleErrors.append( (aj < (gv.min_refresh_time * 2 + 10), "Program is running slowly so quitting"))
-				possibleErrors.append((gv.programChrashed == False, "Program Crashed flag has been raised so quitting"))
+				possibleErrors.append( (len(gv.exceptions) > 20, "Program has errors"))
+				possibleErrors.append( (aj > (gv.min_refresh_time * 2 + 10), "Program is running slowly so quitting"))
+				possibleErrors.append((gv.programCrashed == False, "Program Crashed flag has been raised so quitting"))
 				for case, problemText in possibleErrors:
 					if case:
 						raise AssertionError(problemText)
@@ -437,7 +437,21 @@ def main(debugBreak = False):
 			print "Quitting"
 			cleanup()
 			break
-		
+		except AssertionError as e:
+			print "Program Self Check has caused program to quit."
+			print ""
+			print "%s Error."%str(e)
+			
+			print "Offline Equipment:"
+			for equipmentID in gv.equipmentDict.keys():
+				try:
+					if gv.equipmentDict[equipmentID].get_offline():
+						eq = gv.equipmentDict[equipmentID]
+						print eq.name.ljust(10, " ") + eq.modelType.ljust(10, " ") + eq.ip
+				except: continue
+			print "errors:"
+			print gv.exceptions
+			#crashdump()
 		except Exception as e:
 			gv.exceptions.append(e)
 			print "%s Error."%str(e)
