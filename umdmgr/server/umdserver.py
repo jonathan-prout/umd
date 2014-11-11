@@ -47,7 +47,8 @@ class myThread (threading.Thread):
 def crashdump():
 	import pickle, time
 	print "UMD MANAGER HAS MADE AN ERROR AND WILL NOW CLOSE"
-	filepath = "/var/www/programming/server/"
+	#filepath = "/var/www/programming/server/"
+	filepath = ""
 	filename = filepath + "server-crashdump-%s.pickle"% time.strftime("%Y_%m_%d_%H_%M_%S")
 	cmd = "UPDATE `UMD`.`management` SET `value` = 'OFFLINE_ERROR' WHERE `management`.`key` = 'current_status';"
 	gv.sql.qselect(cmd)
@@ -436,7 +437,7 @@ def main(debugBreak = False):
 		
 		except Exception as e:
 			gv.exceptions.append(e)
-			print "%s Error."%type(e)
+			print "%s Error."%str(e)
 			crashdump()
 		
 
