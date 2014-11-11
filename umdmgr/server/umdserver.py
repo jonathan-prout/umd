@@ -102,7 +102,7 @@ def start(_id=None):
 		#print equipmentID, ip, name
 		for key in simpleTypes.keys():
 		
-			if any(( key in model_id), (key in name)):
+			if any( ( ( key in model_id), (key in name) ) ):
 				newird = simpleTypes[key](int(equipmentID), ip, name)
 		
 		#elif "NS2000" in name: #Method not supported yet
