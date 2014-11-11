@@ -85,7 +85,6 @@ def beginthreads():
 def start(_id=None):
 	#Begin background worker threads
 	beginthreads()
-
 	# Equipment Types 
 	simpleTypes = {
 		"TT1260":equipment.ericsson.TT1260,
@@ -94,17 +93,16 @@ def start(_id=None):
 		"TVG420":equipment.tvips.TVG420,
 		"IP Gridport":equipment.omneon.IPGridport,
 		"Rx8200":equipment.ericsson.RX8200,
-		
+	
 	}
 	
-
 	for equipmentID, ip, name, model_id in retrivalList(_id):
 		#print equipmentID, ip, name
 		for key in simpleTypes.keys():
 		
 			if any( ( ( key in model_id), (key in name) ) ):
 				newird = simpleTypes[key](int(equipmentID), ip, name)
-		
+				break
 		#elif "NS2000" in name: #Method not supported yet
 		#	newird = equipment_new.NS2000(int(equipmentID), ip, name)
 		else:
