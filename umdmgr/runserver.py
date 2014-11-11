@@ -6,7 +6,7 @@ import sys
 
 def usage():
 	print "v, verbose logs everything"
-	print "l, loop, loops every 10s"
+	#print "l, loop, loops every 10s"
 	print "e, errors, print errors"
 		
 if __name__ == "__main__":
@@ -30,9 +30,10 @@ if __name__ == "__main__":
 		elif opt in ("-e", "--errors"):
 			errors_in_stdout = True
 		else:
-			print opt
-			assert False, 'option not recognised' 
-
+			print "option '%s' not recognised"%opt
+			#assert False, 'option not recognised'
+			usage() 
+			sys.exit(1)
 	if gv.loud:
 		print "Starting in verbose mode"
 	umdserver.main()
