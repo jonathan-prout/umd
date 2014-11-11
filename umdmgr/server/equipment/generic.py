@@ -3,6 +3,7 @@ from server import gv
 from helpers import snmp
 snmp.gv = gv #in theory we don't want to import explictly the server's version of gv
 class equipment(object):
+	modelType = "Not Set"
 	def getoid(self):
 		""" Obtains SNMP Paramaters for ModelType according to database"""
 		
@@ -95,21 +96,37 @@ class equipment(object):
 		""" removed import snmp here """ 
 		#d = {'DeviceType':".1.3.6.1.4.1.1773.1.1.1.7.0"}
 		equipTypes = [
-			[
-                                {'DeviceType': ".1.3.6.1.4.1.27338.5.2.2.0"}
-                                 ,"testing whether it's an  Ateme",
-                                "DR5000"
-                        ],[
-                                {'DeviceType':  ".1.3.6.1.4.1.37576.2.3.1.5.1.2.1"} #This is not the best but then that is not on older versions of NS mib
-                                 ,"testing whether it's a  Novelsat",
-                                "NS2000"
-                        ],[
+				[
+						{'DeviceType': ".1.3.6.1.4.1.27338.5.2.2.0"}
+						 ,"testing whether it's an  Ateme",
+						"DR5000"
+				],[
+						{'DeviceType':  ".1.3.6.1.4.1.37576.2.3.1.5.1.2.1"} #This is not the best but then that is not on older versions of NS mib
+						 ,"testing whether it's a  Novelsat",
+						"NS2000"
+				],[
 				{'DeviceType':".1.3.6.1.2.1.1.1.0"},#sysdescr.0
-				 "testing whether it's a Tandberg or TVIPS",
+				"testing whether it's a Tandberg or TVIPS",
 				""
-			]
+				]
 		]
 		
+		""" Speed up assesment process """
+		equipTypes_ateme_only = [equipTypes[0]]
+		equipTypes_novelsat_only = [equipTypes[1]]
+		equipTypes_sysdecr = [equipTypes[2]]
+		testmap = [
+			("Rx8200", equipTypes_sysdecr),
+			("RX1290", equipTypes_sysdecr),
+			("TT1260", equipTypes_sysdecr),
+			("TVG420", equipTypes_sysdecr),
+			("DR5000", equipTypes_ateme_only),
+			("NS2000", equipTypes_novelsat_only),
+		]
+		for name, test in testmap:
+			if name in self.modelType:
+				equipTypes = test
+				break
 		def type_test(equipTypes):
 			for test, blurb, setType in equipTypes:
 				ver_found = False

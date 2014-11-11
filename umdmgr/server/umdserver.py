@@ -12,14 +12,16 @@ from helpers import mysql
 errors_in_stdout = False
 
 
+
+
 def retrivalList(_id = None):
 	#global gv.sql
 	globallist = []
 	#request = "select * FROM equipment"
 	if _id:
-		request =  "select id, ip, labelnamestatic FROM equipment WHERE id='%d'"%_id
+		request =  "select id, ip, labelnamestatic, model_id FROM equipment WHERE id='%d'"%_id
 	else:
-		request = "select id, ip, labelnamestatic FROM equipment"
+		request = "select id, ip, labelnamestatic, model_id FROM equipment"
 	
 	return  gv.sql.qselect(request)
 
@@ -83,12 +85,26 @@ def beginthreads():
 def start(_id=None):
 	#Begin background worker threads
 	beginthreads()
+
+	# Equipment Types 
+	simpleTypes = {
+		"TT1260":equipment.ericsson.TT1260,
+		"RX1290":equipment.ericsson.RX1290,
+		"DR5000":equipment.ateme.DR5000,
+		"TVG420":equipment.tvips.TVG420,
+		"IP Gridport":equipment.omneon.IPGridport,
+		"Rx8200":equipment.ericsson.RX8200,
+		
+	}
 	
 
-	for equipmentID, ip, name in retrivalList(_id):
+	for equipmentID, ip, name, model_id in retrivalList(_id):
 		#print equipmentID, ip, name
-		if name == "IP Gridport": #NOT SNMP
-			newird = equipment.omneon.IPGridport(int(equipmentID), ip, name)
+		for key in simpleTypes.keys():
+		
+			if any(( key in model_id), (key in name)):
+				newird = simpleTypes[key](int(equipmentID), ip, name)
+		
 		#elif "NS2000" in name: #Method not supported yet
 		#	newird = equipment_new.NS2000(int(equipmentID), ip, name)
 		else:
@@ -113,16 +129,16 @@ def determine_type(args):
 	ip = gv.equipmentDict[equipmentID].ip
 	
 	name = gv.equipmentDict[equipmentID].name
-	
 	# Equipment Types without subtype
 	simpleTypes = {
 		"TT1260":equipment.ericsson.TT1260,
 		"RX1290":equipment.ericsson.RX1290,
 		"DR5000":equipment.ateme.DR5000,
 		"TVG420":equipment.tvips.TVG420,
-		"IP Gridport":equipment.omneon.IPGridport,
+		"IP Gridport":equipment.omneon.IPGridport
 		
 	}
+		
 	
 	for key in simpleTypes.keys():
 		if  key in Type:
@@ -318,8 +334,10 @@ def main(debugBreak = False):
 					for item in inactives:
 						if gv.loud:
 							print "Restarting UMD for ID %s" %item
-						if not k in gv.offlineEquip:
-							gv.offlineEquip.append(k)
+						if not item in gv.offlineEquip:
+							gv.offlineEquip.append(item)
+							newird = equipment.generic.GenericIRD(int(item), ip, name)
+							gv.addEquipment(newird)
 							gv.offlineQueue.put((determine_type, [item, True]))
 				except TypeError:
 					pass
@@ -340,7 +358,8 @@ def main(debugBreak = False):
 				for k in gv.equipmentDict.keys():
 					if gv.equipmentDict[k].get_offline():
 						if not k in gv.offlineEquip:
-							gv.offlineEquip.append(k)
+							newird = equipment.generic.GenericIRD(int(k), ip, name)
+							gv.addEquipment(newird)
 							gv.offlineQueue.put((determine_type, [k, True]))
 					else:
 						gv.ThreadCommandQueue.put((refresh, k))
