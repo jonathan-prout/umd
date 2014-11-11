@@ -425,7 +425,7 @@ def main(debugBreak = False):
 				possibleErrors.append( (oncount < offcount, "More equipment off than on. Most likely an error there"))
 				possibleErrors.append( (len(gv.exceptions) > 20, "Program has errors"))
 				possibleErrors.append( (aj > (gv.min_refresh_time * 2 + 10), "Program is running slowly so quitting"))
-				possibleErrors.append((gv.programCrashed == False, "Program Crashed flag has been raised so quitting"))
+				possibleErrors.append((gv.programCrashed == True, "Program Crashed flag has been raised so quitting"))
 				for case, problemText in possibleErrors:
 					if case:
 						raise AssertionError(problemText)
@@ -468,7 +468,7 @@ def main(debugBreak = False):
 				except: continue
 			print "errors:"
 			print gv.exceptions
-			#crashdump()
+			crashdump()
 		except Exception as e:
 			gv.exceptions.append(e)
 			print "%s Error."%str(e)
