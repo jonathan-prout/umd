@@ -115,7 +115,7 @@ def getcache( ip, port, addr, cache_max_age='120'):
 	import time
 	import os
 	string = addr.split("/")
-	cachedir = "cache"
+	cachedir = "cache/"
 	
 	cachefile = cachedir + "cachefile." + ip
 	for part in string:
