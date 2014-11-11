@@ -17,7 +17,7 @@ def retrivalList(_id = None):
 	globallist = []
 	#request = "select * FROM equipment"
 	if _id:
-		 "select id, ip, labelnamestatic FROM equipment WHERE id='%d'"%_id
+		request =  "select id, ip, labelnamestatic FROM equipment WHERE id='%d'"%_id
 	else:
 		request = "select id, ip, labelnamestatic FROM equipment"
 	

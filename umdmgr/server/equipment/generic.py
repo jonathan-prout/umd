@@ -96,17 +96,17 @@ class equipment(object):
 		#d = {'DeviceType':".1.3.6.1.4.1.1773.1.1.1.7.0"}
 		equipTypes = [
 			[
+                                {'DeviceType': ".1.3.6.1.4.1.27338.5.2.2.0"}
+                                 ,"testing whether it's an  Ateme",
+                                "DR5000"
+                        ],[
+                                {'DeviceType':  ".1.3.6.1.4.1.37576.2.3.1.5.1.2.1"} #This is not the best but then that is not on older versions of NS mib
+                                 ,"testing whether it's a  Novelsat",
+                                "NS2000"
+                        ],[
 				{'DeviceType':".1.3.6.1.2.1.1.1.0"},#sysdescr.0
 				 "testing whether it's a Tandberg or TVIPS",
 				""
-			],[
-				{'DeviceType': ".1.3.6.1.4.1.37576.2.3.1.5.1.2.1"} #This is not the best but then that is not on older versions of NS mib
-				 ,"testing whether it's a  Novelsat",
-				"NS2000"
-			],[
-				{'DeviceType': ".1.3.6.1.4.1.27338.5.2.2.0"} 
-				 ,"testing whether it's a  Novelsat",
-				"DR5000"
 			]
 		]
 		
