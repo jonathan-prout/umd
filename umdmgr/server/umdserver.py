@@ -114,6 +114,7 @@ def start(_id=None):
 
 def determine_type(args):
 	t = "ERROR"
+	equipTypeStr = "OFFLINE"
 	equipmentID, autostart = args
 	try: #remove from offline equip list if it's in there
 		gv.offlineEquip.remove(equipmentID)
@@ -121,14 +122,14 @@ def determine_type(args):
 		pass
 	if not all( (gv.suppressEquipCheck, (not isinstance(gv.equipmentDict[equipmentID], equipment.generic.GenericIRD ) ) ) ):
 		try:
-			Type = gv.equipmentDict[equipmentID].determine_type()
+			equipTypeStr = gv.equipmentDict[equipmentID].determine_type()
 		except:
-			Type = "OFFLINE"
+			equipTypeStr = "OFFLINE"
 	
 	ip = gv.equipmentDict[equipmentID].ip
 	
 	name = gv.equipmentDict[equipmentID].name
-	# Equipment Types without subtype
+	# Equipment equipTypeStrs without subtype
 	simpleTypes = {
 		"TT1260":equipment.ericsson.TT1260,
 		"RX1290":equipment.ericsson.RX1290,
@@ -140,15 +141,15 @@ def determine_type(args):
 		
 	
 	for key in simpleTypes.keys():
-		if  any( ( key in Type, isinstance(gv.equipmentDict[equipmentID], simpleTypes[key]) ) ):
+		if  any( ( key in equipTypeStr, isinstance(gv.equipmentDict[equipmentID], simpleTypes[key]) ) ):
 			newird = simpleTypes[key](equipmentID, ip, name)
 			newird.lastRefreshTime = 0
 			gv.addEquipment(newird)
 			t = key
 			break
 		
-	# Equipment Type with subtype
-	if any( ( "Rx8000"in Type, isinstance(gv.equipmentDict[equipmentID], equipment.ericsson.RX8200) ) ):
+	# Equipment equipTypeStr with subtype
+	if any( ( "Rx8000"in equipTypeStr, isinstance(gv.equipmentDict[equipmentID], equipment.ericsson.RX8200) ) ):
 		newird = equipment.ericsson.RX8200(equipmentID, ip, name)
 		subtype = newird.determine_subtype()
 		if subtype == "RX8200-4RF":
@@ -159,7 +160,7 @@ def determine_type(args):
 		gv.addEquipment(newird)
 		t = "Rx8200"
 		
-	elif  any( ( "NS2000"in Type, isinstance(gv.equipmentDict[equipmentID], equipment.novelsat.NS2000) ) ):
+	elif  any( ( "NS2000"in equipTypeStr, isinstance(gv.equipmentDict[equipmentID], equipment.novelsat.NS2000) ) ):
 		newird = equipment.novelsat.NS2000(equipmentID, ip, name)
 		subtype = newird.determine_subtype()
 		if subtype == "NS2000_WEB":
@@ -170,7 +171,7 @@ def determine_type(args):
 		gv.addEquipment(newird)
 		t = "NS2000"
 		
-	elif Type == "OFFLINE":	
+	elif equipTypeStr == "OFFLINE":	
 		t = "OFFLINE"
 		gv.equipmentDict[equipmentID].offline = True
 	query = "UPDATE equipment SET model_id ='%s' WHERE id ='%i'"%(t, equipmentID)
@@ -185,7 +186,7 @@ def determine_type(args):
 	gv.sql.qselect(query)
 	if autostart:
 		if gv.threadJoinFlag == False:
-			if Type != "OFFLINE":
+			if equipTypeStr != "OFFLINE":
 				gv.ThreadCommandQueue.put((refresh, equipmentID))
 
 def refresh(equipmentID):
