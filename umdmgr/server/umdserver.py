@@ -141,7 +141,7 @@ def determine_type(args):
 		
 	
 	for key in simpleTypes.keys():
-		if  any( ( key in equipTypeStr, isinstance(gv.equipmentDict[equipmentID], simpleTypes[key]) ) ):
+		if  any( ( (key in equipTypeStr), isinstance(gv.equipmentDict[equipmentID], simpleTypes[key]) ) ):
 			newird = simpleTypes[key](equipmentID, ip, name)
 			newird.lastRefreshTime = 0
 			gv.addEquipment(newird)
@@ -149,7 +149,7 @@ def determine_type(args):
 			break
 		
 	# Equipment equipTypeStr with subtype
-	if any( ( "Rx8000"in equipTypeStr, isinstance(gv.equipmentDict[equipmentID], equipment.ericsson.RX8200) ) ):
+	if any( ( ("Rx8000"in equipTypeStr), isinstance(gv.equipmentDict[equipmentID], equipment.ericsson.RX8200) ) ):
 		newird = equipment.ericsson.RX8200(equipmentID, ip, name)
 		subtype = newird.determine_subtype()
 		if subtype == "RX8200-4RF":
@@ -160,7 +160,7 @@ def determine_type(args):
 		gv.addEquipment(newird)
 		t = "Rx8200"
 		
-	elif  any( ( "NS2000"in equipTypeStr, isinstance(gv.equipmentDict[equipmentID], equipment.novelsat.NS2000) ) ):
+	elif  any( ( ("NS2000"in equipTypeStr), isinstance(gv.equipmentDict[equipmentID], equipment.novelsat.NS2000) ) ):
 		newird = equipment.novelsat.NS2000(equipmentID, ip, name)
 		subtype = newird.determine_subtype()
 		if subtype == "NS2000_WEB":
