@@ -36,7 +36,7 @@ threadJoinFlag = False
 bg_worker_threads =25
 offlineCheckThreads = 2
 parity = "1/1"
-
+suppressEquipCheck = False
 loud = False
 logfile = "/var/www/programming/server/server_log.txt"
 loglock = threading.RLock()

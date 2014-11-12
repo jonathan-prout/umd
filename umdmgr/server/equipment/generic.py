@@ -112,19 +112,19 @@ class equipment(object):
 		]
 		
 		""" Speed up assesment process """
-		equipTypes_ateme_only = [equipTypes[0]]
-		equipTypes_novelsat_only = [equipTypes[1]]
-		equipTypes_sysdecr = [equipTypes[2]]
+		equipTypes_ateme_first = [equipTypes[0], equipTypes[1], equipTypes[2]]
+		equipTypes_novelsat_first = [equipTypes[1], equipTypes[0], equipTypes[2]]
+		equipTypes_sysdecr_first = [equipTypes[2], equipTypes[0], equipTypes[1]]
 		testmap = [
-			("Rx8200", equipTypes_sysdecr),
-			("RX1290", equipTypes_sysdecr),
-			("TT1260", equipTypes_sysdecr),
-			("TVG420", equipTypes_sysdecr),
-			("DR5000", equipTypes_ateme_only),
-			("NS2000", equipTypes_novelsat_only),
+			("RX8200", equipTypes_sysdecr_first),
+			("RX1290", equipTypes_sysdecr_first),
+			("TT1260", equipTypes_sysdecr_first),
+			("TVG420", equipTypes_sysdecr_first),
+			("DR5000", equipTypes_ateme_first),
+			("NS2000", equipTypes_novelsat_first),
 		]
 		for name, test in testmap:
-			if name in self.modelType:
+			if name in self.modelType.upper():
 				equipTypes = test
 				break
 		def type_test(equipTypes):

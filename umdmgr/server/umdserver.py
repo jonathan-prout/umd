@@ -119,10 +119,11 @@ def determine_type(args):
 		gv.offlineEquip.remove(equipmentID)
 	except ValueError:
 		pass
-	try:
-		Type = gv.equipmentDict[equipmentID].determine_type()
-	except:
-		Type = "OFFLINE"
+	if not all( (gv.suppressEquipCheck, (not isinstance(gv.equipmentDict[equipmentID], equipment.generic.GenericIRD ) ) ) ):
+		try:
+			Type = gv.equipmentDict[equipmentID].determine_type()
+		except:
+			Type = "OFFLINE"
 	
 	ip = gv.equipmentDict[equipmentID].ip
 	
@@ -139,14 +140,15 @@ def determine_type(args):
 		
 	
 	for key in simpleTypes.keys():
-		if  key in Type:
+		if  any( ( key in Type, isinstance(gv.equipmentDict[equipmentID], simpleTypes[key]) ) ):
 			newird = simpleTypes[key](equipmentID, ip, name)
 			newird.lastRefreshTime = 0
 			gv.addEquipment(newird)
 			t = key
 			break
+		
 	# Equipment Type with subtype
-	if "Rx8000"in Type:
+	if any( ( "Rx8000"in Type, isinstance(gv.equipmentDict[equipmentID], equipment.ericsson.RX8200) ) ):
 		newird = equipment.ericsson.RX8200(equipmentID, ip, name)
 		subtype = newird.determine_subtype()
 		if subtype == "RX8200-4RF":
@@ -157,7 +159,7 @@ def determine_type(args):
 		gv.addEquipment(newird)
 		t = "Rx8200"
 		
-	elif "NS2000"in Type:
+	elif  any( ( "NS2000"in Type, isinstance(gv.equipmentDict[equipmentID], equipment.novelsat.NS2000) ) ):
 		newird = equipment.novelsat.NS2000(equipmentID, ip, name)
 		subtype = newird.determine_subtype()
 		if subtype == "NS2000_WEB":

@@ -14,7 +14,7 @@ if __name__ == "__main__":
 	from server import umdserver
 	from server import gv
 	try:                                
-		opts, args = getopt.getopt(sys.argv[1:], "vle", ["verbose", "loop", "errors"]) 
+		opts, args = getopt.getopt(sys.argv[1:], "vles", ["verbose", "loop", "errors", "suppress"]) 
 	except getopt.GetoptError, err:
 		print str(err)	
 		print "error in arguments"
@@ -29,6 +29,8 @@ if __name__ == "__main__":
 			gv.loud = True
 		elif opt in ("-e", "--errors"):
 			errors_in_stdout = True
+		elif opt in ("-s", "--suppress"):
+			gv.suppressEquipCheck = True
 		else:
 			print "option '%s' not recognised"%opt
 			#assert False, 'option not recognised'
