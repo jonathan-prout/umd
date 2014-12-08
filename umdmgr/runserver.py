@@ -13,6 +13,7 @@ if __name__ == "__main__":
 	#project imports
 	from server import umdserver
 	from server import gv
+	from helpers import mysql
 	try:                                
 		opts, args = getopt.getopt(sys.argv[1:], "vles", ["verbose", "loop", "errors", "suppress"]) 
 	except getopt.GetoptError, err:
@@ -38,4 +39,8 @@ if __name__ == "__main__":
 			sys.exit(1)
 	if gv.loud:
 		print "Starting in verbose mode"
+		
+	gv.sql = mysql.mysql()
+	gv.sql.semaphore = threading.BoundedSemaphore(value=10)
+	gv.sql.mutex = threading.RLock()
 	umdserver.main()

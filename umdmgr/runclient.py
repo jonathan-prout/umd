@@ -11,9 +11,13 @@ def usage():
 	
 if __name__ == '__main__':
 	from client import umdclient
-	
+	from helpers import mysql
 	from client import gv
-	
+	sql = mysql.mysql()
+
+	sql.semaphore = threading.BoundedSemaphore(value=1)
+	sql.mutex = threading.RLock()
+	gv.sql = sql
 	gv.display_server_status = "Starting"
 	try:                                
 		opts, args = getopt.getopt(sys.argv[1:], "vle", ["verbose", "loop", "errors"]) 

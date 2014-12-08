@@ -9,9 +9,6 @@ from helpers import mysql
 import threading
 #mysql.mysql.semaphore = threading.BoundedSemaphore(value=1)
 #mysql.mysql.mutex = threading.RLock()
-sql = mysql.mysql()
-
-sql.semaphore = threading.BoundedSemaphore(value=1)
-sql.mutex = threading.RLock()
+sql = None
 
 labelcache = {}
