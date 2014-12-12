@@ -24,13 +24,6 @@ errors_in_stdout = False
 
 
 
-def biss_status_text(castatus):
-	if castatus == "On":
-		return "BS:ON"
-	elif castatus == "Off":
-		return "BS:Off"
-	else:
-		return ""
 
 		
 		
@@ -189,23 +182,23 @@ def getAddresses(ip):
 	return addresses
 
 			
-	
+
 def getdb():
 #	request = "SELECT s.servicename,s.aspectratio,s.ebno,s.pol,s.castatus, e.matrixname,e.labeladdr2,e.kaleidoaddr,e.labeladdr,e.labelnamestatic,s.framerate FROM equipment e, status s WHERE e.id = s.id"
 	request = "SELECT "
-	commands = ["e.id","s.servicename","s.aspectratio","s.ebno","s.pol",
-		    "s.castatus","e.labeladdr2","e.kaleidoaddr",
-		    "e.labeladdr","s.channel","s.framerate","e.labelnamestatic",
-		    "s.modulationtype","s.modtype2","s.asi","s.videoresolution",
-		    "e.model_id","s.muxbitrate","s.videostate", "s.status", "s.muxstate", "e.kid",
-		    "s.OmneonRec", "s.TvipsRec", "e.doesNotUseGateway", "e.Demod"]
+	commands = irdResult.commands
 	
 	cmap = {}
 	for x in range(len(commands)):
 		cmap[commands[x]] = x
 	request += ",".join(commands)
 	request += " FROM equipment e, status s WHERE e.id = s.id "
-
+	
+	gv.equip = {}
+	for item in gv.sql.qselect(request):
+		equipmentID = int(item[cmap["e.id"]])
+		gv.[equipmentID] = irdResult(equipmentID, item)
+	
 	return gv.sql.qselect(request), commands, cmap
 	
 def writeDefaults():
@@ -263,7 +256,7 @@ def writeStatus(status):
 		klist = sorted(mv[addr].lookuptable.keys())
 		for key in range(0, len(klist), 16):
 			try: 
-				mv[addr].put( (klist[key], "BOTTOM", status, "TEXT") )
+				mv[addr].put( (klist[key], "BOTTOM", status, multiviewer.generic.status_message.textMode) )
 			except:
 				pass
 		
@@ -464,7 +457,7 @@ def getMultiviewer(mvType, host):
 	    return multiviewer.harris.zprotocol(host)
 
 
-class myThread (threading.Thread):
+class mvThread (threading.Thread):
     def __init__(self, threadID, name, counter, instance):
         threading.Thread.__init__(self)
         self.threadID = threadID
@@ -473,11 +466,22 @@ class myThread (threading.Thread):
         self.instance = instance
     def run(self):
         #print "Starting " + self.name
-        refresh(self.instance, self.name)
+        mvrefresh(self.instance, self.name)
         #print "Exiting " + self.name
-def refresh(myInstance, name):            
+class matrixThread(mvThread):
+	def run(self):
+		matrixrefresh(self.instance, self.name)
+		
+def matrixrefresh(myInstance, name):            
 	while not gv.threadTerminationFlag:
+		myInstance.refresh()
+		time.sleep(1)
+
+def mvrefresh(myInstance, name):            
+	while not gv.threadTerminationFlag:
+		
 		if myInstance.get_offline():
+			
 			gv.sql.qselect('UPDATE `Multiviewer` SET `status` = "OFFLINE" WHERE `IP` = "%s";'%myInstance.host)
 		
 			for seconds in range(60):

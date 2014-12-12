@@ -5,8 +5,33 @@
     """
 import telnetlib, Queue, signal, time
 
+class status_message(object):
+    topLabel = None
+    bottomLabel = None
+    cnAlarm = False
+    recAlarm = False
+    mv_input = -1
+    
+    alarmMode = 1
+    textMode = 0
+    def __iter__(self):
+        """ we pack this class into a list and call the list's iterator """
+        """ Each item is a tuple of videoInput, level, line, mode"""
+        level = ["TOP", "BOTTOM", "C/N", "REC"]
+        line = [self.topLabel, self.bottomLabel, self.cnAlarm, self.recAlarm]
+        mode = [self.textMode, self.textMode, self.alarmMode, self.alarmMode ]
+        msgList = []
+        for i in range(4):
+            if line[i]:
+                msgList.append( (self.mv_input, level[i], line[i], mode[i] ))
+        return msgList.__iter__()
+        
 
-class telnet_multiviewer(object):
+class multiviewer(object):
+    """ Base class multiviewers MUST inherit """
+    pass
+
+class telnet_multiviewer(multiviewer):
     """ Boilerplate stuff to inherit into sublcass that does stuff"""
     lookuptable = {}
     def shout(self, stuff):
