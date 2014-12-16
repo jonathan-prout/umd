@@ -135,8 +135,7 @@ class kaleido(telnet_multiviewer):
 				break
 			sm = self.q.get()
 			for alarm in [sm.cnAlarm, sm.recAlarm]:
-				if not alarm:
-					alarm = "DISABLE"
+				alarm = {True:"MAJOR", False:"DISABLE"}[alarm]
 				
 			for videoInput, level, line, mode in sm:
 			

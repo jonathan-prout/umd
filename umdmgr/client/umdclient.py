@@ -9,6 +9,8 @@ import time
 from helpers import mysql
 import multiviewer
 import gv
+import labelmodel
+
 
 gv.display_server_status = "Starting"
 ASI_MODE_TEXT = "ASI"
@@ -23,7 +25,9 @@ errors_in_stdout = False
 
 
 
-
+def enum(*sequential, **named):
+    enums = dict(zip(sequential, range(len(sequential))), **named)
+    return type('Enum', (), enums)
 
 		
 		
@@ -66,6 +70,11 @@ def bitrateToStreamcode(muxbitrate):
 			bitratestring = str(bitratefloat)[:4]
 	return bitratestring	
 	
+def getPollStatus():
+	cmd = 'SELECT `value` FROM `management` where `key` = "current_status";'
+	pollstatus = gv.sql.qselect(cmd)[0][0]
+	return pollstatus
+
 def main(loop):
 	#global gv.sql
 	now = datetime.datetime.now()
@@ -74,8 +83,8 @@ def main(loop):
 	
 	global streamcodes
 	res = ""
-	global mv
-	mv = {}
+	
+	gv.mv = {}
 	global threads
 	threads = []
 	
@@ -83,21 +92,19 @@ def main(loop):
 	d = {"id":0,"Name":1,"IP":2,"Protocol":3}
 	res = gv.sql.qselect(cmd)
 	threadcounter = 0
-	cmd = 'SELECT `value` FROM `management` where `key` = "current_status";'
-	pollstatus = gv.sql.qselect(cmd)[0][0]
+	
 	# Get multiviewers
 	for line in res:
 		mul = getMultiviewer(line[ d["Protocol"]], line[ d["IP"]]) # returns mv instance
-		
+		gv.mvID[ line[ d["IP"]]] =  line[ d["id"]]
 		mul.lookuptable = getAddresses(line[ d["IP"]]) #multiviewer input table
-		mv[line[ d["IP"]]] = mul 
-		bg = myThread(threadcounter, line[d["Name"]], threadcounter, mv[line[ d["IP"]]]) #put multivier in thread
+		gv.mv[line[ d["IP"]]] = mul 
+		bg = myThread(threadcounter, line[d["Name"]], threadcounter, gv.mv[line[ d["IP"]]]) #put multivier in thread
 		bg.daemon = True
 		mythreads.append(bg)
 		bg.start()
 		threadcounter += 1
-		writeStatus("Display: %s, Polling:%s"%(gv.display_server_status, pollstatus))
-	writeDefaults()
+		
 	
 	
 	print "Now starting main loop press ctrl c to quit"
@@ -141,52 +148,31 @@ def main(loop):
 			return
 	
 def getAddresses(ip):
-	res, commands, cmap = getdb()
-	addresses = {}
-	for i in range(0,len(res)):
-			
-			j = {}
-			
-			for k in commands:
-				j[k] = res[i][cmap[k]]
-			
-	
-			if j["e.kaleidoaddr"] == ip:
-				
-				d = {
-				"TOP": int(j["e.labeladdr"]),
-				"BOTTOM": int(j["e.labeladdr2"]),
-				"C/N": 500 + int(j["e.kid"]),
-				"REC": 600 + int(j["e.kid"])
-				}
-				
-				addresses[int(j["e.kid"])] = d
-	res, commands, cmap = getCustom()
-	for i in range(0,len(res)):
-
-			j = {}
-			
-			for k in commands:
-				j[k] = res[i][cmap[k]]
-				
-			if j["kaleidoaddr"] == ip:
-				
-				d = {
-				"TOP": int(j["address1"]),
-				"BOTTOM": int(j["address2"]),
-				"C/N": 500 + int(j["input"]),
-				"REC": 600 + int(j["input"])
-				}
-				
-				addresses[int(j["input"])] = d
-	return addresses
+	cmd = "SELECT `input`, `labeladdr1`, `labeladdr2` FROM `mv_input` WHERE `multiviewer` =%d"%gv.mvID[ip]
+	res = gv.sql.qselect(cmd)
+	lookuptable = {}
+	for line in res:
+		i, labeladdr1, labeladdr2 = line
+		i = int(i)
+		d = {
+			"TOP": "0" + str(i),
+			"BOTTOM": 100 + i,
+			"C/N": 500 + i,
+			"REC": 600 + i
+		}
+		if labeladdr1:
+			d["TOP"] = int(labeladdr1)
+		if labeladdr2:
+			d["BOTTOM"] = int(labeladdr2)
+		lookuptable[i] = d
+	return lookuptable
 
 			
 
 def getdb():
 #	request = "SELECT s.servicename,s.aspectratio,s.ebno,s.pol,s.castatus, e.matrixname,e.labeladdr2,e.kaleidoaddr,e.labeladdr,e.labelnamestatic,s.framerate FROM equipment e, status s WHERE e.id = s.id"
 	request = "SELECT "
-	commands = irdResult.commands
+	commands = labelmodel.irdResult.commands
 	
 	cmap = {}
 	for x in range(len(commands)):
@@ -197,24 +183,11 @@ def getdb():
 	gv.equip = {}
 	for item in gv.sql.qselect(request):
 		equipmentID = int(item[cmap["e.id"]])
-		gv.[equipmentID] = irdResult(equipmentID, item)
+		gv.equip[equipmentID] = labelmodel.irdResult(equipmentID, item)
 	
 	return gv.sql.qselect(request), commands, cmap
 	
-def writeDefaults():
-	""" For blanking the canvas during UMD startup """
-	res, commands, cmap = getdb()
-	for i in range(0,len(res)):
-			
-			j = {}
-			
-			for k in commands:
-				j[k] = res[i][cmap[k]]
-			
-			if (j["e.kaleidoaddr"] in mv.keys()):
-				mv[j["e.kaleidoaddr"]].put( (int(j["e.kid"]), "TOP", 	j["e.labelnamestatic"], "TEXT")   )
-				mv[j["e.kaleidoaddr"]].put( (int(j["e.kid"]), "BOTTOM", "", 			"TEXT")   )
-				gv.labelcache[int(j["e.id"])] = {"TOP": j["e.labelnamestatic"], "BOTTOM":""}
+
 
 def getCustom():
 	commands = ["kaleidoaddr",  "input",  "top",  "bottom",  "address1",  "address2"]
@@ -261,179 +234,61 @@ def writeStatus(status):
 				pass
 		
 
-def getrxes():
-	""" Writes receiver results to multiviwer """
-	res, commands, cmap = getdb()
-	rxes = {}
-	#print "%s RXES" % len(res)
-	for i in range(0,len(res)):
-			#print "Starting UMD for IRD " + str(i) + "/n"
-			# nb python has no #DEFINE statement for constants, so these all get set as variables
-			j = {}
-			for k in commands:
-				j[k] = res[i][cmap[k]]
-			rxes[j["e.id"]] = j.copy()
-	for equipmentID, rx in rxes.iteritems():
-		
-		if (rx["e.kaleidoaddr"] in mv.keys()):
-			if rx["e.Demod"] != 0:
-				if rxes.has_key(rx["e.Demod"]):
-					if rx["s.asi"] in  ['IP', "ASI"]: #UNIT is using an external demod. Use that demod's settings 
-						rx["s.asi"] = 'DEMOD'
-						if rxes[rx["e.Demod"]]["s.status"] == "Online":
-							for key in ['s.modulationtype', 's.channel', 's.pol', 's.ebno']:
-							       rx[key] = rxes[rx["e.Demod"]][key]
-			
-			ebnoalarm = False
-			#if unrx["s.muxstate"], rx either shows .-1 or 100.10db. For some reason TS lock state is not reliable so we work it out
-			lockstate = "True"
-			if any((rx["e.Demod"] != 0 , rx["s.asi"] == "SAT")):
-				if (rx["s.ebno"] == ".-1dB"):
-					lockstate = "False"
-				elif ('-' in rx["s.ebno"]):
-					lockstate = "False"
-				elif (rx["s.ebno"] == "100.10dB"):
-					lockstate = "False"
-				elif (rx["s.ebno"] == "0.0dB"):
-					lockstate = "False"
-			if (len(rx["s.servicename"]) != 0): #clearly if there is a service name it is rx["s.muxstate"]
-				lockstate = "True"
-			if (rx["s.videostate"] == "Running"):
-				lockstate = "True"
-			if (rx["s.muxstate"] == "Unlock"):
-				lockstate = "False"
-			
-			if rx["s.status"] == "Online":
-				if (lockstate == "True"):
-					bottomumd = ""
-					topumd = ""
-					# Let's go through and see if we are HD - and our SD resolution
-					HD = False
-					if (rx["s.videoresolution"] == "1080"): 
-						HD = True
-					elif (rx["s.videoresolution"] == "1088"): 
-						HD = True	
-						
-					elif (rx["s.videoresolution"] == "720"):
-						HD = True
-					elif (rx["s.videoresolution"] == "576"):
-						HD = False
-						SD = "625"
-					elif (rx["s.videoresolution"] == "480"):
-						HD = False
-						SD = "525"
-					else:
-						HD = False
-						SD = ""
-					framerate = rx["s.framerate"].replace(" ","")
-					if remove_hz:
-						framerate = framerate.replace("Hz","")
-					# first set bottom display
-					if (HD == True):
-						bottomumd +=  rx["s.videoresolution"] + "/" + framerate
-					else:
-						if rx["s.aspectratio"] != "":
-							if SD != "":
-								bottomumd +=   SD[0] + "_"+rx["s.aspectratio"]
-							else:
-								bottomumd += rx["s.aspectratio"]
-						else:
-							bottomumd +=   SD
-					
-					if(rx["s.asi"] in ["ASI", "IP"]):
-						text1 = rx["s.asi"]
-					else:
-						text1 = rx["s.ebno"]
-						text1 = text1.replace('"','')
-						text1 = text1.replace(' ','')
-						text1 = text1.replace('+','')
-						#ebnoalarm
-						try:
-							en = rx["s.ebno"]
-							en = en.replace("dB","")
-							
-							ebnoint = float(en)
-						except ValueError:
-							ebnoint = 0 
-						if ebnoint < 2:
-							ebnoalarm = True
-					
-					bottomumd +=  "/" + text1 + " " + biss_status_text(rx["s.castatus"]) 
-					
-					
-					
-					#sendumd += "<setKDynamicText>set address=\""+rx["e.rx["e.labeladdr"]2"]+"\" text=\""+res[i][5]+" "+res[i][1]
-					"""sendumd = sendumd + " " + res[i][2] + " " + res[i][3]+" Biss:"+res[i][4]+" "+res[i][10]+"\"</setKDynamicText>\n" """
-					#sendumd = sendumd + " / " + res[i][2] + " " +" BS:"+res[i][4]+" "+res[i][10]+"\"</setKDynamicText>\n"
-											# sendumd = sendumd + " / " + res[i][2] + " " +" BS:"+res[i][4]+" "+res[i][10]+"\"</setKDynamicText>\n"
-					
-					
-				else: #IF No lock, we write "NO LOCK" at the bottom
-					bottomumd = "NO LOCK"
-			else:	
-				bottomumd="OFFLINE" 
-								
-									
-			if rx["s.status"] == "Online":					
-				#Are we in DVB-S or S2 mode?
-				if (rx["s.asi"] != "ASI"): 
-					
-					dvbmode = rx["s.modulationtype"].replace("DVB-", "")
-					
-				# We need to get the mux bitrate we match it to a streamcode with a little leeway
-
-				bitratestring = bitrateToStreamcode(rx["s.muxbitrate"])
-
-				
-									
-				if (len(rx["s.channel"]) != 0): #Have we found the channel?
-					if (lockstate == "True"): # Channel found and service running
-						if (rx["s.asi"] != "ASI"): #NOT ASI
-							rname = rx["e.labelnamestatic"].split(" ")[0].replace("RX","")
-							toplabeltext = rname + " " + rx["s.channel"][0:max(0,(len(rx["s.channel"])-3))] + " " + bitratestring + "" + dvbmode + "| " + rx["s.servicename"]
-						else:
-							toplabeltext = rx["e.labelnamestatic"] + " " + bitratestring + ""  + "| " + rx["s.servicename"]
-					else: #no input
-						toplabeltext = rx["e.labelnamestatic"] + " " + rx["s.channel"] + "" + dvbmode
-
-				else: # Channel missing and service running
-					if (lockstate == "True"):
-						toplabeltext = rx["e.labelnamestatic"] + " " + bitratestring + ""  + "| " + rx["s.servicename"]
-					else:
-						toplabeltext = rx["e.labelnamestatic"]
-				
-				
-				
+inputStrategies = enum("Reserved", "equip", "matrix", "indirect", "label")
+def getStatusMesage(mvInput, mvHost):
+	
+	happyStatuses = ["RUNNING"]
+	pollstatus = getPollStatus()
+	displayStatus = gv.display_server_status
+	
+	sm = multiviewer.generic.status_message()
+	fields = ["strategy", "equipment", "inputmtxid", "inputmtxname", "customlabel1", "customlabel2"]
+	fn = []
+	cmap = {}
+	i = 0
+	for f in fields:
+		fn.append("`mv_input`.`%s`"%f)
+		cmap[f] = i
+		i += 1
+	
+	cmd = "SELECT "
+	cmd += " , ".join(fn)
+	cmd += "FROM `mv_input`"
+	cmd += "WHERE ((`mv_input`.`multiviewer` =%d) AND (`mv_input`.`input` =%d))"%(gv.mvID[mvHost],mvInput)
+	
+	res = dict(zip(fields, gv.sql.qselect(cmd)[0]))
+	if all((pollstatus in happyStatuses, displayStatus in happyStatuses)):
+		if all((res["strategy"] == inputStrategies.equip, res["equipment"] not in [None, 0])):
+				sm = gv.equip[res["equipment"]].getStatusMessage()
+		elif res["strategy"] == inputStrategies.matrix:
+			mtxIn = mtxLookup[res["inputmtxname"]]
+			if gv.getEquipByName(mtxIn):
+				sm = gv.equip[gv.getEquipByName()].getStatusMessage()
 			else:
-				toplabeltext = rx["e.labelnamestatic"]
-								
-								
-								
-								
-			#sendumd += "<setKDynamicText>set address=\""+ rx["e.labeladdr"] +"\" text=\"" + toplabeltext + "\"</setKDynamicText>\n"
-			#print "%s top: %s"% (rx["e.kid"], toplabeltext)
+				sm = labelmodel.matrixResult(mtxIn).getStatusMessage()
+		elif res["strategy"] == inputStrategies.indirect:
+			sm = labelmodel.matrixResult(res["inputmtxname"]).getStatusMessage()
+		elif res["strategy"] == inputStrategies.label:
+			if res["customlabel1"]:
+				sm.topLabel = res["customlabel1"]
+			if res["customlabel2"]:
+				sm.bottomLabel = res["customlabel2"]
+	else:
+		if all((res["strategy"] == inputStrategies.equip, res["equipment"] not in [None, 0])):
+				sm.topLabel = gv.equip[res["equipment"]].isCalled()
+		elif res["strategy"] == inputStrategies.label:
+			if res["customlabel1"]:
+				sm.topLabel = res["customlabel1"]
+			if res["customlabel2"]:
+				sm.bottomLabel = res["customlabel2"]
+		else:
+			sm.topLabel = res["inputmtxname"]
+	
+	
+		if mvInput %16 == 1:
+			sm.bottomLabel = "Display: %s, Polling:%s"%(displayStatus, pollstatus)
 
-			mv[rx["e.kaleidoaddr"]].put( (int(rx["e.kid"]), "TOP", toplabeltext.replace("\n", ""), "TEXT")   )
-			mv[rx["e.kaleidoaddr"]].put( (int(rx["e.kid"]), "BOTTOM", bottomumd.replace("\n", ""), "TEXT")   )
-			
-			gv.labelcache[int(rx["e.id"])] = {"TOP": toplabeltext.replace("\n", ""), "BOTTOM": bottomumd.replace("\n", "")}
-			
-			input = int(rx["e.kid"])
-			d = {True:"MAJOR", False:"DISABLE"}
-			#sendumd += '<setKStatusMessage>set id="%s" status="%s"</setKStatusMessage>\n' %((input+ ebno_alarm_base), d[ebnoalarm])
-			mv[rx["e.kaleidoaddr"]].put( (int(rx["e.kid"]), "C/N", d[ebnoalarm], "ALARM")   )
-			#Truth Table If TVIPS and Omneon is enabled or if Omneon is enabled and the IRD does
-			recalarm = any( (all( (bool(rx["s.OmneonRec"]), bool(rx["s.TvipsRec"]) )),
-					all(( bool(rx["s.OmneonRec"]), bool(rx["e.doesNotUseGateway"]) ))
-					) )
-			d = {False:"MINOR", True:"DISABLE"}
-			#sendumd += '<setKStatusMessage>set id="%s" status="%s"</setKStatusMessage>\n' %((input+ rec_alarm_base), d[recalarm])
-			mv[rx["e.kaleidoaddr"]].put( (int(rx["e.kid"]), "REC", d[recalarm], "ALARM")   )
-			#print str(i), sendumd
-			
-		#print element
-		#print sendumd
-		#socketing(element,sendumd)
+
 		
 def getMultiviewer(mvType, host):
 	gv.sql.qselect('UPDATE `Multiviewer` SET `status` = "STARTING" WHERE `IP` = "%s";'%host)
@@ -494,10 +349,12 @@ def mvrefresh(myInstance, name):
 				myInstance.connect()
 			
 
-
+		
 			
 		if not myInstance.get_offline():
 			gv.sql.qselect('UPDATE `Multiviewer` SET `status` = "OK" WHERE `IP` = "%s";'%myInstance.host)
+			for i in myInstance.lookuptable.keys():
+				myInstance.put(getStatusMessage(i, myInstance.host))
 			myInstance.refresh()
 			time.sleep(1)
 	print "Stopping display for %s"% name
