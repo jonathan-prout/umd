@@ -104,6 +104,12 @@ def main(loop):
 			if k in mtx.prefsDict["capabilitiy"]:
 				gv.matrixCapabilities[k].append(mtx)
 	# Get multiviewers
+	bg = dbThread(threadcounter, "database thread", threadcounter, None)
+        bg.daemon = True
+        gv.threads.append(bg)
+        bg.start()
+        threadcounter += 1
+
 	for line in res:
 		mul = getMultiviewer(line[ d["Protocol"]], line[ d["IP"]]) # returns mv instance
 		gv.mvID[ line[ d["IP"]]] =  line[ d["id"]]
@@ -111,16 +117,10 @@ def main(loop):
 		gv.mv[line[ d["IP"]]] = mul 
 		bg = mvThread(threadcounter, line[d["Name"]], threadcounter, gv.mv[line[ d["IP"]]]) #put multivier in thread
 		bg.daemon = True
-		mythreads.append(bg)
+		gv.threads.append(bg)
 		bg.start()
 		threadcounter += 1
 		
-	bg = dbThread(threadcounter, "database thread", threadcounter, None) 
-	bg.daemon = True
-	mythreads.append(bg)
-	bg.start()
-	threadcounter += 1
-	
 	print "Now starting main loop press ctrl c to quit"
 	gv.display_server_status = "Running"
 	
@@ -170,7 +170,7 @@ def getAddresses(ip):
 		i, labeladdr1, labeladdr2 = line
 		i = int(i)
 		d = {
-			"TOP": "0" + str(i),
+			"TOP": i,
 			"BOTTOM": 100 + i,
 			"C/N": 500 + i,
 			"REC": 600 + i
@@ -186,8 +186,9 @@ def getAddresses(ip):
 
 def getdb():
 	#	request = "SELECT s.servicename,s.aspectratio,s.ebno,s.pol,s.castatus, e.matrixname,e.labeladdr2,e.kaleidoaddr,e.labeladdr,e.labelnamestatic,s.framerate FROM equipment e, status s WHERE e.id = s.id"
-	gv.equipDBLock.writer_acquire()
-	try:
+	with gv.equipDBLock:
+		print "getdb"
+	
 		request = "SELECT "
 		commands = labelmodel.irdResult.commands
 		
@@ -204,8 +205,7 @@ def getdb():
 		
 		for matrix in gv.matrixes:
 			matrix.refresh()
-	finally:
-		gv.equipDBLock.reader_release()
+	
 	
 	
 
@@ -225,11 +225,11 @@ def writeStatus(status):
 
 inputStrategies = enum("Reserved", "equip", "matrix", "indirect", "label")
 def getStatusMesage(mvInput, mvHost):
-	gv.equipDBLock.reader_acquire()
-	try:
+	with gv.equipDBLock:
+		
 		happyStatuses = ["RUNNING"]
-		pollstatus = getPollStatus()
-		displayStatus = gv.display_server_status
+		pollstatus = getPollStatus().upper()
+		displayStatus = gv.display_server_status.upper()
 		
 		sm = multiviewer.generic.status_message()
 		fields = ["strategy", "equipment", "inputmtxid", "inputmtxname", "customlabel1", "customlabel2"]
@@ -248,10 +248,18 @@ def getStatusMesage(mvInput, mvHost):
 		
 		res = dict(zip(fields, gv.sql.qselect(cmd)[0]))
 		if all((pollstatus in happyStatuses, displayStatus in happyStatuses)):
-			if all((res["strategy"] == inputStrategies.equip, res["equipment"] not in [None, 0])):
+			try:
+                                if gv.equip[int(res["equipment"])] is not None:
+                                        tlOK = True
+                                else:
+                                        tlOK = False
+                                e = None
+                        except Exception, e:
+                                tlOK = False
+                        if all((int(res["strategy"]) == int(inputStrategies.equip), tlOK )):
 					sm = gv.equip[res["equipment"]].getStatusMessage()
 			elif res["strategy"] == inputStrategies.matrix:
-				mtxIn = mtxLookup[res["inputmtxname"]]
+				mtxIn = gv.mtxLookup(res["inputmtxname"])
 				if gv.getEquipByName(mtxIn):
 					sm = gv.equip[gv.getEquipByName()].getStatusMessage()
 				else:
@@ -265,12 +273,16 @@ def getStatusMesage(mvInput, mvHost):
 					sm.bottomLabel = res["customlabel2"]
 		else:
 			try: 
-				assert gv.equip[int(res["equipment"])] is not None
-				tlOK = True
-			except:
+				if gv.equip[int(res["equipment"])] is not None:
+					tlOK = True
+				else:
+					tlOK = False
+				e = None
+			except Exception, e:
 				tlOK = False
-			if all((res["strategy"] == inputStrategies.equip, tlOK )):
+			if all((int(res["strategy"]) == int(inputStrategies.equip), tlOK )):
 					sm.topLabel = gv.equip[int(res["equipment"])].isCalled()
+					sm.bottomLabel = " "
 			elif res["strategy"] == inputStrategies.label:
 				if res["customlabel1"]:
 					sm.topLabel = res["customlabel1"]
@@ -278,13 +290,12 @@ def getStatusMesage(mvInput, mvHost):
 					sm.bottomLabel = res["customlabel2"]
 			else:
 				sm.topLabel = res["inputmtxname"]
-		
-		
+				#sm.bottomLabel = "%s, %s %s,%s"%(res["equipment"],len(gv.equip.keys()),e, int(res["strategy"]) )
+				sm.bottomLabel = " "
 			if mvInput %16 == 1:
 				sm.bottomLabel = "Display: %s, Polling:%s"%(displayStatus, pollstatus)
 		sm.mv_input = mvInput
-	finally:
-		gv.equipDBLock.reader_release()
+	
 	return sm
 		
 def getMultiviewer(mvType, host):

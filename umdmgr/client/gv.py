@@ -16,8 +16,8 @@ labelcache = {}
 matrixes = []
 matrixCapabilities = {}
 threads = []
-equipDBLock = rwlock.RWLock()
-
+equipDBLock = threading.RLock()
+streamcodes = None
 mvID = {}
 
 
@@ -29,7 +29,7 @@ def getEquipByName(name):
 	
 	return 0
 
-def mtxLookup(name, level):
+def mtxLookup(name, level = "SDI"):
 	"""Lookup source from destination. Returns equip ID int or None """
 	try:
 		mxes = matrixCapabilities[level]

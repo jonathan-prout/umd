@@ -17,12 +17,12 @@ def cast(func, obj):
 			if func == f:
 				return v
 
-streamcodes = []
+
 def bitrateToStreamcode(muxbitrate):
 	tolerance = float(0.125)
 	#streamcodes == []:
-	if not streamcodes:
-		streamcodes = gv.sql.qselect("SELECT `name`, `bitrate` FROM `streamcodes` WHERE 1")
+	if not gv.streamcodes:
+		gv.streamcodes = gv.sql.qselect("SELECT `name`, `bitrate` FROM `streamcodes` WHERE 1")
 	
 	
 	try:
@@ -32,7 +32,7 @@ def bitrateToStreamcode(muxbitrate):
 		bitratefloat = 0
 	
 	
-	for name, streamBitrate in streamcodes:
+	for name, streamBitrate in gv.streamcodes:
 		streamBitratee = float(streamBitrate)
 		if(streamBitrate - tolerance  < bitratefloat <streamBitrate + tolerance):
 			bitratestring = name
@@ -53,7 +53,9 @@ class matrixResult(object):
 			toplabel = "%s > %s"%(src, self.name)
 		else:
 			toplabel = "%s"%self.name
-			
+	
+	def getBottomLabel(self):
+		return " "		
 	def getStatusMessage(self):
 		sm = status_message()
 
@@ -78,7 +80,13 @@ class irdResult(object):
 	def __init__(self, equipmentID, res = None):
 		self.equipmentID = int(equipmentID)
 		if res:
-			self.res = res
+			if isinstance(res, dict):
+				self.res = res
+			elif isinstance(res[0], dict):
+                                self.res = res[0]
+			elif isinstance(res, tuple):
+				 self.res = dict(zip(self.commands,res))
+
 		else:
 			refresh()
 		self.cmap = {}
@@ -87,11 +95,11 @@ class irdResult(object):
 	
 	def refresh(self):
 		request = "SELECT " + ",".join(self.commands) + " FROM equipment e, status s WHERE e.id = s.id AND e.id = '%d'"%self.equipmentID
-		self.res = gv.sql.qselect(request)
+		self.res = dict(zip(self.commands,gv.sql.qselect(request)[0]))
 	
 	def getKey(self,k):
 		try:
-			return self.res[self.cmap[k]]
+			return self.res[k]
 		except KeyError:
 			return ""
 	def getKeyFromDemod(self, k):
@@ -148,7 +156,7 @@ class irdResult(object):
 
 	def getCN(self):
 		
-		ebno = getKeyFromDemod("s.ebno").replace("dB","").strip()
+		ebno = self.getKeyFromDemod("s.ebno").replace("dB","").strip()
 		ebno = ebno.replace('"','')
 		ebno = ebno.replace(' ','')
 		ebno = ebno.replace('+','')
@@ -167,7 +175,7 @@ class irdResult(object):
 						
 						src = gv.mtxLookup(self.getKey("e.InMTXName"),self.getInput())
 							
-		return src
+						return src
 						
 	
 	def getDemod(self):
@@ -193,7 +201,7 @@ class irdResult(object):
 		return dvbmode
 	
 	def getOnline(self):
-		return getKey("s.status") == "Online"
+		return self.getKey("s.status") == "Online"
 	
 	def getBitrate(self):
 		return self.getKey("s.muxbitrate")
@@ -285,7 +293,7 @@ class irdResult(object):
 		d = {True:"MAJOR", False:"DISABLE"}
 		cnOK = all((self.getCN()	< 2, self.getCN()	> 0 ))
 		sm.cnAlarm = not cnOK
-		sm.recAlarm = any( (all( cast(bool, self.getKey("s.OmneonRec")), cast(bool, self.getKey("s.TvipsRec")) ),
+		sm.recAlarm = any( (all( (cast(bool, self.getKey("s.OmneonRec")), cast(bool, self.getKey("s.TvipsRec"))) ),
 					all(( cast(bool, self.getKey("s.OmneonRec")), cast(bool, self.getKey("e.doesNotUseGateway")) ))
 					) )
 		

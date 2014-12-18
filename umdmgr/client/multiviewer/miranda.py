@@ -83,6 +83,7 @@ class kaleido(telnet_multiviewer):
 			"""
 			try:
 				self.tel.write(cmd)
+				#print cmd
 				a = self.tel.read_until("<ack/>", self.timeout)
 				if "<ack/>" not in a:
 					self.shout(a)
@@ -136,12 +137,12 @@ class kaleido(telnet_multiviewer):
 				break
 			sm = self.q.get()
 			if sm:
-				print self.host + ": status %s//%s"%(sm.topLabel, sm.bottomLabel)
+				#print self.host + ": status %s//%s"%(sm.topLabel, sm.bottomLabel)
 				for alarm in [sm.cnAlarm, sm.recAlarm]:
 					alarm = {True:"MAJOR", False:"DISABLE"}[alarm]
 					
 				for videoInput, level, line, mode in sm:
-					if not line: line = ""
+					if not line: line = " "
 					if not self.get_offline():
 						if not self.matchesPrevious(videoInput, level, line):
 							self.writeline(videoInput, level, line, mode)
