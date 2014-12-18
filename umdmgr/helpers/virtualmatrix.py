@@ -10,9 +10,11 @@ import threading
 
 class virtualMatrix( mysql, matrix):
 	def __init__(self, name):
+		self.lock = threading.RLock() #Just to eliminate a race between$
 		super(virtualMatrix, self).__init__(name, "10.73.196.238", "umd", "umd", "matrix")
 		""" Start by passing name as string. Mysql handler as class instance """
 		"""
+		#self.lock = threading.RLock() #Just to eliminate a race between$
 		self.name = name
 		self.sql = mysql.mysql(dname="matrix")
 		"""
@@ -27,7 +29,7 @@ class virtualMatrix( mysql, matrix):
 		self.prefsDict = {}
 		self.dbConnect()
 		self.refresh()
-		self.lock = threading.RLock() #Just to eliminate a race between calling matrix info and refreshing it
+		
 	def refresh(self):
 		with self.lock:
 			self.openPrefs()

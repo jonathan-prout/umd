@@ -98,7 +98,7 @@ def main(loop):
 		gv.matrixCapabilities[k] = []
 	matrixNames = ["UMDASC1","lband"]
 	for m in matrixNames:
-		mtx = virtualmatrix(m)
+		mtx = virtualmatrix.virtualMatrix(m)
 		gv.matrixes.append(mtx)
 		for k in matrixCapabilites:
 			if k in mtx.prefsDict["capabilitiy"]:
@@ -123,8 +123,8 @@ def main(loop):
 	
 	print "Now starting main loop press ctrl c to quit"
 	gv.display_server_status = "Running"
-	writeCustom()
-	writeDefaults()
+	
+	
 	while 1:
 		#print "Iteration %s"% counter
 		try:
@@ -138,7 +138,7 @@ def main(loop):
 					writeCustom()
 				else:
 					if umdServerRunning == True:
-						mv[m].fullref = True
+						gv.mv[m].fullref = True
 						umdServerRunning = False
 					
 					writeStatus("Display: %s, Polling: %s"%(gv.display_server_status, pollstatus))
@@ -147,15 +147,15 @@ def main(loop):
 				if not loop:
 					return
 				
-			for m in mv.keys():
+			for m in gv.mv.keys():
 				
-				mv[m].fullref = True
+				gv.mv[m].fullref = True
 				
 				"""
-				if mv[m].get_offline():
+				if gv.mv[m].get_offline():
 					try:
 						logwrite("%s is offline"%m)
-						mv[m].connect()
+						gv.mv[m].connect()
 					except: pass
 				"""
 		except KeyboardInterrupt:
@@ -185,7 +185,7 @@ def getAddresses(ip):
 			
 
 def getdb():
-#	request = "SELECT s.servicename,s.aspectratio,s.ebno,s.pol,s.castatus, e.matrixname,e.labeladdr2,e.kaleidoaddr,e.labeladdr,e.labelnamestatic,s.framerate FROM equipment e, status s WHERE e.id = s.id"
+	#	request = "SELECT s.servicename,s.aspectratio,s.ebno,s.pol,s.castatus, e.matrixname,e.labeladdr2,e.kaleidoaddr,e.labeladdr,e.labelnamestatic,s.framerate FROM equipment e, status s WHERE e.id = s.id"
 	gv.equipDBLock.writer_acquire()
 	try:
 		request = "SELECT "
@@ -214,11 +214,11 @@ def getdb():
 	
 def writeStatus(status):
 	""" Write Errors to the multiviewer """
-	for addr in mv.keys():
-		klist = sorted(mv[addr].lookuptable.keys())
+	for addr in gv.mv.keys():
+		klist = sorted(gv.mv[addr].lookuptable.keys())
 		for key in range(0, len(klist), 16):
 			try: 
-				mv[addr].put( (klist[key], "BOTTOM", status, multiviewer.generic.status_message.textMode) )
+				gv.mv[addr].put( (klist[key], "BOTTOM", status, multiviewer.generic.status_message.textMode) )
 			except:
 				pass
 		
@@ -264,8 +264,13 @@ def getStatusMesage(mvInput, mvHost):
 				if res["customlabel2"]:
 					sm.bottomLabel = res["customlabel2"]
 		else:
-			if all((res["strategy"] == inputStrategies.equip, res["equipment"] not in [None, 0])):
-					sm.topLabel = gv.equip[res["equipment"]].isCalled()
+			try: 
+				assert gv.equip[int(res["equipment"])] is not None
+				tlOK = True
+			except:
+				tlOK = False
+			if all((res["strategy"] == inputStrategies.equip, tlOK )):
+					sm.topLabel = gv.equip[int(res["equipment"])].isCalled()
 			elif res["strategy"] == inputStrategies.label:
 				if res["customlabel1"]:
 					sm.topLabel = res["customlabel1"]
@@ -277,9 +282,10 @@ def getStatusMesage(mvInput, mvHost):
 		
 			if mvInput %16 == 1:
 				sm.bottomLabel = "Display: %s, Polling:%s"%(displayStatus, pollstatus)
+		sm.mv_input = mvInput
 	finally:
 		gv.equipDBLock.reader_release()
-
+	return sm
 		
 def getMultiviewer(mvType, host):
 	gv.sql.qselect('UPDATE `Multiviewer` SET `status` = "STARTING" WHERE `IP` = "%s";'%host)
@@ -316,7 +322,7 @@ class mvThread (threading.Thread):
         #print "Exiting " + self.name
 class dbThread(mvThread):
 	def run(self):
-		dbrefresh( )
+		dbrefresh()
 		
 def dbrefresh():            
 	while not gv.threadTerminationFlag:
@@ -361,7 +367,7 @@ def shutdown(exit_status):
 			gv.display_server_status = "OFFLINE"
 		else:
 			gv.display_server_status = "OFFLINE_ERROR"
-		writeDefaults()
+		#writeDefaults()
 		writeStatus("Display: %s, Polling: %s"%(gv.display_server_status, pollstatus))
 		running = False
 		gv.threadTerminationFlag = True

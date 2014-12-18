@@ -18,7 +18,7 @@ matrixCapabilities = {}
 threads = []
 equipDBLock = rwlock.RWLock()
 
-gv.mvID = {}
+mvID = {}
 
 
 def getEquipByName(name):

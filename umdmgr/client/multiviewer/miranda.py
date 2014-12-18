@@ -63,6 +63,7 @@ class kaleido(telnet_multiviewer):
 			try:
 				addr = self.lookup(videoInput, level)
 			except:
+				print "videoIn, %s, level %s not found"%(videoInput, level)
 				return
 			a = ""
 			if mode == status_message.alarmMode:
@@ -134,14 +135,16 @@ class kaleido(telnet_multiviewer):
 			if self.fullref:
 				break
 			sm = self.q.get()
-			for alarm in [sm.cnAlarm, sm.recAlarm]:
-				alarm = {True:"MAJOR", False:"DISABLE"}[alarm]
-				
-			for videoInput, level, line, mode in sm:
-			
-				if not self.get_offline():
-					if not self.matchesPrevious(videoInput, level, line):
-						self.writeline(videoInput, level, line, mode)
+			if sm:
+				print self.host + ": status %s//%s"%(sm.topLabel, sm.bottomLabel)
+				for alarm in [sm.cnAlarm, sm.recAlarm]:
+					alarm = {True:"MAJOR", False:"DISABLE"}[alarm]
+					
+				for videoInput, level, line, mode in sm:
+					if not line: line = ""
+					if not self.get_offline():
+						if not self.matchesPrevious(videoInput, level, line):
+							self.writeline(videoInput, level, line, mode)
 		if self.fullref:
 				self.qtruncate()
 			

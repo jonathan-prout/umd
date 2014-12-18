@@ -68,10 +68,10 @@ class irdResult(object):
 	remove_hz = True
 	
 	commands = ["e.id","s.servicename","s.aspectratio","s.ebno","s.pol",
-		    "s.castatus","e.kaleidoaddr","e.InMTXName","e.OutMTXName",
+		    "s.castatus","e.InMTXName","e.OutMTXName",
 		    "s.channel","s.framerate","e.labelnamestatic", 	"e.name",
 		    "s.modulationtype","s.modtype2","s.asi","s.videoresolution",
-		    "e.model_id","s.muxbitrate","s.videostate", "s.status", "s.muxstate", "e.kid",
+		    "e.model_id","s.muxbitrate","s.videostate", "s.status", "s.muxstate", 
 		    "s.OmneonRec", "s.TvipsRec", "e.doesNotUseGateway", "e.Demod"]
 	
 	

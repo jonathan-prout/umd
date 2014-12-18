@@ -3,6 +3,8 @@
 import getopt
 import sys
 import datetime
+import threading
+
 
 def usage():
 	print "v, verbose logs everything"
