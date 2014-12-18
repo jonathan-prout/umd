@@ -7,6 +7,7 @@ import getopt
 import time
 
 from helpers import mysql
+from helpers import virtualmatrix
 import multiviewer
 import gv
 import labelmodel
@@ -92,20 +93,33 @@ def main(loop):
 	d = {"id":0,"Name":1,"IP":2,"Protocol":3}
 	res = gv.sql.qselect(cmd)
 	threadcounter = 0
-	
+	matrixCapabilites = ["SDI", "ASI", "LBAND", "IP"]
+	for k in matrixCapabilites:
+		gv.matrixCapabilities[k] = []
+	matrixNames = ["UMDASC1","lband"]
+	for m in matrixNames:
+		mtx = virtualmatrix(m)
+		gv.matrixes.append(mtx)
+		for k in matrixCapabilites:
+			if k in mtx.prefsDict["capabilitiy"]:
+				gv.matrixCapabilities[k].append(mtx)
 	# Get multiviewers
 	for line in res:
 		mul = getMultiviewer(line[ d["Protocol"]], line[ d["IP"]]) # returns mv instance
 		gv.mvID[ line[ d["IP"]]] =  line[ d["id"]]
 		mul.lookuptable = getAddresses(line[ d["IP"]]) #multiviewer input table
 		gv.mv[line[ d["IP"]]] = mul 
-		bg = myThread(threadcounter, line[d["Name"]], threadcounter, gv.mv[line[ d["IP"]]]) #put multivier in thread
+		bg = mvThread(threadcounter, line[d["Name"]], threadcounter, gv.mv[line[ d["IP"]]]) #put multivier in thread
 		bg.daemon = True
 		mythreads.append(bg)
 		bg.start()
 		threadcounter += 1
 		
-	
+	bg = dbThread(threadcounter, "database thread", threadcounter, None) 
+	bg.daemon = True
+	mythreads.append(bg)
+	bg.start()
+	threadcounter += 1
 	
 	print "Now starting main loop press ctrl c to quit"
 	gv.display_server_status = "Running"
@@ -115,6 +129,7 @@ def main(loop):
 		#print "Iteration %s"% counter
 		try:
 			for x in range(60):
+				"""
 				cmd = 'SELECT `value` FROM `management` where `key` = "current_status";'
 				pollstatus = gv.sql.qselect(cmd)[0][0]
 				if pollstatus == "RUNNING":
@@ -127,7 +142,7 @@ def main(loop):
 						umdServerRunning = False
 					
 					writeStatus("Display: %s, Polling: %s"%(gv.display_server_status, pollstatus))
-				
+				"""
 				time.sleep(1)
 				if not loop:
 					return
@@ -171,57 +186,31 @@ def getAddresses(ip):
 
 def getdb():
 #	request = "SELECT s.servicename,s.aspectratio,s.ebno,s.pol,s.castatus, e.matrixname,e.labeladdr2,e.kaleidoaddr,e.labeladdr,e.labelnamestatic,s.framerate FROM equipment e, status s WHERE e.id = s.id"
-	request = "SELECT "
-	commands = labelmodel.irdResult.commands
-	
-	cmap = {}
-	for x in range(len(commands)):
-		cmap[commands[x]] = x
-	request += ",".join(commands)
-	request += " FROM equipment e, status s WHERE e.id = s.id "
-	
-	gv.equip = {}
-	for item in gv.sql.qselect(request):
-		equipmentID = int(item[cmap["e.id"]])
-		gv.equip[equipmentID] = labelmodel.irdResult(equipmentID, item)
-	
-	return gv.sql.qselect(request), commands, cmap
-	
-
-
-def getCustom():
-	commands = ["kaleidoaddr",  "input",  "top",  "bottom",  "address1",  "address2"]
-	cmap = {}
-	for x in range(len(commands)):
-		cmap[commands[x]] = x
+	gv.equipDBLock.writer_acquire()
+	try:
 		request = "SELECT "
-	request += ",".join(commands)
-	request += "  FROM `customlabel`  "
-	return gv.sql.qselect(request), commands, cmap
-def writeCustom():
-	res, commands, cmap = getCustom()
-	for i in range(0,len(res)):
-			
-			j = {}
-			
-			for k in commands:
-				j[k] = res[i][cmap[k]]
-			
-			if j["kaleidoaddr"] in mv.keys():
-				if "sameas=" in j["top"]:
-					try:
-						s, eid = j["top"].split("=")
-						mv[j["kaleidoaddr"]].put( ( int(j["input"]) , "TOP", gv.labelcache[int(eid)]["TOP"], "TEXT")   )
-						mv[j["kaleidoaddr"]].put( ( int(j["input"]) , "BOTTOM", gv.labelcache[int(eid)]["BOTTOM"], "TEXT")   )
-					except Exception as e:
-						mv[j["kaleidoaddr"]].put( ( int(j["input"]) , "TOP", str(eid), "TEXT")   )
-						errortext =  e.__repr__()
-						errortext = errortext.replace("(", " ")
-						errortext = errortext.replace(")", " ")
-						mv[j["kaleidoaddr"]].put( ( int(j["input"]) , "BOTTOM", "%s"% errortext, "TEXT")   )
-				else:
-					mv[j["kaleidoaddr"]].put( ( int(j["input"]) , "TOP", j["top"], "TEXT")   )
-					mv[j["kaleidoaddr"]].put(  ( int(j["input"]) , "BOTTOM", j["bottom"], "TEXT") )   	
+		commands = labelmodel.irdResult.commands
+		
+		cmap = {}
+		for x in range(len(commands)):
+			cmap[commands[x]] = x
+		request += ",".join(commands)
+		request += " FROM equipment e, status s WHERE e.id = s.id "
+		
+		gv.equip = {}
+		for item in gv.sql.qselect(request):
+			equipmentID = int(item[cmap["e.id"]])
+			gv.equip[equipmentID] = labelmodel.irdResult(equipmentID, item)
+		
+		for matrix in gv.matrixes:
+			matrix.refresh()
+	finally:
+		gv.equipDBLock.reader_release()
+	
+	
+
+
+
 	
 def writeStatus(status):
 	""" Write Errors to the multiviewer """
@@ -236,58 +225,60 @@ def writeStatus(status):
 
 inputStrategies = enum("Reserved", "equip", "matrix", "indirect", "label")
 def getStatusMesage(mvInput, mvHost):
-	
-	happyStatuses = ["RUNNING"]
-	pollstatus = getPollStatus()
-	displayStatus = gv.display_server_status
-	
-	sm = multiviewer.generic.status_message()
-	fields = ["strategy", "equipment", "inputmtxid", "inputmtxname", "customlabel1", "customlabel2"]
-	fn = []
-	cmap = {}
-	i = 0
-	for f in fields:
-		fn.append("`mv_input`.`%s`"%f)
-		cmap[f] = i
-		i += 1
-	
-	cmd = "SELECT "
-	cmd += " , ".join(fn)
-	cmd += "FROM `mv_input`"
-	cmd += "WHERE ((`mv_input`.`multiviewer` =%d) AND (`mv_input`.`input` =%d))"%(gv.mvID[mvHost],mvInput)
-	
-	res = dict(zip(fields, gv.sql.qselect(cmd)[0]))
-	if all((pollstatus in happyStatuses, displayStatus in happyStatuses)):
-		if all((res["strategy"] == inputStrategies.equip, res["equipment"] not in [None, 0])):
-				sm = gv.equip[res["equipment"]].getStatusMessage()
-		elif res["strategy"] == inputStrategies.matrix:
-			mtxIn = mtxLookup[res["inputmtxname"]]
-			if gv.getEquipByName(mtxIn):
-				sm = gv.equip[gv.getEquipByName()].getStatusMessage()
-			else:
-				sm = labelmodel.matrixResult(mtxIn).getStatusMessage()
-		elif res["strategy"] == inputStrategies.indirect:
-			sm = labelmodel.matrixResult(res["inputmtxname"]).getStatusMessage()
-		elif res["strategy"] == inputStrategies.label:
-			if res["customlabel1"]:
-				sm.topLabel = res["customlabel1"]
-			if res["customlabel2"]:
-				sm.bottomLabel = res["customlabel2"]
-	else:
-		if all((res["strategy"] == inputStrategies.equip, res["equipment"] not in [None, 0])):
-				sm.topLabel = gv.equip[res["equipment"]].isCalled()
-		elif res["strategy"] == inputStrategies.label:
-			if res["customlabel1"]:
-				sm.topLabel = res["customlabel1"]
-			if res["customlabel2"]:
-				sm.bottomLabel = res["customlabel2"]
+	gv.equipDBLock.reader_acquire()
+	try:
+		happyStatuses = ["RUNNING"]
+		pollstatus = getPollStatus()
+		displayStatus = gv.display_server_status
+		
+		sm = multiviewer.generic.status_message()
+		fields = ["strategy", "equipment", "inputmtxid", "inputmtxname", "customlabel1", "customlabel2"]
+		fn = []
+		cmap = {}
+		i = 0
+		for f in fields:
+			fn.append("`mv_input`.`%s`"%f)
+			cmap[f] = i
+			i += 1
+		
+		cmd = "SELECT "
+		cmd += " , ".join(fn)
+		cmd += "FROM `mv_input`"
+		cmd += "WHERE ((`mv_input`.`multiviewer` =%d) AND (`mv_input`.`input` =%d))"%(gv.mvID[mvHost],mvInput)
+		
+		res = dict(zip(fields, gv.sql.qselect(cmd)[0]))
+		if all((pollstatus in happyStatuses, displayStatus in happyStatuses)):
+			if all((res["strategy"] == inputStrategies.equip, res["equipment"] not in [None, 0])):
+					sm = gv.equip[res["equipment"]].getStatusMessage()
+			elif res["strategy"] == inputStrategies.matrix:
+				mtxIn = mtxLookup[res["inputmtxname"]]
+				if gv.getEquipByName(mtxIn):
+					sm = gv.equip[gv.getEquipByName()].getStatusMessage()
+				else:
+					sm = labelmodel.matrixResult(mtxIn).getStatusMessage()
+			elif res["strategy"] == inputStrategies.indirect:
+				sm = labelmodel.matrixResult(res["inputmtxname"]).getStatusMessage()
+			elif res["strategy"] == inputStrategies.label:
+				if res["customlabel1"]:
+					sm.topLabel = res["customlabel1"]
+				if res["customlabel2"]:
+					sm.bottomLabel = res["customlabel2"]
 		else:
-			sm.topLabel = res["inputmtxname"]
-	
-	
-		if mvInput %16 == 1:
-			sm.bottomLabel = "Display: %s, Polling:%s"%(displayStatus, pollstatus)
-
+			if all((res["strategy"] == inputStrategies.equip, res["equipment"] not in [None, 0])):
+					sm.topLabel = gv.equip[res["equipment"]].isCalled()
+			elif res["strategy"] == inputStrategies.label:
+				if res["customlabel1"]:
+					sm.topLabel = res["customlabel1"]
+				if res["customlabel2"]:
+					sm.bottomLabel = res["customlabel2"]
+			else:
+				sm.topLabel = res["inputmtxname"]
+		
+		
+			if mvInput %16 == 1:
+				sm.bottomLabel = "Display: %s, Polling:%s"%(displayStatus, pollstatus)
+	finally:
+		gv.equipDBLock.reader_release()
 
 		
 def getMultiviewer(mvType, host):
@@ -323,13 +314,13 @@ class mvThread (threading.Thread):
         #print "Starting " + self.name
         mvrefresh(self.instance, self.name)
         #print "Exiting " + self.name
-class matrixThread(mvThread):
+class dbThread(mvThread):
 	def run(self):
-		matrixrefresh(self.instance, self.name)
+		dbrefresh( )
 		
-def matrixrefresh(myInstance, name):            
+def dbrefresh():            
 	while not gv.threadTerminationFlag:
-		myInstance.refresh()
+		getdb()
 		time.sleep(1)
 
 def mvrefresh(myInstance, name):            
@@ -354,7 +345,7 @@ def mvrefresh(myInstance, name):
 		if not myInstance.get_offline():
 			gv.sql.qselect('UPDATE `Multiviewer` SET `status` = "OK" WHERE `IP` = "%s";'%myInstance.host)
 			for i in myInstance.lookuptable.keys():
-				myInstance.put(getStatusMessage(i, myInstance.host))
+				myInstance.put(getStatusMesage(i, myInstance.host))
 			myInstance.refresh()
 			time.sleep(1)
 	print "Stopping display for %s"% name

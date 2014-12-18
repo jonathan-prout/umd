@@ -56,7 +56,7 @@ class mysql(generic.IInfoSourceMixIn):
 		#self.db.query("DO 0;")
 		#self.db.commit()
 	def openPrefs(self):
-		cmd = 'SELECT `id`,`mtxName`,`type`,`address` FROM `matrixes` WHERE `mtxName` = "%s"'%self.name
+		cmd = 'SELECT `id`,`mtxName`,`type`,`address`,`capability` FROM `matrixes` WHERE `mtxName` = "%s"'%self.name
 		res = self.qselect(cmd)
 		if not len(res) == 1:
 			self.set_offline("Database Error: There are multiple matrixes named %s"%self.name)
@@ -69,7 +69,7 @@ class mysql(generic.IInfoSourceMixIn):
 			self.prefsDict["host"], self.prefsDict["port"] = res[3].split(":")
 		else:
 			self.prefsDict["host"] = res[3]
-		
+		self.prefsDict["capabilitiy"] = res[4].split(" ")
 		
 		self.input = {}
 		self.output = {}
