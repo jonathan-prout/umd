@@ -134,10 +134,10 @@ def main(loop, test = None):
 		while 1:
 			try:
 				for i in mul.lookuptable.keys():
-                                	for x in getStatusMesage(i, mul.host).__iter__(): print x
+					for x in getStatusMesage(i, mul.host).__iter__(): print x
 					mul.put(getStatusMesage(i, mul.host))
-                        	mul.refresh()
-                        	time.sleep(1)
+				mul.refresh()
+				time.sleep(1)
 				gv.display_server_status = "Running"
 
 			except KeyboardInterrupt:
@@ -285,32 +285,32 @@ def getStatusMesage(mvInput, mvHost):
 		#print res
 		if all((pollstatus in happyStatuses, displayStatus in happyStatuses)):
 			try:
-                                if gv.equip[int(res["equipment"])] is not None:
-                                        tlOK = True
-                                else:
-                                        tlOK = False
-                                e = None
-                        except Exception, e:
-                                tlOK = False
-                        if all((int(res["strategy"]) == int(inputStrategies.equip), tlOK )):
-					sm = gv.equip[res["equipment"]].getStatusMessage()
-					assert sm is not None
-			elif res["strategy"] == inputStrategies.matrix:
-				mtxIn = gv.mtxLookup(res["inputmtxname"])
-				if gv.getEquipByName(mtxIn):
-					sm = gv.equip[gv.getEquipByName(mtxIn)].getStatusMessage()
-					assert sm is not None
-				else:
-					sm = labelmodel.matrixResult(mtxIn).getStatusMessage()
-					assert sm is not None
-			elif res["strategy"] == inputStrategies.indirect:
-				sm = labelmodel.matrixResult(res["inputmtxname"]).getStatusMessage()
-				assert sm is not None
-			elif res["strategy"] == inputStrategies.label:
-				if res["customlabel1"]:
-					sm.topLabel = res["customlabel1"]
-				if res["customlabel2"]:
-					sm.bottomLabel = res["customlabel2"]
+								if gv.equip[int(res["equipment"])] is not None:
+									tlOK = True
+								else:
+									tlOK = False
+								e = None
+			except Exception, e:
+					tlOK = False
+					if all((int(res["strategy"]) == int(inputStrategies.equip), tlOK )):
+						sm = gv.equip[res["equipment"]].getStatusMessage()
+						assert sm is not None
+					elif res["strategy"] == inputStrategies.matrix:
+						mtxIn = gv.mtxLookup(res["inputmtxname"])
+						if gv.getEquipByName(mtxIn):
+							sm = gv.equip[gv.getEquipByName(mtxIn)].getStatusMessage()
+							assert sm is not None
+						else:
+							sm = labelmodel.matrixResult(mtxIn).getStatusMessage()
+							assert sm is not None
+					elif res["strategy"] == inputStrategies.indirect:
+						sm = labelmodel.matrixResult(res["inputmtxname"]).getStatusMessage()
+						assert sm is not None
+					elif res["strategy"] == inputStrategies.label:
+						if res["customlabel1"]:
+							sm.topLabel = res["customlabel1"]
+						if res["customlabel2"]:
+							sm.bottomLabel = res["customlabel2"]
 		else:
 			try: 
 				if gv.equip[int(res["equipment"])] is not None:
