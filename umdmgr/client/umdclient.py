@@ -111,20 +111,37 @@ def main(loop, test = None):
 	res = gv.sql.qselect(cmd)
 	if test:
 		mul = multiviewer.generic.testmultiviewer(test)
+		
 		for line in res:
 			if line[ d["IP"]] == test:
 					break
 		else:
 			print "'%s' not in the multiviewer table"%test
 			return
+		mul = multiviewer.generic.testmultiviewer(line[ d["IP"]])
 		gv.mvID[ line[ d["IP"]]] =  line[ d["id"]]
+		print  getAddresses(line[ d["IP"]])
 		mul.lookuptable = getAddresses(line[ d["IP"]])
+		"""
 		gv.mv[line[ d["IP"]]] = mul 
 		bg = mvThread(threadcounter, line[d["Name"]], threadcounter, gv.mv[line[ d["IP"]]]) #put multivier in thread
 		bg.daemon = True
 		gv.threads.append(bg)
 		bg.start()
 		threadcounter += 1
+		"""
+		print "Started test"
+		while 1:
+			try:
+				for i in mul.lookuptable.keys():
+                                	for x in getStatusMesage(i, mul.host).__iter__(): print x
+					mul.put(getStatusMesage(i, mul.host))
+                        	mul.refresh()
+                        	time.sleep(1)
+				gv.display_server_status = "Running"
+
+			except KeyboardInterrupt:
+				return
 	else:
 
 		for line in res:
@@ -204,7 +221,7 @@ def getAddresses(ip):
 def getdb():
 	#	request = "SELECT s.servicename,s.aspectratio,s.ebno,s.pol,s.castatus, e.matrixname,e.labeladdr2,e.kaleidoaddr,e.labeladdr,e.labelnamestatic,s.framerate FROM equipment e, status s WHERE e.id = s.id"
 	with gv.equipDBLock:
-		print "getdb"
+		
 	
 		request = "SELECT "
 		commands = labelmodel.irdResult.commands
@@ -264,6 +281,8 @@ def getStatusMesage(mvInput, mvHost):
 		cmd += "WHERE ((`mv_input`.`multiviewer` =%d) AND (`mv_input`.`input` =%d))"%(gv.mvID[mvHost],mvInput)
 		
 		res = dict(zip(fields, gv.sql.qselect(cmd)[0]))
+		#print cmd
+		#print res
 		if all((pollstatus in happyStatuses, displayStatus in happyStatuses)):
 			try:
                                 if gv.equip[int(res["equipment"])] is not None:
@@ -275,14 +294,18 @@ def getStatusMesage(mvInput, mvHost):
                                 tlOK = False
                         if all((int(res["strategy"]) == int(inputStrategies.equip), tlOK )):
 					sm = gv.equip[res["equipment"]].getStatusMessage()
+					assert sm is not None
 			elif res["strategy"] == inputStrategies.matrix:
 				mtxIn = gv.mtxLookup(res["inputmtxname"])
 				if gv.getEquipByName(mtxIn):
-					sm = gv.equip[gv.getEquipByName()].getStatusMessage()
+					sm = gv.equip[gv.getEquipByName(mtxIn)].getStatusMessage()
+					assert sm is not None
 				else:
 					sm = labelmodel.matrixResult(mtxIn).getStatusMessage()
+					assert sm is not None
 			elif res["strategy"] == inputStrategies.indirect:
 				sm = labelmodel.matrixResult(res["inputmtxname"]).getStatusMessage()
+				assert sm is not None
 			elif res["strategy"] == inputStrategies.label:
 				if res["customlabel1"]:
 					sm.topLabel = res["customlabel1"]
@@ -311,6 +334,8 @@ def getStatusMesage(mvInput, mvHost):
 				sm.bottomLabel = " "
 			if mvInput %16 == 1:
 				sm.bottomLabel = "Display: %s, Polling:%s"%(displayStatus, pollstatus)
+		
+			
 		sm.mv_input = mvInput
 	
 	return sm
@@ -349,18 +374,25 @@ class mvThread (threading.Thread):
         #print "Starting " + self.name
         mvrefresh(self.instance, self.name)
         #print "Exiting " + self.name
+
+
+def dbrefresh():
+        while not gv.threadTerminationFlag:
+                getdb()
+                time.sleep(1)
+
+
+
+
 class dbThread(mvThread):
 	def run(self):
 		dbrefresh()
-		
-def dbrefresh():            
-	while not gv.threadTerminationFlag:
-		getdb()
-		time.sleep(1)
+
 
 def mvrefresh(myInstance, name):            
+	
 	while not gv.threadTerminationFlag:
-		
+		print "mvrefr"
 		if myInstance.get_offline():
 			
 			gv.sql.qselect('UPDATE `Multiviewer` SET `status` = "OFFLINE" WHERE `IP` = "%s";'%myInstance.host)

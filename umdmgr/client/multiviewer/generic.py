@@ -139,6 +139,7 @@ class testmultiviewer(multiviewer):
             self.lookuptable[i] = d
     def refresh(self):
         vi = {}
+	print "refresh"
         while not self.q.empty():
             if self.fullref:
                 break
@@ -154,7 +155,8 @@ class testmultiviewer(multiviewer):
                         if not vi.has_key[videoInput]:
                             vi[videoInput] = {}
                         vi[videoInput][level] = line
-        if self.fullref:
+        print vi
+	if self.fullref:
                 self.qtruncate()
         fbuffer = ['<HTML><HEAD></HEAD><BODY><table border="0"width="100%"><tr>']
         i = 0
@@ -167,6 +169,7 @@ class testmultiviewer(multiviewer):
             for k,v in vi[key].iteritems():
                 line += "%s:%s<br>"%(k,v)
             line +="</td>"
+            i += 1	
             if i == 4:
                 line += "</tr>"
                 fbuffer.append(line)
@@ -179,3 +182,5 @@ class testmultiviewer(multiviewer):
         with open("/var/www/umd/umdtest%s.html"%self.host, "w") as fobj:
             fobj.write("\n".join(fbuffer))
         
+	def get_offline(self):
+		return False

@@ -63,6 +63,7 @@ class matrixResult(object):
 		sm.recAlarm = False
 		sm.topLabel = self.getTopLabel()
 		sm.boottomLabel = self.getBottomLabel()
+		return sm
 	
 
 class irdResult(object):
@@ -88,15 +89,17 @@ class irdResult(object):
 				 self.res = dict(zip(self.commands,res))
 
 		else:
-			refresh()
+			self.refresh()
 		self.cmap = {}
 		for x in range(len(self.commands)):
 			self.cmap[self.commands[x]] = x
 	
 	def refresh(self):
 		request = "SELECT " + ",".join(self.commands) + " FROM equipment e, status s WHERE e.id = s.id AND e.id = '%d'"%self.equipmentID
-		self.res = dict(zip(self.commands,gv.sql.qselect(request)[0]))
-	
+		try:
+			self.res = dict(zip(self.commands,gv.sql.qselect(request)[0]))
+		except:
+			self.res = {}
 	def getKey(self,k):
 		try:
 			return self.res[k]
@@ -211,6 +214,8 @@ class irdResult(object):
 		if self.remove_hz:
 			framerate = framerate.replace("Hz","")
 		return cast(float ,framerate)
+	def getca(self):
+		return self.getKey("s.castatus")
 	def getTopLabel(self):
 		if self.getOnline():
 			
@@ -227,7 +232,7 @@ class irdResult(object):
 					else:
 						toplabeltext = self.isCalled() + " " + bitratestring + ""  + "| " + self.getServiceName()
 				else: #no input
-					toplabeltext = self.isCalled() + " " + self.getChannel() + "" + dvbmode
+					toplabeltext = self.isCalled() + " " + self.getChannel() + "" + self.getModScheme()
 
 			else: # Channel missing and service running
 				if self.getLock():
@@ -248,26 +253,26 @@ class irdResult(object):
 						bottomumd +=  "%d/%f"%(vres,self.getFramerate())
 					else:
 						if self.getKey("s.aspectratio") != "":
-							sd = str(vres)
+							SD = str(vres)
 							if SD != "":
 								bottomumd +=   SD[0] + "_"+self.getKey("s.aspectratio")
 							else:
 								bottomumd += self.getKey("s.aspectratio")
 						else:
-							bottomumd +=   SD
-					if self.demod():
+							bottomumd +=   str(vres)
+					if self.getDemod():
 						src = self.getKeyFromDemod("e.labelnamestatic")
 					else:
 						src = self.getMatrixInput()
 					if src:
-						bottomumd += " %s:src "%(self.getInput()[0], src)
+						bottomumd += " %s:%s "%(self.getInput()[0], src)
 					else:
 						if self.getInput() != "SAT":
 							bottomumd += " %s "%self.getInput()
 					if self.getInput() == "SAT":
 						bottomumd += " %0.1fdB "%self.getCN()
 					
-					bottomumd +=  "/" + text1 + " " + biss_status_text(rx["s.castatus"]) 
+					bottomumd +=  "/" +  " " + self.getca() 
 					
 					
 					
@@ -278,7 +283,7 @@ class irdResult(object):
 					
 					
 				else: #IF No lock, we write "NO LOCK" at the bottom
-					if self.demod():
+					if self.getDemod():
 						src = self.getKeyFromDemod("e.labelnamestatic")
 					else:
 						src = self.getMatrixInput()
@@ -300,3 +305,4 @@ class irdResult(object):
 		sm.topLabel = self.getTopLabel()
 		sm.boottomLabel = self.getBottomLabel()
 	
+		return sm

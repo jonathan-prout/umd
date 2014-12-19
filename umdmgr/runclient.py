@@ -24,7 +24,7 @@ if __name__ == '__main__':
 	try:                                
 		opts, args = getopt.getopt(sys.argv[1:], "vlet:", ["verbose", "loop", "errors", "test"]) 
 	except getopt.GetoptError, errr:
-		print str(err)	
+			
 		print "error in arguments"
 		usage()                          
 		sys.exit(2) 
