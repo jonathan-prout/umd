@@ -152,7 +152,7 @@ class testmultiviewer(multiviewer):
                 for videoInput, level, line, mode in sm:
                     if not line: line = ""
                     if not self.get_offline():
-                        if not vi.has_key[videoInput]:
+                        if not vi.has_key(videoInput):
                             vi[videoInput] = {}
                         vi[videoInput][level] = line
         print vi
@@ -165,7 +165,7 @@ class testmultiviewer(multiviewer):
             if i == 4: i = 0
             if i == 0:
                 line += "<tr>"
-            line += "<td> input %s<br>"
+            line += "<td> input %s<br>"%key
             for k,v in vi[key].iteritems():
                 line += "%s:%s<br>"%(k,v)
             line +="</td>"
