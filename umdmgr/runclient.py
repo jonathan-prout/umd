@@ -22,7 +22,7 @@ if __name__ == '__main__':
 	gv.sql = sql
 	gv.display_server_status = "Starting"
 	try:                                
-		opts, args = getopt.getopt(sys.argv[1:], "vle", ["verbose", "loop", "errors"]) 
+		opts, args = getopt.getopt(sys.argv[1:], "vlet:", ["verbose", "loop", "errors", "test"]) 
 	except getopt.GetoptError, errr:
 		print str(err)	
 		print "error in arguments"
@@ -30,7 +30,7 @@ if __name__ == '__main__':
 		sys.exit(2) 
 	#verbose = False
 	loop = False
-	
+	test = None
 	for opt, arg in  opts:
 	
 		if opt in ("-v", "--verbose"):
@@ -38,6 +38,8 @@ if __name__ == '__main__':
 			gv.loud = True
 		elif opt in ("-l", "--loop"):
 			loop = True
+		elif opt in ("-t", "--test"):
+			test = arg
 		elif opt in ("-e", "--errors"):
 			errors_in_stdout = True
 		else:
@@ -53,7 +55,7 @@ if __name__ == '__main__':
 	now = datetime.datetime.now()
 	if gv.loud:
 		print "starting " + now.strftime("%d-%m-%Y %H:%M:%S")
-	umdclient.main(loop)
+	umdclient.main(loop, test)
 	now = datetime.datetime.now()
 	if gv.loud:
 		print "Done " + now.strftime("%d-%m-%Y %H:%M:%S")

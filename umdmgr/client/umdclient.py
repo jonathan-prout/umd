@@ -76,7 +76,7 @@ def getPollStatus():
 	pollstatus = gv.sql.qselect(cmd)[0][0]
 	return pollstatus
 
-def main(loop):
+def main(loop, test = None):
 	#global gv.sql
 	now = datetime.datetime.now()
 	umdServerRunning = False
@@ -89,10 +89,6 @@ def main(loop):
 	global threads
 	threads = []
 	
-	cmd = "SELECT `id`,`Name`,`IP`,`Protocol` FROM `Multiviewer` "
-	d = {"id":0,"Name":1,"IP":2,"Protocol":3}
-	res = gv.sql.qselect(cmd)
-	threadcounter = 0
 	matrixCapabilites = ["SDI", "ASI", "LBAND", "IP"]
 	for k in matrixCapabilites:
 		gv.matrixCapabilities[k] = []
@@ -103,23 +99,44 @@ def main(loop):
 		for k in matrixCapabilites:
 			if k in mtx.prefsDict["capabilitiy"]:
 				gv.matrixCapabilities[k].append(mtx)
-	# Get multiviewers
+	
+	threadcounter = 0
 	bg = dbThread(threadcounter, "database thread", threadcounter, None)
-        bg.daemon = True
-        gv.threads.append(bg)
-        bg.start()
-        threadcounter += 1
-
-	for line in res:
-		mul = getMultiviewer(line[ d["Protocol"]], line[ d["IP"]]) # returns mv instance
+	bg.daemon = True
+	gv.threads.append(bg)
+	bg.start()
+	threadcounter += 1
+	cmd = "SELECT `id`,`Name`,`IP`,`Protocol` FROM `Multiviewer` "
+	d = {"id":0,"Name":1,"IP":2,"Protocol":3}
+	res = gv.sql.qselect(cmd)
+	if test:
+		mul = multiviewer.generic.testmultiviewer(test)
+		for line in res:
+			if line[ d["IP"]] == test:
+					break
+		else:
+			print "'%s' not in the multiviewer table"%test
+			return
 		gv.mvID[ line[ d["IP"]]] =  line[ d["id"]]
-		mul.lookuptable = getAddresses(line[ d["IP"]]) #multiviewer input table
+		mul.lookuptable = getAddresses(line[ d["IP"]])
 		gv.mv[line[ d["IP"]]] = mul 
 		bg = mvThread(threadcounter, line[d["Name"]], threadcounter, gv.mv[line[ d["IP"]]]) #put multivier in thread
 		bg.daemon = True
 		gv.threads.append(bg)
 		bg.start()
 		threadcounter += 1
+	else:
+
+		for line in res:
+			mul = getMultiviewer(line[ d["Protocol"]], line[ d["IP"]]) # returns mv instance
+			gv.mvID[ line[ d["IP"]]] =  line[ d["id"]]
+			mul.lookuptable = getAddresses(line[ d["IP"]]) #multiviewer input table
+			gv.mv[line[ d["IP"]]] = mul 
+			bg = mvThread(threadcounter, line[d["Name"]], threadcounter, gv.mv[line[ d["IP"]]]) #put multivier in thread
+			bg.daemon = True
+			gv.threads.append(bg)
+			bg.start()
+			threadcounter += 1
 		
 	print "Now starting main loop press ctrl c to quit"
 	gv.display_server_status = "Running"
@@ -318,6 +335,7 @@ def getMultiviewer(mvType, host):
 	else: #Harris/Zandar
 	    print "Starting Harris" 
 	    return multiviewer.harris.zprotocol(host)
+
 
 
 class mvThread (threading.Thread):
