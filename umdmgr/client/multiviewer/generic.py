@@ -156,31 +156,31 @@ class testmultiviewer(multiviewer):
                             vi[videoInput] = {}
                         vi[videoInput][level] = line
         print vi
-    if self.fullref:
-                self.qtruncate()
-    fbuffer = ['<HTML><HEAD></HEAD><BODY><table border="0"width="100%"><tr>']
-    i = 0
-    line = ""
-    for key in vi.keys():
-        if i == 4: i = 0
-        if i == 0:
-            line += "<tr>"
-        line += "<td> input %s<br>"
-        for k,v in vi[key].iteritems():
-            line += "%s:%s<br>"%(k,v)
-        line +="</td>"
-        i += 1	
-        if i == 4:
-            line += "</tr>"
+        if self.fullref:
+                    self.qtruncate()
+        fbuffer = ['<HTML><HEAD></HEAD><BODY><table border="0"width="100%"><tr>']
+        i = 0
+        line = ""
+        for key in vi.keys():
+            if i == 4: i = 0
+            if i == 0:
+                line += "<tr>"
+            line += "<td> input %s<br>"
+            for k,v in vi[key].iteritems():
+                line += "%s:%s<br>"%(k,v)
+            line +="</td>"
+            i += 1	
+            if i == 4:
+                line += "</tr>"
+                fbuffer.append(line)
+                line = ""
             fbuffer.append(line)
-            line = ""
-        fbuffer.append(line)
-    fbuffer.append("""</tr>
-                </table>
-                </body>
-                </html>""")
-    with open("/var/www/umd/umdtest%s.html"%self.host, "w") as fobj:
-        fobj.write("\n".join(fbuffer))
+        fbuffer.append("""</tr>
+                    </table>
+                    </body>
+                    </html>""")
+        with open("/var/www/umd/umdtest%s.html"%self.host, "w") as fobj:
+            fobj.write("\n".join(fbuffer))
         
     def get_offline(self):
         return False
