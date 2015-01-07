@@ -117,6 +117,7 @@ class telnet_multiviewer(multiviewer):
 
 
 class testmultiviewer(multiviewer):
+    lookuptable = {}
     def __init__(self, host):
         self.mv_type = "test"
         
@@ -139,6 +140,8 @@ class testmultiviewer(multiviewer):
             self.lookuptable[i] = d
     def refresh(self):
         vi = {}
+        for v in self.lookuptable.values():
+            v["new"] = "False"
         print "refresh"
         while not self.q.empty():
             if self.fullref:
@@ -155,19 +158,22 @@ class testmultiviewer(multiviewer):
                         if not vi.has_key(videoInput):
                             vi[videoInput] = {}
                         vi[videoInput][level] = line
-                vi[videoInput]["strategy"] = sm.strategy
+                    vi[videoInput]["strategy"] = sm.strategy
+                    vi[videoInput]["new"] = "True"
         print vi
+        for k,v in vi.iteritems():
+            self.lookuptable[k] = v
         if self.fullref:
                     self.qtruncate()
         fbuffer = ['<HTML><HEAD></HEAD><BODY><table border="0"width="100%"><tr>']
         i = 0
         line = ""
-        for key in vi.keys():
+        for key in self.lookuptable.keys():
             if i == 4: i = 0
             if i == 0:
                 line += "<tr>"
             line += "<td> input %s<br>"%key
-            for k,v in vi[key].iteritems():
+            for k,v in self.lookuptable[key].iteritems():
                 line += "%s:%s<br>"%(k,v)
                 
             line +="</td>"

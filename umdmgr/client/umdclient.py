@@ -296,6 +296,7 @@ def getStatusMesage(mvInput, mvHost):
 			if all((int(res["strategy"]) == int(inputStrategies.equip), tlOK )):
 				sm = gv.equip[res["equipment"]].getStatusMessage()
 				assert sm is not None
+				sm.strategy = "equip"
 			elif res["strategy"] == inputStrategies.matrix:
 				mtxIn = gv.mtxLookup(res["inputmtxname"])
 				if gv.getEquipByName(mtxIn):
@@ -328,15 +329,18 @@ def getStatusMesage(mvInput, mvHost):
 			if all((int(res["strategy"]) == int(inputStrategies.equip), tlOK )):
 					sm.topLabel = gv.equip[int(res["equipment"])].isCalled()
 					sm.bottomLabel = " "
+					sm.strategy = "equip"
 			elif res["strategy"] == inputStrategies.label:
 				if res["customlabel1"]:
 					sm.topLabel = res["customlabel1"]
 				if res["customlabel2"]:
 					sm.bottomLabel = res["customlabel2"]
+				sm.strategy = "label"
 			else:
 				sm.topLabel = res["inputmtxname"]
 				#sm.bottomLabel = "%s, %s %s,%s"%(res["equipment"],len(gv.equip.keys()),e, int(res["strategy"]) )
 				sm.bottomLabel = " "
+				sm.strategy = "matrix"
 			if mvInput %16 == 1:
 				sm.bottomLabel = "Display: %s, Polling:%s"%(displayStatus, pollstatus)
 		
