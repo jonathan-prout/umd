@@ -53,6 +53,7 @@ class matrixResult(object):
 			toplabel = "%s > %s"%(src, self.name)
 		else:
 			toplabel = "%s"%self.name
+		return toplabel
 	
 	def getBottomLabel(self):
 		return " "		
@@ -84,7 +85,7 @@ class irdResult(object):
 			if isinstance(res, dict):
 				self.res = res
 			elif isinstance(res[0], dict):
-                                self.res = res[0]
+					self.res = res[0]
 			elif isinstance(res, tuple):
 				 self.res = dict(zip(self.commands,res))
 
@@ -244,54 +245,54 @@ class irdResult(object):
 		return toplabeltext.replace("\n","")
 	
 	def getBottomLabel(self):
-			if self.getOnline():
-				if self.getLock():
-					bottomumd = ""
-					vres = self.getVideoResolution()
-					HD = vres >= 720
-					if (HD == True):
-						bottomumd +=  "%d/%f"%(vres,self.getFramerate())
-					else:
-						if self.getKey("s.aspectratio") != "":
-							SD = str(vres)
-							if SD != "":
-								bottomumd +=   SD[0] + "_"+self.getKey("s.aspectratio")
-							else:
-								bottomumd += self.getKey("s.aspectratio")
+		if self.getOnline():
+			if self.getLock():
+				bottomumd = ""
+				vres = self.getVideoResolution()
+				HD = vres >= 720
+				if (HD == True):
+					bottomumd +=  "%d/%f"%(vres,self.getFramerate())
+				else:
+					if self.getKey("s.aspectratio") != "":
+						SD = str(vres)
+						if SD != "":
+							bottomumd +=   SD[0] + "_"+self.getKey("s.aspectratio")
 						else:
-							bottomumd +=   str(vres)
-					if self.getDemod():
-						src = self.getKeyFromDemod("e.labelnamestatic")
+							bottomumd += self.getKey("s.aspectratio")
 					else:
-						src = self.getMatrixInput()
-					if src:
-						bottomumd += " %s:%s "%(self.getInput()[0], src)
-					else:
-						if self.getInput() != "SAT":
-							bottomumd += " %s "%self.getInput()
-					if self.getInput() == "SAT":
-						bottomumd += " %0.1fdB "%self.getCN()
-					
-					bottomumd +=  "/" +  " " + self.getca() 
-					
-					
-					
-					#sendumd += "<setKDynamicText>set address=\""+rx["e.rx["e.labeladdr"]2"]+"\" text=\""+res[i][5]+" "+res[i][1]
-					"""sendumd = sendumd + " " + res[i][2] + " " + res[i][3]+" Biss:"+res[i][4]+" "+res[i][10]+"\"</setKDynamicText>\n" """
-					#sendumd = sendumd + " / " + res[i][2] + " " +" BS:"+res[i][4]+" "+res[i][10]+"\"</setKDynamicText>\n"
-											# sendumd = sendumd + " / " + res[i][2] + " " +" BS:"+res[i][4]+" "+res[i][10]+"\"</setKDynamicText>\n"
-					
-					
-				else: #IF No lock, we write "NO LOCK" at the bottom
-					if self.getDemod():
-						src = self.getKeyFromDemod("e.labelnamestatic")
-					else:
-						src = self.getMatrixInput()
-					if not src: src = ""
-					bottomumd = "%s:%s NO LOCK"%(self.getInput(), src)
-			else:	
-				bottomumd="OFFLINE"
-			return bottomumd.replace("\n","")
+						bottomumd +=   str(vres)
+				if self.getDemod():
+					src = self.getKeyFromDemod("e.labelnamestatic")
+				else:
+					src = self.getMatrixInput()
+				if src:
+					bottomumd += " %s:%s "%(self.getInput()[0], src)
+				else:
+					if self.getInput() != "SAT":
+						bottomumd += " %s "%self.getInput()
+				if self.getInput() == "SAT":
+					bottomumd += " %0.1fdB "%self.getCN()
+				
+				bottomumd +=  "/" +  " " + self.getca() 
+				
+				
+				
+				#sendumd += "<setKDynamicText>set address=\""+rx["e.rx["e.labeladdr"]2"]+"\" text=\""+res[i][5]+" "+res[i][1]
+				"""sendumd = sendumd + " " + res[i][2] + " " + res[i][3]+" Biss:"+res[i][4]+" "+res[i][10]+"\"</setKDynamicText>\n" """
+				#sendumd = sendumd + " / " + res[i][2] + " " +" BS:"+res[i][4]+" "+res[i][10]+"\"</setKDynamicText>\n"
+										# sendumd = sendumd + " / " + res[i][2] + " " +" BS:"+res[i][4]+" "+res[i][10]+"\"</setKDynamicText>\n"
+				
+				
+			else: #IF No lock, we write "NO LOCK" at the bottom
+				if self.getDemod():
+					src = self.getKeyFromDemod("e.labelnamestatic")
+				else:
+					src = self.getMatrixInput()
+				if not src: src = ""
+				bottomumd = "%s:%s NO LOCK"%(self.getInput(), src)
+		else:	
+			bottomumd="OFFLINE"
+		return bottomumd.replace("\n","")
 		
 	def getStatusMessage(self):
 		sm = status_message()
