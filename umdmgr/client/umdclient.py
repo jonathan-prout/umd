@@ -292,25 +292,25 @@ def getStatusMesage(mvInput, mvHost):
 								e = None
 			except Exception, e:
 					tlOK = False
-					if all((int(res["strategy"]) == int(inputStrategies.equip), tlOK )):
-						sm = gv.equip[res["equipment"]].getStatusMessage()
-						assert sm is not None
-					elif res["strategy"] == inputStrategies.matrix:
-						mtxIn = gv.mtxLookup(res["inputmtxname"])
-						if gv.getEquipByName(mtxIn):
-							sm = gv.equip[gv.getEquipByName(mtxIn)].getStatusMessage()
-							assert sm is not None
-						else:
-							sm = labelmodel.matrixResult(mtxIn).getStatusMessage()
-							assert sm is not None
-					elif res["strategy"] == inputStrategies.indirect:
-						sm = labelmodel.matrixResult(res["inputmtxname"]).getStatusMessage()
-						assert sm is not None
-					elif res["strategy"] == inputStrategies.label:
-						if res["customlabel1"]:
-							sm.topLabel = res["customlabel1"]
-						if res["customlabel2"]:
-							sm.bottomLabel = res["customlabel2"]
+			if all((int(res["strategy"]) == int(inputStrategies.equip), tlOK )):
+				sm = gv.equip[res["equipment"]].getStatusMessage()
+				assert sm is not None
+			elif res["strategy"] == inputStrategies.matrix:
+				mtxIn = gv.mtxLookup(res["inputmtxname"])
+				if gv.getEquipByName(mtxIn):
+					sm = gv.equip[gv.getEquipByName(mtxIn)].getStatusMessage()
+					assert sm is not None
+				else:
+					sm = labelmodel.matrixResult(mtxIn).getStatusMessage()
+					assert sm is not None
+			elif res["strategy"] == inputStrategies.indirect:
+				sm = labelmodel.matrixResult(res["inputmtxname"]).getStatusMessage()
+				assert sm is not None
+			elif res["strategy"] == inputStrategies.label:
+				if res["customlabel1"]:
+					sm.topLabel = res["customlabel1"]
+				if res["customlabel2"]:
+					sm.bottomLabel = res["customlabel2"]
 		else:
 			try: 
 				if gv.equip[int(res["equipment"])] is not None:

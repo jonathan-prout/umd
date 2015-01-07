@@ -174,7 +174,7 @@ class testmultiviewer(multiviewer):
                 line += "</tr>"
                 fbuffer.append(line)
                 line = ""
-            fbuffer.append(line)
+        fbuffer.append(line)
         fbuffer.append("""</tr>
                     </table>
                     </body>
