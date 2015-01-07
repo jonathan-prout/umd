@@ -266,6 +266,7 @@ def getStatusMesage(mvInput, mvHost):
 		displayStatus = gv.display_server_status.upper()
 		
 		sm = multiviewer.generic.status_message()
+		
 		fields = ["strategy", "equipment", "inputmtxid", "inputmtxname", "customlabel1", "customlabel2"]
 		fn = []
 		cmap = {}
@@ -299,18 +300,22 @@ def getStatusMesage(mvInput, mvHost):
 				mtxIn = gv.mtxLookup(res["inputmtxname"])
 				if gv.getEquipByName(mtxIn):
 					sm = gv.equip[gv.getEquipByName(mtxIn)].getStatusMessage()
+					sm.strategy = "matrix + equip"
 					assert sm is not None
 				else:
 					sm = labelmodel.matrixResult(mtxIn).getStatusMessage()
 					assert sm is not None
+					sm.strategy = "matrix no equip"
 			elif res["strategy"] == inputStrategies.indirect:
 				sm = labelmodel.matrixResult(res["inputmtxname"]).getStatusMessage()
 				assert sm is not None
+				sm.strategy = "indirect"
 			elif res["strategy"] == inputStrategies.label:
 				if res["customlabel1"]:
 					sm.topLabel = res["customlabel1"]
 				if res["customlabel2"]:
 					sm.bottomLabel = res["customlabel2"]
+				sm.strategy = "label"
 		else:
 			try: 
 				if gv.equip[int(res["equipment"])] is not None:

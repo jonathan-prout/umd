@@ -11,15 +11,15 @@ class status_message(object):
     cnAlarm = False
     recAlarm = False
     mv_input = -1
-    
+    strategy = "NoStrategy"
     alarmMode = 1
     textMode = 0
     def __iter__(self):
         """ we pack this class into a list and call the list's iterator """
         """ Each item is a tuple of videoInput, level, line, mode"""
-        level = ["TOP", "BOTTOM", "C/N", "REC"]
-        line = [self.topLabel, self.bottomLabel, self.cnAlarm, self.recAlarm]
-        mode = [self.textMode, self.textMode, self.alarmMode, self.alarmMode ]
+        level = ["TOP",         "BOTTOM",           "C/N",              "REC"]
+        line = [self.topLabel,  self.bottomLabel,   self.cnAlarm,       self.recAlarm]
+        mode = [self.textMode,  self.textMode,      self.alarmMode,     self.alarmMode ]
         msgList = []
         for i in range(4):
             if line[i]:
@@ -145,7 +145,7 @@ class testmultiviewer(multiviewer):
                 break
             sm = self.q.get()
             if sm:
-                print self.host + ": status %s//%s"%(sm.topLabel, sm.bottomLabel)
+                print self.host + ": %s (%s) status %s//%s"%(sm.mv_input, sm.strategy, sm.topLabel, sm.bottomLabel)
                 for alarm in [sm.cnAlarm, sm.recAlarm]:
                     alarm = {True:"MAJOR", False:"DISABLE"}[alarm]
                     
@@ -155,6 +155,7 @@ class testmultiviewer(multiviewer):
                         if not vi.has_key(videoInput):
                             vi[videoInput] = {}
                         vi[videoInput][level] = line
+                vi[videoInput]["strategy"] = sm.strategy
         print vi
         if self.fullref:
                     self.qtruncate()
@@ -168,6 +169,7 @@ class testmultiviewer(multiviewer):
             line += "<td> input %s<br>"%key
             for k,v in vi[key].iteritems():
                 line += "%s:%s<br>"%(k,v)
+                
             line +="</td>"
             i += 1	
             if i == 4:
