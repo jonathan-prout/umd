@@ -1,0 +1,33 @@
+
+table, th, td {
+    border: 1px solid black;
+    border-collapse:collapse;
+}
+th, td {
+    padding: 5px;
+}
+p.input {
+    background-color: grey;
+
+	color: grey;
+}
+p.new {
+    background-color: pink;
+
+	color: pink;
+}
+p.TOP {
+    background-color: yellow;
+
+	color: yellow;
+}
+p.BOTTOM {
+    background-color: orange;
+
+	color: orange;
+}
+p.strategy {
+    background-color: #a8a2f2;
+
+	color: #a8a2f2;
+}
