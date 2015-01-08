@@ -165,7 +165,7 @@ class testmultiviewer(multiviewer):
             self.lookuptable[k] = v
         if self.fullref:
                     self.qtruncate()
-        fbuffer = ['<HTML><HEAD><link rel="stylesheet" type="text/css" href="multiviwer.css"></HEAD><BODY><table border="0"width="100%"><tr>']
+        fbuffer = ['<HTML><HEAD><link rel="stylesheet" type="text/css" href="multiviewer.css"></HEAD><BODY><table border="0"width="100%"><tr>']
         i = 0
         line = ""
         for key in self.lookuptable.keys():
@@ -174,7 +174,7 @@ class testmultiviewer(multiviewer):
                 line += "<tr>"
             line += "<td> input %s<br>"%key
             for k,v in self.lookuptable[key].iteritems():
-                line += '<p class="%s>%s:%s</p>'%(k,k,v)
+                line += '<p class="%s">%s:%s</p>'%(k,k,v)
                 
             line +="</td>"
             i += 1	
