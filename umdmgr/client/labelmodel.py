@@ -193,8 +193,9 @@ class irdResult(object):
 		else:
 			src = gv.getEquipByName(self.getMatrixInput())
 			if gv.equip.has_key(src):
-				if gv.equip[src].getInput() == "SAT":
-					return src
+				if not self.isCalled(src): 
+					if gv.equip[src].getInput() == "SAT":
+						return src
 				
 			
 		return 0
@@ -216,7 +217,8 @@ class irdResult(object):
 			framerate = framerate.replace("Hz","")
 		return cast(float ,framerate)
 	def getca(self):
-		return self.getKey("s.castatus")
+		ca = self.getKey("s.castatus")
+		return ca.replace("Off", "CLEAR")
 	def getTopLabel(self):
 		if self.getOnline():
 			
@@ -251,7 +253,7 @@ class irdResult(object):
 				vres = self.getVideoResolution()
 				HD = vres >= 720
 				if (HD == True):
-					bottomumd +=  "%d/%f"%(vres,self.getFramerate())
+					bottomumd +=  "%d/%s"%(vres,self.getFramerate()).replace(".0", "")
 				else:
 					if self.getKey("s.aspectratio") != "":
 						SD = str(vres)
