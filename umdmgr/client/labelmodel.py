@@ -17,6 +17,11 @@ def cast(func, obj):
 			if func == f:
 				return v
 
+def _slice(sequence, index, default = ""):
+	try:
+		return sequence[index]
+	except:
+		return default
 
 def bitrateToStreamcode(muxbitrate):
 	tolerance = float(0.125)
@@ -237,7 +242,7 @@ class irdResult(object):
 					else:
 						toplabeltext = self.isCalled() + " " + bitratestring + ""  + "| " + self.getServiceName()
 				else: #no input
-					toplabeltext = self.isCalled() + " " + self.getChannel() + "" + self.getModScheme()
+					toplabeltext = self.isCalled() + " " + self.getChannel() + "" + ["",self.getModScheme()][any((self.getDemod(), self.getInput == "SAT"))]
 
 			else: # Channel missing and service running
 				if self.getLock():
@@ -261,7 +266,7 @@ class irdResult(object):
 					if self.getKey("s.aspectratio") != "":
 						SD = str(vres)
 						if SD != "":
-							bottomumd +=   SD[0] + "_"+self.getKey("s.aspectratio")
+							bottomumd +=   _slice(SD,0) + "_"+self.getKey("s.aspectratio")
 						else:
 							bottomumd += self.getKey("s.aspectratio")
 					
@@ -274,7 +279,7 @@ class irdResult(object):
 				else:
 					src = self.getMatrixInput()
 				if src:
-					bottomumd += " %s:%s "%(self.getInput()[0], src)
+					bottomumd += " %s:%s "%(_slice(self.getInput(),0), src)
 				else:
 					if self.getInput() != "SAT":
 						bottomumd += " %s "%self.getInput()
