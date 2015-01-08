@@ -32,13 +32,44 @@ class virtualMatrix( mysql, matrix):
 		
 	def refresh(self):
 		with self.lock:
-			self.openPrefs()
-			self.getSizeAndLevels()
+			inout = ((self.input,"input"), (self.output,"output"))
+			for d, table in inout:
+				cmd = 'SELECT `name`,`port`,`level` FROM `%s` WHERE `matrixid` = %d'%(table, self.prefsDict["mtxId"])
+				res = self.qselect(cmd)
+				for row in res:
+					try:
+						name, port, level = row
+						port = int(port) + self.countFrom1
+						level = int(level)
+					except ValueError:
+						continue
+					if level not in d.keys():
+						d[level] = {}
+					d[level][port] = name
+			cmd = "SELECT `status`.`input`, `status`.`output`, `status`.`levels` FROM `status` WHERE (`status`.`matrixid` ={});".format(self.prefsDict["mtxId"])
+			res = self.qselect(cmd)
+			for src, dest, levels in res:
+				for c in levels:
+					level= int(c)
+					xpc = True
+					try:
+						if self.xpointStatus[level][dest + self.countFrom1] == src + self.countFrom1:
+							xpc = False
+					except:
+						pass
+					if xpc:
+						self.onXPointChange( dest, src, level)
 		
 		
-	def onXPointChange(self):
-		pass
-	
+	def onXPointChange(self, dest, src, level):
+		if not self.xpointStatus.has_key(level):
+				self.xpointStatus[level] = {}
+		self.xpointStatus[level][dest + self.countFrom1] = src + self.countFrom1
+		try:
+			print self.name +" %s -> %s"%(self.input[level][src + self.countFrom1],self.output[level][dest + self.countFrom1] )
+		except KeyError:
+			print self.name +" %s -> %s"%(dest + self.countFrom1 ,src + self.countFrom1)
+			
 	def sourceNameFromDestName(self, destName):
 		with self.lock:
 			srcNr = None
