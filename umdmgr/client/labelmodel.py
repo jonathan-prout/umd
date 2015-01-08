@@ -251,7 +251,7 @@ class irdResult(object):
 				vres = self.getVideoResolution()
 				HD = vres >= 720
 				if (HD == True):
-					bottomumd +=  "%d/%f"%(vres,self.getFramerate())
+					bottomumd +=  "%d/%s"%(vres,self.getFramerate())
 				else:
 					if self.getKey("s.aspectratio") != "":
 						SD = str(vres)
