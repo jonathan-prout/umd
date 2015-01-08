@@ -95,7 +95,15 @@ class mysql(generic.IInfoSourceMixIn):
 		for src, dest, levels in res:
 			for c in levels:
 				level= int(c)
-				self.onXPointChange( dest, src, level)
+				#self.onXPointChange( dest, src, level)
+				xpc = True
+				try:
+					if self.xpointStatus[level][dest + self.countFrom1] == src + self.countFrom1:
+						xpc = False
+				except:
+					pass
+				if xpc:
+					self.onXPointChange( dest, src, level)
 				"""
 				if not self.xpointStatus.has_key(level):
 						self.xpointStatus[level] = {}
