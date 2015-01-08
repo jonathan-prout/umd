@@ -63,7 +63,7 @@ class matrixResult(object):
 		sm.cnAlarm = False
 		sm.recAlarm = False
 		sm.topLabel = self.getTopLabel()
-		sm.boottomLabel = self.getBottomLabel()
+		sm.bottomLabel = self.getBottomLabel()
 		return sm
 	
 
@@ -303,8 +303,8 @@ class irdResult(object):
 					all(( cast(bool, self.getKey("s.OmneonRec")), cast(bool, self.getKey("e.doesNotUseGateway")) ))
 					) )
 		
-		sm.topLabel = self.getTopLabel()
+		sm.setTopLabel(self.getTopLabel())
 		assert(self.getBottomLabel() not in [None, ""])
-		sm.boottomLabel = self.getBottomLabel()
+		sm.setBottomLabel(self.getBottomLabel())
 	
 		return sm

@@ -25,8 +25,26 @@ class status_message(object):
             if line[i]:
                 msgList.append( (self.mv_input, level[i], line[i], mode[i] ))
         return msgList.__iter__()
+    
+    def setBottomLabel(self, s):
         
-
+        """
+        if isinstance(s, basestring):
+            self.bottomLabel = s
+        else:
+            raise TypeError("UMD Label should be a string")
+        """
+        self.bottomLabel = str(s)
+    def setTopLabel(self, s):
+        """
+        if isinstance(s, basestring):
+            self.topLabel = s
+        else:
+            raise TypeError("UMD Label should be a string")
+        """
+        self.topLabel = str(s)
+        
+        
 class multiviewer(object):
     """ Base class multiviewers MUST inherit """
     lookuptable = {}
