@@ -297,13 +297,14 @@ class irdResult(object):
 	def getStatusMessage(self):
 		sm = status_message()
 		d = {True:"MAJOR", False:"DISABLE"}
-		cnOK = all((self.getCN()	< 2, self.getCN()	> 0 ))
-		sm.cnAlarm = not cnOK
-		sm.recAlarm = any( (all( (cast(bool, self.getKey("s.OmneonRec")), cast(bool, self.getKey("s.TvipsRec"))) ),
+		cnBad = all((self.getCN()	< 2, self.getCN()	> 0 ))
+		sm.cnAlarm = cnBad
+		sm.recAlarm = not any( (all( (cast(bool, self.getKey("s.OmneonRec")), cast(bool, self.getKey("s.TvipsRec"))) ),
 					all(( cast(bool, self.getKey("s.OmneonRec")), cast(bool, self.getKey("e.doesNotUseGateway")) ))
 					) )
 		
 		sm.topLabel = self.getTopLabel()
+		assert(self.getBottomLabel() not in [None, ""])
 		sm.boottomLabel = self.getBottomLabel()
 	
 		return sm
