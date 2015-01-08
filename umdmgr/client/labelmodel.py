@@ -190,6 +190,8 @@ class irdResult(object):
 				
 				if gv.equip[demod].getOnline():
 					return demod
+		elif self.getInput() == "SAT":
+			return 0
 		else:
 			src = gv.getEquipByName(self.getMatrixInput())
 			if gv.equip.has_key(src):
@@ -224,8 +226,8 @@ class irdResult(object):
 			
 			bitratestring = str( bitrateToStreamcode(self.getBitrate()) )
 				
-									
-			if (len(self.getChannel()) != 0): #Have we found the channel?
+			onSat = any(( self.getDemod(), self.getInput() == "SAT"))						
+			if all(  ( onSat, self.getChannel() != 0)): #Have we found the channel?
 				if self.getLock(): # Channel found and service running
 					if any((self.getInput() == "SAT", self.getDemod())): #NOT ASI
 						rname = self.isCalled().split(" ")[0].replace("RX","")
@@ -253,7 +255,8 @@ class irdResult(object):
 				vres = self.getVideoResolution()
 				HD = vres >= 720
 				if (HD == True):
-					bottomumd +=  "%d/%s"%(vres,self.getFramerate()).replace(".0", "")
+					bottomumd +=  "%d/%s"%(vres,self.getFramerate())
+					bottomumd.replace(".0", "")
 				else:
 					if self.getKey("s.aspectratio") != "":
 						SD = str(vres)
@@ -261,6 +264,9 @@ class irdResult(object):
 							bottomumd +=   SD[0] + "_"+self.getKey("s.aspectratio")
 						else:
 							bottomumd += self.getKey("s.aspectratio")
+					
+					elif vres == 0:
+						bottomumd += "No Video"
 					else:
 						bottomumd +=   str(vres)
 				if self.getDemod():
