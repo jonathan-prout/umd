@@ -139,8 +139,9 @@ class kaleido(telnet_multiviewer):
 			sm = self.q.get()
 			if sm:
 				#print self.host + ": status %s//%s"%(sm.topLabel, sm.bottomLabel)
-				for alarm in [sm.cnAlarm, sm.recAlarm]:
-					alarm = {True:"MAJOR", False:"DISABLE"}[alarm]
+				#for alarm in [sm.cnAlarm, sm.recAlarm]:
+				sm.cnAlarm = {True:"MAJOR", False:"DISABLE"}[sm.cnAlarm]
+				sm.recAlarm = {True:"MAJOR", False:"DISABLE"}[sm.recAlarm]
 					
 				for videoInput, level, line, mode in sm:
 					if not line: line = " "
