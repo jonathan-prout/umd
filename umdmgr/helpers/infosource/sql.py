@@ -95,9 +95,12 @@ class mysql(generic.IInfoSourceMixIn):
 		for src, dest, levels in res:
 			for c in levels:
 				level= int(c)
+				self.onXPointChange( dest, src, level)
+				"""
 				if not self.xpointStatus.has_key(level):
 						self.xpointStatus[level] = {}
-				self.xpointStatus[level][dest + self.countFrom1] = src + self.countFrom1
+				self.xpointStatus[level][dest - self.countFrom1] = src - self.countFrom1
+				"""
 				
 	def qselect(self,sql):
 		""" semaphore & mutex lock to access share database takes sql command as string. Returns list"""

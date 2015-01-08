@@ -28,6 +28,8 @@ class virtualMatrix( mysql, matrix):
 		self.xpointStatus = {}
 		self.prefsDict = {}
 		self.dbConnect()
+		self.openPrefs()
+		self.getSizeAndLevels()
 		self.refresh()
 		
 	def refresh(self):
@@ -64,11 +66,14 @@ class virtualMatrix( mysql, matrix):
 	def onXPointChange(self, dest, src, level):
 		if not self.xpointStatus.has_key(level):
 				self.xpointStatus[level] = {}
-		self.xpointStatus[level][dest + self.countFrom1] = src + self.countFrom1
+		self.xpointStatus[level][dest - self.countFrom1] = src - self.countFrom1
 		try:
 			print self.name +" %s -> %s"%(self.input[level][src + self.countFrom1],self.output[level][dest + self.countFrom1] )
 		except KeyError:
-			print self.name +" %s -> %s"%(dest + self.countFrom1 ,src + self.countFrom1)
+			try:
+				print self.name +" %s -> %s"%(self.input[0][src + self.countFrom1],self.output[0][dest + self.countFrom1] )
+			except:
+				print self.name +" %s -> %s"%(dest + self.countFrom1 ,src + self.countFrom1)
 			
 	def sourceNameFromDestName(self, destName):
 		with self.lock:
