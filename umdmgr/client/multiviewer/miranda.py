@@ -86,12 +86,13 @@ class kaleido(telnet_multiviewer):
 				#print cmd
 				a = self.tel.read_until("<ack/>", self.timeout)
 				if "<ack/>" not in a:
-					self.shout(a)
+					if "<nack/>" in a:
+						self.shout("%s: NACK ERROR in writeline when writing %s"%(self.host,cmd))
+					else:
+						self.shout(a)
 			except:
-				if "<nack/>" in a:
-					self.shout("NACK ERROR in writeline when writing %s"% cmd)
-				else:
-					self.set_offline("writeline, %s, %s "%(line,a) )
+				
+				self.set_offline("writeline, %s, %s "%(line,a) )
 			finally:
 				#signal.alarm(0)          # Disable the alarm
 				pass

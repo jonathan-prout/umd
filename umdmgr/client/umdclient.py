@@ -401,7 +401,7 @@ class dbThread(mvThread):
 def mvrefresh(myInstance, name):            
 	
 	while not gv.threadTerminationFlag:
-		print "mvrefr"
+		#print "mvrefr"
 		if myInstance.get_offline():
 			
 			gv.sql.qselect('UPDATE `Multiviewer` SET `status` = "OFFLINE" WHERE `IP` = "%s";'%myInstance.host)
