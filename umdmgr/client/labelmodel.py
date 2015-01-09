@@ -225,7 +225,10 @@ class irdResult(object):
 		framerate = self.getKey("s.framerate").replace(" ","")
 		if self.remove_hz:
 			framerate = framerate.replace("Hz","")
-		return cast(float ,framerate)
+		n =  cast(float ,framerate)
+		if n == int(n): #return int if whole number float if not
+			n = int(n)
+		return n
 	def getca(self):
 		ca = self.getKey("s.castatus")
 		return ca.replace("Off", "CLEAR")
@@ -264,7 +267,7 @@ class irdResult(object):
 				HD = vres >= 720
 				if (HD == True):
 					bottomumd +=  "%d/%s"%(vres,self.getFramerate())
-					bottomumd.replace(".0", "")
+					#bottomumd = bottomumd.replace(".0", "")
 				else:
 					if self.getKey("s.aspectratio") != "":
 						SD = str(vres)
