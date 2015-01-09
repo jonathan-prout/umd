@@ -189,14 +189,15 @@ class irdResult(object):
 	
 	def getDemod(self):
 		demod = cast(int, self.getKey("e.Demod"))
-		if demod != 0:
+		if self.getInput() == "SAT":
+			return 0
+		elif demod != 0:
 				if not gv.equip.has_key(demod):
 					gv.equip[demod] = irdResult(demod)
 				
 				if gv.equip[demod].getOnline():
 					return demod
-		elif self.getInput() == "SAT":
-			return 0
+		
 		else:
 			src = gv.getEquipByName(self.getMatrixInput())
 			if gv.equip.has_key(src):
