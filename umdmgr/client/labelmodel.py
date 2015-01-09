@@ -285,7 +285,7 @@ class irdResult(object):
 					bottomumd += " %0.1fdB on %s"%(self.getCN(), src)
 				elif self.getMatrixInput():
 					src = self.getMatrixInput()
-					bottomumd += " %s:% "%(_slice(self.getInput(),0), src)
+					bottomumd += " %s:%s "%(_slice(self.getInput(),0), src)
 				else:
 					if self.getInput() != "SAT":
 						bottomumd += " %s "%self.getInput()
