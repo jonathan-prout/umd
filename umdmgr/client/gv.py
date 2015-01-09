@@ -22,10 +22,11 @@ mvID = {}
 
 
 def getEquipByName(name):
-	for k,v in equip.iteritems():
-		if v.isCalled(name):
-			return k
-	
+	if name:
+		for k,v in equip.iteritems():
+			if v.isCalled(name):
+				return k
+		
 	
 	return 0
 

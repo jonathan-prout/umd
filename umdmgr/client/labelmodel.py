@@ -166,6 +166,8 @@ class irdResult(object):
 	def getCN(self):
 		
 		ebno = self.getKeyFromDemod("s.ebno").replace("dB","").strip()
+		ebno = ebno.replace('>','')
+		ebno = ebno.replace('<','')
 		ebno = ebno.replace('"','')
 		ebno = ebno.replace(' ','')
 		ebno = ebno.replace('+','')
@@ -286,6 +288,7 @@ class irdResult(object):
 						bottomumd += " %s "%self.getInput()
 				if self.getInput() == "SAT":
 					bottomumd += " %0.1fdB "%self.getCN()
+					bottomumd.replace(".0","")
 				
 				bottomumd +=  "/" +  " " + self.getca() 
 				
