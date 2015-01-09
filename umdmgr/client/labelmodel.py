@@ -211,7 +211,7 @@ class irdResult(object):
 		return 0
 					
 	def getModScheme(self):
-		dvbmode = self.getKey("s.modulationtype")
+		dvbmode = self.getKeyFromDemod("s.modulationtype")
 		dvbmode = dvbmode.replace("DVB-", "")
 		return dvbmode
 	
@@ -282,9 +282,9 @@ class irdResult(object):
 						bottomumd +=   str(vres)
 				if self.getDemod():
 					src = self.getKeyFromDemod("e.labelnamestatic")
-				else:
+					bottomumd += " %s on %s "%(self.getCN(), src)
+				elif self.getMatrixInput():
 					src = self.getMatrixInput()
-				if src:
 					bottomumd += " %s:%s "%(_slice(self.getInput(),0), src)
 				else:
 					if self.getInput() != "SAT":
