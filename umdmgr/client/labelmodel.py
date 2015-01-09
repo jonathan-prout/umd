@@ -175,7 +175,7 @@ class irdResult(object):
 		
 	
 	def getChannel(self):
-		return self.getKey("s.channel")
+		return self.getKeyFromDemod("s.channel")
 	def getServiceName(self):
 		return self.getKey("s.servicename")
 
