@@ -282,7 +282,7 @@ class irdResult(object):
 						bottomumd +=   str(vres)
 				if self.getDemod():
 					src = self.getKeyFromDemod("e.labelnamestatic")
-					bottomumd += " %s on %s "%(self.getCN(), src)
+					bottomumd += "%0.1fdB on %s "%(self.getCN(), src)
 				elif self.getMatrixInput():
 					src = self.getMatrixInput()
 					bottomumd += " %s:%s "%(_slice(self.getInput(),0), src)
@@ -292,8 +292,8 @@ class irdResult(object):
 				if self.getInput() == "SAT":
 					bottomumd += " %0.1fdB "%self.getCN()
 					bottomumd.replace(".0","")
-				
-				bottomumd +=  "/" +  " " + self.getca() 
+				if self.getca():
+					bottomumd +=  "/" +  " " + self.getca() 
 				
 				
 				
