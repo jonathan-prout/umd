@@ -98,6 +98,10 @@ def start(_id=None):
 	
 	for equipmentID, ip, name, model_id in retrivalList(_id):
 		#print equipmentID, ip, name
+		query = "SELECT `id` from `status` WHERE `status`.`id` ='%d'"%equipmentID
+		if len(gv.sql.qselect(query)) == 0:
+			query = "REPLACE INTO `UMD`.`status` SET `id` ='%d'"%equipmentID
+		gv.sql.qselect(query)
 		for key in simpleTypes.keys():
 		
 			if any( ( ( key in model_id), (key in name) ) ):
