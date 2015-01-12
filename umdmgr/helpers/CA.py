@@ -1,7 +1,7 @@
 """ Ca Types
 
 """
-import gv
+
 
 CATypes = { "CLEAR":"CLEAR",
 		   "Off":"CLEAR",
@@ -17,4 +17,4 @@ def get():
 			CATypes[hex_str] = value
 		except ValueError:
 			continue
-get()
+#get()

@@ -93,15 +93,19 @@ class RX1290(IRD):
 			return 0
 		
 	def getCAStatus(self):
-		key = 'CASID'
-		ca = self.lookup(key)
-		if ca == "":
-			ca = 0
-		try:
-			return hex(int(ca))
-		except TypeError:
+		if self.getBissStatus() == "BISS":
+			return "0x2600"
+		if 	cast(int, self.lookup('castatus')) ==2:
+			
+			ca = self.lookup('CASID')
+			if ca == "":
+				ca = 0
+			try:
+				return hex(int(ca))
+			except TypeError:
+				return "CLEAR"
+		else:
 			return "CLEAR"
-		
 	def getinput_selection(self):
 		d = {"1":"ASI","2":"SAT"}
 		return self.lookup_replace('input_selection ', d)
