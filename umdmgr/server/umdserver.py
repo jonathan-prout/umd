@@ -12,14 +12,16 @@ from helpers import mysql
 errors_in_stdout = False
 
 
+
+
 def retrivalList(_id = None):
 	#global gv.sql
 	globallist = []
 	#request = "select * FROM equipment"
 	if _id:
-		request =  "select id, ip, labelnamestatic FROM equipment WHERE id='%d'"%_id
+		request =  "select id, ip, labelnamestatic, model_id FROM equipment WHERE id='%d'"%_id
 	else:
-		request = "select id, ip, labelnamestatic FROM equipment"
+		request = "select id, ip, labelnamestatic, model_id FROM equipment"
 	
 	return  gv.sql.qselect(request)
 
@@ -83,12 +85,28 @@ def beginthreads():
 def start(_id=None):
 	#Begin background worker threads
 	beginthreads()
+	# Equipment Types 
+	simpleTypes = {
+		"TT1260":equipment.ericsson.TT1260,
+		"RX1290":equipment.ericsson.RX1290,
+		"DR5000":equipment.ateme.DR5000,
+		"TVG420":equipment.tvips.TVG420,
+		"IP Gridport":equipment.omneon.IPGridport,
+		"Rx8200":equipment.ericsson.RX8200,
 	
-
-	for equipmentID, ip, name in retrivalList(_id):
+	}
+	
+	for equipmentID, ip, name, model_id in retrivalList(_id):
 		#print equipmentID, ip, name
-		if name == "IP Gridport": #NOT SNMP
-			newird = equipment.omneon.IPGridport(int(equipmentID), ip, name)
+		query = "SELECT `id` from `status` WHERE `status`.`id` ='%d'"%equipmentID
+		if len(gv.sql.qselect(query)) == 0:
+			query = "REPLACE INTO `UMD`.`status` SET `id` ='%d'"%equipmentID
+		gv.sql.qselect(query)
+		for key in simpleTypes.keys():
+		
+			if any( ( ( key in model_id), (key in name) ) ):
+				newird = simpleTypes[key](int(equipmentID), ip, name)
+				break
 		#elif "NS2000" in name: #Method not supported yet
 		#	newird = equipment_new.NS2000(int(equipmentID), ip, name)
 		else:
@@ -100,39 +118,42 @@ def start(_id=None):
 
 def determine_type(args):
 	t = "ERROR"
+	equipTypeStr = "OFFLINE"
 	equipmentID, autostart = args
 	try: #remove from offline equip list if it's in there
 		gv.offlineEquip.remove(equipmentID)
 	except ValueError:
 		pass
-	try:
-		Type = gv.equipmentDict[equipmentID].determine_type()
-	except:
-		Type = "OFFLINE"
+	if not all( (gv.suppressEquipCheck, (not isinstance(gv.equipmentDict[equipmentID], equipment.generic.GenericIRD ) ) ) ):
+		try:
+			equipTypeStr = gv.equipmentDict[equipmentID].determine_type()
+		except:
+			equipTypeStr = "OFFLINE"
 	
 	ip = gv.equipmentDict[equipmentID].ip
 	
 	name = gv.equipmentDict[equipmentID].name
-	
-	# Equipment Types without subtype
+	# Equipment equipTypeStrs without subtype
 	simpleTypes = {
 		"TT1260":equipment.ericsson.TT1260,
 		"RX1290":equipment.ericsson.RX1290,
 		"DR5000":equipment.ateme.DR5000,
 		"TVG420":equipment.tvips.TVG420,
-		"IP Gridport":equipment.omneon.IPGridport,
+		"IP Gridport":equipment.omneon.IPGridport
 		
 	}
+		
 	
 	for key in simpleTypes.keys():
-		if  key in Type:
+		if  any( ( (key in equipTypeStr), isinstance(gv.equipmentDict[equipmentID], simpleTypes[key]) ) ):
 			newird = simpleTypes[key](equipmentID, ip, name)
 			newird.lastRefreshTime = 0
 			gv.addEquipment(newird)
 			t = key
 			break
-	# Equipment Type with subtype
-	if "Rx8000"in Type:
+		
+	# Equipment equipTypeStr with subtype
+	if any( ( ("Rx8000"in equipTypeStr), isinstance(gv.equipmentDict[equipmentID], equipment.ericsson.RX8200) ) ):
 		newird = equipment.ericsson.RX8200(equipmentID, ip, name)
 		subtype = newird.determine_subtype()
 		if subtype == "RX8200-4RF":
@@ -143,7 +164,7 @@ def determine_type(args):
 		gv.addEquipment(newird)
 		t = "Rx8200"
 		
-	elif "NS2000"in Type:
+	elif  any( ( ("NS2000"in equipTypeStr), isinstance(gv.equipmentDict[equipmentID], equipment.novelsat.NS2000) ) ):
 		newird = equipment.novelsat.NS2000(equipmentID, ip, name)
 		subtype = newird.determine_subtype()
 		if subtype == "NS2000_WEB":
@@ -154,7 +175,7 @@ def determine_type(args):
 		gv.addEquipment(newird)
 		t = "NS2000"
 		
-	elif Type == "OFFLINE":	
+	elif equipTypeStr == "OFFLINE":	
 		t = "OFFLINE"
 		gv.equipmentDict[equipmentID].offline = True
 	query = "UPDATE equipment SET model_id ='%s' WHERE id ='%i'"%(t, equipmentID)
@@ -169,7 +190,7 @@ def determine_type(args):
 	gv.sql.qselect(query)
 	if autostart:
 		if gv.threadJoinFlag == False:
-			if Type != "OFFLINE":
+			if equipTypeStr != "OFFLINE":
 				gv.ThreadCommandQueue.put((refresh, equipmentID))
 
 def refresh(equipmentID):
@@ -318,8 +339,12 @@ def main(debugBreak = False):
 					for item in inactives:
 						if gv.loud:
 							print "Restarting UMD for ID %s" %item
-						if not k in gv.offlineEquip:
-							gv.offlineEquip.append(k)
+						if not item in gv.offlineEquip:
+							gv.offlineEquip.append(item)
+							ip = gv.equipmentDict[item].ip
+							name = gv.equipmentDict[item].name
+							newird = equipment.generic.GenericIRD(int(item), ip, name)
+							gv.addEquipment(newird)
 							gv.offlineQueue.put((determine_type, [item, True]))
 				except TypeError:
 					pass
@@ -340,7 +365,10 @@ def main(debugBreak = False):
 				for k in gv.equipmentDict.keys():
 					if gv.equipmentDict[k].get_offline():
 						if not k in gv.offlineEquip:
-							gv.offlineEquip.append(k)
+							ip = gv.equipmentDict[k].ip
+							name = gv.equipmentDict[k].name
+							newird = equipment.generic.GenericIRD(int(k), ip, name)
+							gv.addEquipment(newird)
 							gv.offlineQueue.put((determine_type, [k, True]))
 					else:
 						gv.ThreadCommandQueue.put((refresh, k))
@@ -454,7 +482,7 @@ def main(debugBreak = False):
 			crashdump()
 		except Exception as e:
 			gv.exceptions.append(e)
-			print "%s Error."%str(e)
+			print "%s: %s."%(e,str(e))
 			crashdump()
 		
 

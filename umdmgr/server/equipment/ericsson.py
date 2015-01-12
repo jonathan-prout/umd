@@ -34,8 +34,8 @@ class TT1260(IRD):
 		return dic
 	"""
 	def updatesql(self):
-		return  "UPDATE status SET status = '%s' , servicename = '%s', aspectratio ='%s', ebno='%s', pol='%s', castatus='%s', videoresolution='%s', framerate='%s',videostate='%s',asioutencrypted='%s',frequency='%s',symbolrate='%s',fec='%s',rolloff='%s',modulationtype='%s',muxbitrate='%s',muxstate='%s', asi='%s', sat_input='%i' WHERE id = %i; " %(self.getStatus(),self.getServiceName(),self.getAspectRatio(),self.getEbno(),self.getPol(),self.getBissStatus(),self.getVResol(),self.getFrameRate(),self.getVState(),self.getAsiOutEncrypted(),self.getinSatSetupSatelliteFreq(),self.getinSatSetupSymbolRate(),self.getinSatSetupFecRate(),self.getinSatSetupRollOff(),self.getinSatSetupModType(),self.getinputTsBitrate(),self.getlockState(),self.getinput_selection(),self.getinSatSetupInputSelect(),self.getId())
-
+		return  "UPDATE status SET status = '%s' , servicename = '%s', aspectratio ='%s', ebno='%s', pol='%s', castatus='%s', videoresolution='%s', framerate='%s',videostate='%s',asioutencrypted='%s',frequency='%s',symbolrate='%s', updated= CURRENT_TIMESTAMP ,fec='%s',rolloff='%s',modulationtype='%s',muxbitrate='%s',muxstate='%s', asi='%s', sat_input='%i' WHERE id = %i; " %(self.getStatus(),self.getServiceName(),self.getAspectRatio(),self.getEbno(),self.getPol(),self.getBissStatus(),self.getVResol(),self.getFrameRate(),self.getVState(),self.getAsiOutEncrypted(),self.getinSatSetupSatelliteFreq(),self.getinSatSetupSymbolRate(),self.getinSatSetupFecRate(),self.getinSatSetupRollOff(),self.getinSatSetupModType(),self.getinputTsBitrate(),self.getlockState(),self.getinput_selection(),self.getinSatSetupInputSelect(),self.getId())
+	
 	def getinput_selection(self):
 		""" Sat or ASI Different on each"""
 		if self.getinSatSetupSatelliteFreq() == "0":
@@ -74,6 +74,7 @@ class RX1290(IRD):
 		sql += "asi='%s',"% self.getinput_selection()
 		sql += "muxbitrate='%s', "% self.getinputTsBitrate()
 		sql += "muxstate='%s' ,"% self.getlockState()
+		sql += "updated= CURRENT_TIMESTAMP ,"
 		sql += "sat_input='%i'"% self.getinSatSetupInputSelect()
 		sql += "WHERE id = %i; " %self.getId()
 		return sql
@@ -125,6 +126,7 @@ class RX8200(IRD):
 		sql += "asi='%s',"% self.getinput_selection()
 		sql += "muxbitrate='%s', "% self.getinputTsBitrate()
 		sql += "muxstate='%s' ,"% self.getlockState()
+		sql += "updated= CURRENT_TIMESTAMP ,"
 		sql += "sat_input='%i'"% self.getinSatSetupInputSelect()
 		sql += "WHERE id = %i; " %self.getId()
 		return sql

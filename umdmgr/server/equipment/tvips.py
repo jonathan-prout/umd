@@ -40,7 +40,7 @@ class TVG420(plugin_tvips.TVG420):
 				l.append(line)
 			except KeyError:
 				pass
-		return "" + "; ".join(l) + ";"
+		return "" + "; ".join(l) + ";update `status` set `updated`= CURRENT_TIMESTAMP where `id` = %s;"%self.equipmentId
 		
 	def getChannel(self):
 		return "DO 0;" #DO NOTHING 

@@ -43,7 +43,7 @@ class IPGridport(OmneonHelper):
 		for key, val in activeDict.items():
 			line = "update `status` set `OmneonRec` = %s where `id` = %s" %(val, key)
 			l.append(line)
-		return "; ".join(l) + ";"
+		return "; ".join(l) + "; update `status` set `updated`= CURRENT_TIMESTAMP where `id` = %s;"%self.equipmentId
 				
 	def getChannel(self):
 		return "DO 0;" #DO NOTHING 

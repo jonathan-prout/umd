@@ -55,7 +55,7 @@ class NS2000(IRD):
 		sql += "fec='%s',"% self.getinSatSetupFecRate()
 		sql += "rolloff='%s',"% self.getinSatSetupRollOff()
 		sql += "modulationtype='%s',"% self.getinSatSetupModType()
-
+		sql += "updated= CURRENT_TIMESTAMP ,"
 		sql += "muxbitrate='%s', "% self.getinputTsBitrate()
 		sql += "muxstate='%s' "% self.getlockState()
 

@@ -267,6 +267,7 @@ class DR5000(IRD):
 		sql += "sat_input='%i' ,"% self.getinSatSetupInputSelect()
 		sql += "ipinusesvlan='%d' ,"% self.getIPInputUsesVlan()
 		sql += "ipoutencrypted='%s' ,"%self.getIPoutEncrypted()
+		sql += "updated= CURRENT_TIMESTAMP ,"
 		sql += "ipinaddr='%s' "%self.getIPInputAddress()
 		
 		sql += "WHERE id = %i; " %self.getId()

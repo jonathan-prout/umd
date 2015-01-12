@@ -9,10 +9,8 @@ import Queue
 #Project imports 
 from helpers import mysql
 
+sql = None
 
-sql = mysql.mysql()
-sql.semaphore = threading.BoundedSemaphore(value=10)
-sql.mutex = threading.RLock()
 min_refresh_time = 10 #Force 10 seconds between refreshes. Gets overidden by min refresh time parameter on matrix
 
 
@@ -36,7 +34,7 @@ threadJoinFlag = False
 bg_worker_threads =25
 offlineCheckThreads = 2
 parity = "1/1"
-
+suppressEquipCheck = False
 loud = False
 logfile = "/var/www/programming/server/server_log.txt"
 loglock = threading.RLock()

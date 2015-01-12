@@ -3,11 +3,11 @@ import os, re, sys,time,datetime
 import threading, MySQLdb
 
 class mysql:
-	def __init__(self):
-		self.dhost="localhost"
-		self.duser="umd"
-		self.dpass="umd"
-		self.dname="UMD"
+	def __init__(self, dhost="localhost", duser="umd", dpass="umd", dname="UMD"):
+		self.dhost=dhost
+		self.duser=duser
+		self.dpass=dpass
+		self.dname=dname
 		self.db = None
 		self.cursor= None
 		#self.semaphore = None
@@ -24,10 +24,12 @@ class mysql:
 			now = datetime.datetime.now()
 			print "Database error at ", now.strftime("%H:%M:%S")
 			print "Error %d: %s" % (e.args[0], e.args[1])
-			self.db.close()
+			self.close()
 			#sys.exit(1)
 			raise e
+
 		
+
 	def qselect(self,sql):
 		""" semaphore & mutex lock to access share database takes sql command as string. Returns list"""
 		self.semaphore.acquire()
@@ -74,5 +76,10 @@ class mysql:
 		
 	def close(self):
 		#print "Closing database....."
-		self.db.close()
+		try:
+			self.db.close()
+		except AttributeError: pass
+		
+	def __del__(self):
+		self.close()
 
