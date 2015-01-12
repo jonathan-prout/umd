@@ -77,11 +77,12 @@ class irdResult(object):
 	remove_hz = True
 	
 	commands = ["e.id","s.servicename","s.aspectratio","s.ebno","s.pol",
-		    "s.castatus","e.InMTXName","e.OutMTXName",
-		    "s.channel","s.framerate","e.labelnamestatic", 	"e.name",
-		    "s.modulationtype","s.modtype2","s.asi","s.videoresolution",
-		    "e.model_id","s.muxbitrate","s.videostate", "s.status", "s.muxstate", 
-		    "s.OmneonRec", "s.TvipsRec", "e.doesNotUseGateway", "e.Demod"]
+				"s.castatus","e.InMTXName","e.OutMTXName",
+				"s.channel","s.framerate","e.labelnamestatic", 	"e.name",
+				"s.modulationtype","s.modtype2","s.asi","s.videoresolution",
+				"e.model_id","s.muxbitrate","s.videostate", "s.status", "s.muxstate", 
+				"s.OmneonRec", "s.TvipsRec", "e.doesNotUseGateway", "e.Demod"
+				"s.ServiceID", "s.numServices", "s.asioutremux"]
 	
 	
 	def __init__(self, equipmentID, res = None):
@@ -143,7 +144,13 @@ class irdResult(object):
 		
 	def getInput(self):
 		return self.getKey("s.asi")
-		
+	
+	def getServiceID(self):
+		return self.getKey("s.ServiceID")
+	
+	def getNumServices(self):
+		return self.getKey("s.numServices")
+	
 	def getLock(self ):
 		lockstate = True
 		if any((self.res["e.Demod"] != 0 , self.res["s.asi"] == "SAT")):
@@ -244,7 +251,11 @@ class irdResult(object):
 						rname = self.isCalled().split(" ")[0].replace("RX","")
 						toplabeltext = rname + " " + self.getChannel()[0:max(0,(len(self.getChannel())-3))]
 						toplabeltext += " " + bitratestring
-						toplabeltext += "" + self.getModScheme() + "| " + self.getServiceName()
+						toplabeltext += "" + self.getModScheme() + "| "
+						mux = (cast(int, self.getNumServices()) > 1)
+						if mux:
+							toplabeltext += "%s/%s "%(self.getServiceID(),self.getNumServices())
+						toplabeltext += self.getServiceName()
 					else:
 						toplabeltext = self.isCalled() + " " + bitratestring + ""  + "| " + self.getServiceName()
 				else: #no input

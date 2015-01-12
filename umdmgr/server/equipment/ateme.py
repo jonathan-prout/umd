@@ -222,7 +222,7 @@ class DR5000(IRD):
 		return  self.lookupstr("ip input udp port")
 	
 
-	def getNumberServices(self):
+	def getNumServices(self):
 		n = self.lookupstr("numServices")
 		try:
 			n = int(n)
@@ -242,8 +242,8 @@ class DR5000(IRD):
 		if len(self.snmp_res_dict) == 0:
 			self.set_offline()
 		if len(self.oid_getBulk) !=0:
-			if self.getNumberServices(): 
-				self.snmp_res_dict.update( snmp.getbulk(self.bulkoids(), self.ip, self.getNumberServices() ) )
+			if self.getNumServices(): 
+				self.snmp_res_dict.update( snmp.getbulk(self.bulkoids(), self.ip, self.getNumServices() ) )
 	
 	def updatesql(self):
 		sql =  "UPDATE status SET status = '%s' , "% self.getStatus()
