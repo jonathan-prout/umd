@@ -1,5 +1,6 @@
 import gv
 from multiviewer.generic import status_message
+from helpers import CA
 
 defaultCast = [(int, 0),
 			(float, 0.0),
@@ -237,8 +238,13 @@ class irdResult(object):
 			n = int(n)
 		return n
 	def getca(self):
-		ca = self.getKey("s.castatus")
-		return ca.replace("Off", "CLEAR")
+		cas = self.getKey("s.castatus")
+		if CA.CATypes.has_key(cas):
+			cas_str = CA.CATypes[cas]
+			return cas_str
+		else:
+			return "Unknown"
+		
 	def getTopLabel(self):
 		if self.getOnline():
 			

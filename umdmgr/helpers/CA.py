@@ -13,8 +13,8 @@ def get():
 	res = gv.sql.qselect("SELECT  `hex`, `value` FROM `encryption_types` WHERE 1")
 	for line in res:
 		try:
-			hex, value = line
-			CATypes[hex] = value
+			hex_str, value = line
+			CATypes[hex_str] = value
 		except ValueError:
 			continue
 get()
