@@ -91,11 +91,23 @@ class RX1290(IRD):
 			return len(self.snmp_res_dict[key])
 		else:
 			return 0
-		
+	
+	def getDirectorStatus(self):
+		try:
+			return int ( self.lookup("director_encrypted") ) == 2
+		except:
+			return False
 	def getCAStatus(self):
+		try:
+			castatus = int( self.lookup('castatus'))
+		except:
+			castatus = 0
 		if self.getBissStatus() == "BISS":
 			return "0x2600"
-		if 	cast(int, self.lookup('castatus')) ==2:
+		elif self.getDirectorStatus():
+			return "0x1010"
+		
+		elif 	castatus ==2:
 			
 			ca = self.lookup('CASID')
 			if ca == "":
