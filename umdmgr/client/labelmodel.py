@@ -81,7 +81,7 @@ class irdResult(object):
 				"s.channel","s.framerate","e.labelnamestatic", 	"e.name",
 				"s.modulationtype","s.modtype2","s.asi","s.videoresolution",
 				"e.model_id","s.muxbitrate","s.videostate", "s.status", "s.muxstate", 
-				"s.OmneonRec", "s.TvipsRec", "e.doesNotUseGateway", "e.Demod"
+				"s.OmneonRec", "s.TvipsRec", "e.doesNotUseGateway", "e.Demod",
 				"s.ServiceID", "s.numServices", "s.asioutremux"]
 	
 	
