@@ -45,7 +45,7 @@ class DR5000(IRD):
 	
 	def getServiceId(self):
 		try:
-			return int(self.lookupstr('service_id'))
+			return int(self.lookupstr('ServiceID'))
 		except ValueError:
 			return 0
 	
@@ -223,7 +223,7 @@ class DR5000(IRD):
 	
 
 	def getNumberServices(self):
-		n = self.lookupstr("ip input udp port")
+		n = self.lookupstr("numServices")
 		try:
 			n = int(n)
 		except:
@@ -267,6 +267,8 @@ class DR5000(IRD):
 		sql += "sat_input='%i' ,"% self.getinSatSetupInputSelect()
 		sql += "ipinusesvlan='%d' ,"% self.getIPInputUsesVlan()
 		sql += "ipoutencrypted='%s' ,"%self.getIPoutEncrypted()
+		sql += "ServiceID='%s', "%self.getServiceID()
+		sql += "numServices='%s', "%self.getNumServices()
 		sql += "updated= CURRENT_TIMESTAMP ,"
 		sql += "ipinaddr='%s' "%self.getIPInputAddress()
 		

@@ -74,6 +74,8 @@ class RX1290(IRD):
 		sql += "asi='%s',"% self.getinput_selection()
 		sql += "muxbitrate='%s', "% self.getinputTsBitrate()
 		sql += "muxstate='%s' ,"% self.getlockState()
+		sql += "ServiceID='%s', "%self.getServiceID()
+		sql += "numServices='%s', "%self.getNumServices()
 		sql += "updated= CURRENT_TIMESTAMP ,"
 		sql += "sat_input='%i'"% self.getinSatSetupInputSelect()
 		sql += "WHERE id = %i; " %self.getId()
@@ -82,7 +84,14 @@ class RX1290(IRD):
 		key = 'inSatModType'
 		d = {"2":"DVB-S2","1":"DVB-S"}
 		return self.lookup_replace(key, d)
-
+	
+	def getNumServices(self):
+		key = "Table_Service_ID"
+		if self.snmp_res_dict.has_key(key):
+			return len(self.snmp_res_dict[key])
+		else:
+			return 0
+		
 	def getinput_selection(self):
 		d = {"1":"ASI","2":"SAT"}
 		return self.lookup_replace('input_selection ', d)
@@ -105,8 +114,31 @@ class RX8200(IRD):
 		s = self.lookupstr(key) + "000" #kbps to bps
 		return s
 
+	def refresh(self):
+		""" Refresh method of Rx8200 """
+		
+		try:
+			self.snmp_res_dict  = snmp.get(self.getoids(), self.ip)
+		except:
+			self.set_offline()
+		if len(self.snmp_res_dict.keys()) < len(self.getoids().keys()):
+			self.oid_mask()
 
-
+		if len(self.snmp_res_dict) == 0:
+			self.set_offline()
+		if len(self.oid_getBulk) !=0:
+			if self.getNumberServices(): 
+				self.snmp_res_dict.update( snmp.getbulk(self.bulkoids(), self.ip, self.getNumberServices() ) )
+	def getCAStatus(self):
+		key = 'CASID'
+		ca = self.lookup(key)
+		if ca == "":
+			ca = 0
+		try:
+			return hex(int(ca))
+		except TypeError:
+			return "0x0"
+		
 	def updatesql(self):
 		sql =  "UPDATE status SET status = '%s' , "% self.getStatus()
 		sql += "servicename = '%s', "% self.getServiceName()
@@ -126,6 +158,8 @@ class RX8200(IRD):
 		sql += "asi='%s',"% self.getinput_selection()
 		sql += "muxbitrate='%s', "% self.getinputTsBitrate()
 		sql += "muxstate='%s' ,"% self.getlockState()
+		sql += "ServiceID='%s', "%self.getServiceID()
+		sql += "numServices='%s', "%self.getNumServices()
 		sql += "updated= CURRENT_TIMESTAMP ,"
 		sql += "sat_input='%i'"% self.getinSatSetupInputSelect()
 		sql += "WHERE id = %i; " %self.getId()
@@ -182,6 +216,8 @@ class RX8200(IRD):
 			return self.processServiceName(serviceName)
 		except:
 			return ""
+		
+	
 	def getCAStatus(self):
 		
 		try:

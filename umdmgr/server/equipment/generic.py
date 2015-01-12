@@ -448,6 +448,15 @@ class IRD(equipment):
 		return self.lookup_replace('LockState', d)
 			
 	
+	
+	def getServiceID(self):
+		key = 'ServiceID'
+		return self.lookupstr(key)
+	
+	def getNumServices(self):
+		key = 'numServices'
+		return self.lookupstr(key)
+	
 	def set_offline(self):
 			self.offline = True
 			try:
@@ -457,7 +466,7 @@ class IRD(equipment):
 				result = gv.sql.qselect(order)
 			except: pass
 			
-			
+		
 class GenericIRD(IRD):
 	def __init__(self, equipmentId, ip, name):
 		self.equipmentId = equipmentId
