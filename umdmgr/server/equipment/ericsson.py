@@ -154,7 +154,7 @@ class RX8200(IRD):
 			self.set_offline()
 		if len(self.oid_getBulk) !=0:
 			if self.getNumServices(): 
-				self.snmp_res_dict.update( snmp.getbulk(self.bulkoids(), self.ip, self.getNumServices() ) )
+				self.snmp_res_dict.update( snmp.getbulk(self.bulkoids(), self.ip, self.getNumServices() +1  ) )
 	
 		
 	def updatesql(self):
