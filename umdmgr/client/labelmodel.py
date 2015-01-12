@@ -1,6 +1,9 @@
 import gv
 from multiviewer.generic import status_message
 from helpers import CA
+CA.gv = gv
+CA.get()
+
 
 defaultCast = [(int, 0),
 			(float, 0.0),
