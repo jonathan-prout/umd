@@ -95,7 +95,11 @@ class RX1290(IRD):
 	def getCAStatus(self):
 		if self.getBissStatus() == "BISS":
 			return "0x2600"
-		if 	cast(int, self.lookup('castatus')) ==2:
+		try:
+			castatus = int( self.lookup('castatus'))
+		except:
+			castatus = 0
+		if castatus ==2:
 			
 			ca = self.lookup('CASID')
 			if ca == "":
