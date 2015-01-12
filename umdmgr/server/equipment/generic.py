@@ -455,8 +455,10 @@ class IRD(equipment):
 	
 	def getNumServices(self):
 		key = 'numServices'
-		return self.lookupstr(key)
-	
+		try:
+			return int(self.lookup(key))
+		except:
+				return 0
 	def set_offline(self):
 			self.offline = True
 			try:

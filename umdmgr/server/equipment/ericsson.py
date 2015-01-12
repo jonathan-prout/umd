@@ -61,7 +61,7 @@ class RX1290(IRD):
 		sql += "aspectratio ='%s', "% self.getAspectRatio()
 		sql += "ebno='%s', "% self.getEbno()
 		sql += "pol='%s', "% self.getPol()
-		sql += "castatus='%s', "% self.getBissStatus()
+		sql += "castatus='%s', "% self.getCAStatus()
 		sql += "videoresolution='%s', "% self.getVResol()
 		sql += "framerate='%s', "% self.getFrameRate()
 		sql += "videostate='%s',"% self.getVState()
@@ -91,6 +91,16 @@ class RX1290(IRD):
 			return len(self.snmp_res_dict[key])
 		else:
 			return 0
+		
+	def getCAStatus(self):
+		key = 'CASID'
+		ca = self.lookup(key)
+		if ca == "":
+			ca = 0
+		try:
+			return hex(int(ca))
+		except TypeError:
+			return "CLEAR"
 		
 	def getinput_selection(self):
 		d = {"1":"ASI","2":"SAT"}
@@ -127,17 +137,9 @@ class RX8200(IRD):
 		if len(self.snmp_res_dict) == 0:
 			self.set_offline()
 		if len(self.oid_getBulk) !=0:
-			if self.getNumberServices(): 
-				self.snmp_res_dict.update( snmp.getbulk(self.bulkoids(), self.ip, self.getNumberServices() ) )
-	def getCAStatus(self):
-		key = 'CASID'
-		ca = self.lookup(key)
-		if ca == "":
-			ca = 0
-		try:
-			return hex(int(ca))
-		except TypeError:
-			return "0x0"
+			if self.getNumServices(): 
+				self.snmp_res_dict.update( snmp.getbulk(self.bulkoids(), self.ip, self.getNumServices() ) )
+	
 		
 	def updatesql(self):
 		sql =  "UPDATE status SET status = '%s' , "% self.getStatus()
@@ -145,7 +147,7 @@ class RX8200(IRD):
 		sql += "aspectratio ='%s', "% self.getAspectRatio()
 		sql += "ebno='%s', "% self.getEbno()
 		sql += "pol='%s', "% self.getPol()
-		sql += "castatus='%s', "% self.getBissStatus()
+		sql += "castatus='%s', "% self.getCAStatus()
 		sql += "videoresolution='%s', "% self.getVResol()
 		sql += "framerate='%s', "% self.getFrameRate()
 		sql += "videostate='%s',"% self.getVState()
