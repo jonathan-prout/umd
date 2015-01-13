@@ -272,7 +272,11 @@ class irdResult(object):
 
 			else: # Channel missing and service running
 				if self.getLock():
-					toplabeltext = self.isCalled() + " " + bitratestring + ""  + "| " + self.getServiceName()
+					toplabeltext = self.isCalled() + " " + bitratestring + ""  + "| "
+					mux = (cast(int, self.getNumServices()) > 1)
+					if mux:
+						toplabeltext += "%s/%s "%(self.getServiceID(),self.getNumServices())
+					toplabeltext += self.getServiceName()
 				else:
 					toplabeltext = self.isCalled()
 		else:
