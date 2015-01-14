@@ -116,7 +116,8 @@ def getcache( ip, port, addr, cache_max_age='120'):
 	import os
 	string = addr.split("/")
 	cachedir = "cache/"
-	
+	if not os.path.exists(cachedir):
+		os.mkdir(cachedir)
 	cachefile = cachedir + "cachefile." + ip
 	for part in string:
 		cachefile += "."

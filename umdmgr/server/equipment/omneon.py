@@ -23,10 +23,12 @@ class IPGridport(OmneonHelper):
 			
 			
 	def refresh(self):
+		self.get_equipment_ids() #Dynamically update to db changes
 		self.streamDict = self.getrecorders(returnlist="dict") #Refresh list of streams
 		if set( self.addressesbyname.keys() ) != set( self.streamDict.keys() ) : #Only get recorders if really needed
 			owners, ports, multicastaddresses = self.getports()
 			self.addressesbyname = dict(zip(owners, multicastaddresses))
+		self.set_online()
 		
 	def updatesql(self):
 		activeDict = {}
@@ -36,8 +38,8 @@ class IPGridport(OmneonHelper):
 		for key in self.streamDict.keys():
 			try:
 				mca = self.addressesbyname[key]
-				id = self.multicast_id_dict[mca]
-				activeDict[id] = 1
+				_id = self.multicast_id_dict[mca]
+				activeDict[_id] = 1
 			except KeyError:
 				pass
 		for key, val in activeDict.items():
