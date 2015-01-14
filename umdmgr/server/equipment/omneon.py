@@ -51,14 +51,15 @@ class IPGridport(OmneonHelper):
 		return "DO 0;" #DO NOTHING 
 	def getId(self):
 		return self.equipmentId 
-			
+	def set_online(self):
+		self.offline = False			
 	def get_offline(self):
 		return self.offline
 	def set_offline(self):
 		self.offline = True
 		
 	def determine_type(self):
-		import httpcaller
+		#import httpcaller
 		#response, stringfromserver = httpcaller.get(self.ip, '9980', "csvoutput?--login=auto")
 		try:
 			response, stringfromserver = httpcaller.get(self.ip, '9980', "csvoutput?--login=auto")
