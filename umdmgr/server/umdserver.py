@@ -374,13 +374,23 @@ def main(debugBreak = False):
 					print "Joining Queue"
 				gv.threadJoinFlag = True
 				try:
-                                        while 1:
-                                                gv.ThreadCommandQueue.get_nowait() #Truncate Queue
+					while 1:
+						gv.ThreadCommandQueue.get_nowait() #Truncate Queue
 						gv.ThreadCommandQueue.task_done()
-                                except Queue.Empty:
-                                        pass
+				except Queue.Empty:
+					pass
 				gv.ThreadCommandQueue.join()
-				
+				jitter = gv.equipmentDict[equipmentID].refreshjitter
+				jitterlist.append(jitter)
+				"""
+				if gv.loud:
+					print "%s: %s"%(equipmentID, gv.equipmentDict[equipmentID].refreshjitter)
+				"""
+				if float(jitter) > 30:
+					gv.equipmentDict[equipmentID].set_offline()
+					offcount += 1
+				else:
+					oncount += 1
 				for k in gv.equipmentDict.keys():
 					if gv.equipmentDict[k].get_offline():
 						if not k in gv.offlineEquip:
@@ -409,10 +419,19 @@ def main(debugBreak = False):
 						if gv.equipmentDict[equipmentID].get_offline():
 							offcount += 1
 						else:
-							oncount += 1
-							jitterlist.append(gv.equipmentDict[equipmentID].refreshjitter)
+							
+							jitter = gv.equipmentDict[equipmentID].refreshjitter
+							jitterlist.append(jitter)
 							if gv.loud:
 								print "%s: %s"%(equipmentID, gv.equipmentDict[equipmentID].refreshjitter)
+							"""
+							if float(jitter) > 30:
+								gv.equipmentDict[equipmentID].set_offline()
+								offcount += 1
+							else:
+								oncount += 1
+							"""
+							
 					except: pass
 				def avg(L):
 					return float(sum(L)) / len(L)
