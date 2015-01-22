@@ -202,10 +202,14 @@ def refresh(equipmentID):
 		t = 0
 	
 	if not currentEquipment.get_offline():
-		while t > (time.time() - currentEquipment.min_refresh_time()):
+		if t > (time.time() - currentEquipment.min_refresh_time()):
 			#if gv.loud: print "sleeping %s seconds" % max(0, (gv.min_refresh_time - (time.time() - t) ))
-			sleepytime = min(max(0, (currentEquipment.min_refresh_time() - (time.time() - t) )), 1)
+			#sleepytime = min(max(0, (currentEquipment.min_refresh_time() - (time.time() - t) )), 1)
+			if gv.threadJoinFlag == False:
+				gv.ThreadCommandQueue.put((refresh, equipmentID))
+			sleepytime = 0.01
 			time.sleep(sleepytime)
+			return 
 		
 	try:
 		currentEquipment.refresh()
@@ -258,10 +262,17 @@ def backgroundworker(myQ):
 			
 		if gotdata:
 			#print  "Processing Item %s" % item
-			func(data)
-		
-			#print "processed a thred command!s"
-			myQ.task_done()
+			error = None
+			try:
+				func(data)
+			except Exception, e:
+				error = e	
+			
+			finally:	
+				#print "processed a thred command!s"
+				myQ.task_done()
+			if error:
+				gv.exceptions.append(error)
 			item +=1
 	#thread.exit()
 
@@ -330,6 +341,7 @@ def main(debugBreak = False):
 				try:
 					while 1:
 						gv.offlineQueue.get_nowait() #Truncate Queue
+						gv.offlineQueue.task_done()
 				except Queue.Empty:
 					pass
 				
@@ -349,10 +361,11 @@ def main(debugBreak = False):
 				except TypeError:
 					pass
 			loopcounter += 1
-			if loopcounter > 20: # Restart all threads every 10 minutes
+			if loopcounter > 10: # Restart all threads every 10 minutes
 				try:
 					while 1:
 						gv.offlineQueue.get_nowait() #Truncate Queue
+						gv.offlineQueue.task_done()
 				except Queue.Empty:
 					pass
 				gv.offlineEquip = []
@@ -360,8 +373,14 @@ def main(debugBreak = False):
 				if gv.loud:
 					print "Joining Queue"
 				gv.threadJoinFlag = True
+				try:
+                                        while 1:
+                                                gv.ThreadCommandQueue.get_nowait() #Truncate Queue
+						gv.ThreadCommandQueue.task_done()
+                                except Queue.Empty:
+                                        pass
 				gv.ThreadCommandQueue.join()
-		
+				
 				for k in gv.equipmentDict.keys():
 					if gv.equipmentDict[k].get_offline():
 						if not k in gv.offlineEquip:
