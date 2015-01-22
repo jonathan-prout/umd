@@ -202,10 +202,14 @@ def refresh(equipmentID):
 		t = 0
 	
 	if not currentEquipment.get_offline():
-		while t > (time.time() - currentEquipment.min_refresh_time()):
+		if t > (time.time() - currentEquipment.min_refresh_time()):
 			#if gv.loud: print "sleeping %s seconds" % max(0, (gv.min_refresh_time - (time.time() - t) ))
-			sleepytime = min(max(0, (currentEquipment.min_refresh_time() - (time.time() - t) )), 1)
+			#sleepytime = min(max(0, (currentEquipment.min_refresh_time() - (time.time() - t) )), 1)
+			if gv.threadJoinFlag == False:
+				gv.ThreadCommandQueue.put((refresh, equipmentID))
+			sleepytime = 0.01
 			time.sleep(sleepytime)
+			return 
 		
 	try:
 		currentEquipment.refresh()
