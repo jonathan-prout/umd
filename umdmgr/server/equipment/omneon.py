@@ -53,6 +53,19 @@ class IPGridport(OmneonHelper):
 		return self.equipmentId 
 			
 	def get_offline(self):
+		
+		import httpcaller
+		#response, stringfromserver = httpcaller.get(self.ip, '9980', "csvoutput?--login=auto")
+		try:
+			response, stringfromserver = httpcaller.get(self.ip, '9980', "csvoutput?--login=auto")
+		except:
+			
+			response = {'status':'500'}
+		if response['status'] != '200': 
+			#die( zip(response, "----------", "Bad response from server when getting streamstores from ", ipgridportiplist[item]))
+			self.offline = True
+		else:
+			self.offline = False
 		return self.offline
 	def set_offline(self):
 		self.offline = True

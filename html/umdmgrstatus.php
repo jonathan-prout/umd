@@ -266,6 +266,53 @@ if (ref != "") {land(loc,target);}
  ?>
  </table>
    <br />
+     <table border="1" bordercolor="grey" style="background-color:lightgrey"  cellpadding="3" cellspacing="3">
+	<tr>
+		<td>Slow IRDs</td><td>Updated</td></tr>
+<?php 
+	
+	$sql = 'SELECT `equipment`.*,`status`.*
+FROM equipment, status
+WHERE (`status`.`updated` <= NOW() - INTERVAL 30 SECOND ) AND (`status`.`status` NOT like  "Offline") AND `equipment`.`id`= `status`.`id` ORDER BY `status`.`updated` ASC';
+		
+		//print $sql;
+		
+		
+            $result = mysql_query($sql);
+			$num=mysql_numrows($result);
+			//print $num;
+		
+	
+	$i=0;
+	while ($i < $num) {
+		$label=mysql_result($result,$i,"equipment.labelnamestatic");
+		$channel=mysql_result($result,$i,"status.channel");
+		$videoresolution=mysql_result($result,$i,"status.videoresolution");
+		$aspectratio=mysql_result($result,$i,"status.aspectratio");
+		$servicename=mysql_result($result,$i,"status.servicename");
+		$ip=mysql_result($result,$i,"equipment.ip");
+		$videostate=mysql_result($result,$i,"status.videostate");
+		$modulation=mysql_result($result,$i,"status.modulationtype");
+		$framerate=mysql_result($result,$i,"status.framerate");
+		$asioutencrypted=mysql_result($result,$i,"status.asioutencrypted");
+		$updated=mysql_result($result,$i,"status.updated");
+		if ($videostate == "Running")
+			$background = "lightgreen";
+		else
+			$background = "99FFFF";
+			
+		echo '<tr>';
+		echo '<td bgcolor="'. $background .'"><a href ="http://'. $ip . '/" target=_blank>'. $label .'</a></td><td>'.$updated.'</td>';
+		
+		echo '</tr>';
+	
+	
+	$i++;
+	}
+	
+	
+		
+ ?>
   <table border="1" bordercolor="grey" style="background-color:lightgrey"  cellpadding="3" cellspacing="3">
 	<tr>
 		<td>Oflline IRDs</td></tr>

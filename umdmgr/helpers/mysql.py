@@ -24,7 +24,10 @@ class mysql:
 			now = datetime.datetime.now()
 			print "Database error at ", now.strftime("%H:%M:%S")
 			print "Error %d: %s" % (e.args[0], e.args[1])
-			self.close()
+			try:
+				self.close()
+			except:
+				pass
 			#sys.exit(1)
 			raise e
 
@@ -32,8 +35,10 @@ class mysql:
 
 	def qselect(self,sql):
 		""" semaphore & mutex lock to access share database takes sql command as string. Returns list"""
-		self.semaphore.acquire()
-		self.mutex.acquire()
+		if self.semaphore:
+			self.semaphore.acquire()
+		if self.mutex:
+			self.mutex.acquire()
 		rows = []
 		e = None
 		
@@ -65,8 +70,10 @@ class mysql:
 		
 		finally:
 			""" semaphore & mutex lock to release locked share database """
-			self.mutex.release()
-			self.semaphore.release()
+			if self.mutex:
+				self.mutex.release()
+			if self.semaphore:
+				self.semaphore.release()
 		
 		
 		if e != None:
