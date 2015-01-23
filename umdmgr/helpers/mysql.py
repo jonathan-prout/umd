@@ -3,6 +3,7 @@ import os, re, sys,time,datetime
 import threading, MySQLdb
 
 class mysql:
+	autocommit = False
 	def __init__(self, dhost="localhost", duser="umd", dpass="umd", dname="UMD"):
 		self.dhost=dhost
 		self.duser=duser
@@ -56,12 +57,15 @@ class mysql:
 					
 					
 					#data = self.cursor.fetchall()
-					#self.db.commit()
+					
 					
 					try:
 						rows +=  data.fetch_row(maxrows=0)
 					except:
 						pass
+					if self.autocommit:
+                                                self.db.commit()
+
 		except Exception as e:
 			pass
 		

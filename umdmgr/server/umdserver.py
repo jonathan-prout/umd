@@ -210,7 +210,7 @@ def refresh(equipmentID):
 			#sleepytime = min(max(0, (currentEquipment.min_refresh_time() - (time.time() - t) )), 1)
 			if gv.threadJoinFlag == False:
 				gv.ThreadCommandQueue.put((refresh, equipmentID))
-			sleepytime = 0.01
+			sleepytime = 0.1
 			time.sleep(sleepytime)
 			return 
 		
@@ -383,17 +383,26 @@ def main(debugBreak = False):
 				except Queue.Empty:
 					pass
 				gv.ThreadCommandQueue.join()
-				jitter = gv.equipmentDict[equipmentID].refreshjitter
-				jitterlist.append(jitter)
-				"""
-				if gv.loud:
-					print "%s: %s"%(equipmentID, gv.equipmentDict[equipmentID].refreshjitter)
-				"""
-				if float(jitter) > 30:
-					gv.equipmentDict[equipmentID].set_offline()
-					offcount += 1
-				else:
-					oncount += 1
+				for equipmentID in gv.equipmentDict.keys():
+					try:
+						if gv.equipmentDict[equipmentID].get_offline():
+							offcount += 1
+						else:
+							jitter = float(gv.equipmentDict[equipmentID].refreshjitter)
+						jitterlist.append(jitter)
+						
+						if gv.loud:
+							print "%s: %s"%(equipmentID, jitter)
+						
+						if float(jitter) > 60:
+							gv.equipmentDict[equipmentID].set_offline()
+							offcount += 1
+							if gv.loud:
+								print "kicking %s, %s now %s"%(equipmentID, gv.equipmentDict[equipmentID].ip, ["online","offline"][gv.equipmentDict[equipmentID].get_offline()])
+						else:
+							oncount += 1
+					except:
+						continue
 				for k in gv.equipmentDict.keys():
 					if gv.equipmentDict[k].get_offline():
 						if not k in gv.offlineEquip:
@@ -434,6 +443,7 @@ def main(debugBreak = False):
 							else:
 								oncount += 1
 							"""
+							oncount += 1
 							
 					except: pass
 				def avg(L):
