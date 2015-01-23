@@ -95,7 +95,8 @@ def start(_id=None):
 		"Rx8200":equipment.ericsson.RX8200,
 	
 	}
-	
+	if gv.loud:
+		print "Getting equipment"
 	for equipmentID, ip, name, model_id in retrivalList(_id):
 		#print equipmentID, ip, name
 		query = "SELECT `id` from `status` WHERE `status`.`id` ='%d'"%equipmentID
@@ -113,6 +114,8 @@ def start(_id=None):
 			newird = equipment.generic.GenericIRD(int(equipmentID), ip, name)
 		gv.addEquipment(newird)
 	#print gv.equipmentDict
+	if gv.loud:
+		print "Determining types"
 	for equipmentID in gv.equipmentDict.keys():
 		gv.ThreadCommandQueue.put((determine_type, [equipmentID, False]))
 
