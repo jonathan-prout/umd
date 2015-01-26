@@ -2,6 +2,7 @@
 
 import os, re, sys
 import string,threading,time, Queue, getopt
+import random
 import equipment
 import gv
 from helpers import snmp
@@ -47,7 +48,26 @@ class myThread (threading.Thread):
 			self.running = False
 		print "Exiting " + self.name
 
+class dbthread (threading.Thread):
+	myQ = gv.dbQ
+	def __init__(self, threadID, name, counter):
+		threading.Thread.__init__(self)
+		self.threadID = threadID
+		self.name = name
+		self.counter = counter
+		self.running = False
 
+		
+	def run(self):
+		#print "Starting " + self.name
+		try:
+			self.running = True
+			dbworker(self.myQ)
+		except Exception as e:
+			print e
+		finally:
+			self.running = False
+		print "Exiting " + self.name
 		
 def crashdump():
 	import pickle, time
@@ -69,6 +89,7 @@ def crashdump():
 def beginthreads():
 	print "Starting %s threads..."% gv.bg_worker_threads
 	gv.threads = []
+	
 	for t in range(gv.bg_worker_threads):
 		if t in range(gv.offlineCheckThreads):
 			name = "offlineCheck-%s"% t
@@ -80,6 +101,10 @@ def beginthreads():
 		if t in range(gv.offlineCheckThreads):
 			bg.myQ = gv.offlineQueue
 		bg.start()
+	t += 1
+	bg = myThread(t, "dbThread0", t)
+	bg.daemon = True
+	gv.threads.append(bg)
 	
 
 def start(_id=None):
@@ -151,6 +176,7 @@ def determine_type(args):
 		if  any( ( (key in equipTypeStr), isinstance(gv.equipmentDict[equipmentID], simpleTypes[key]) ) ):
 			newird = simpleTypes[key](equipmentID, ip, name)
 			newird.lastRefreshTime = 0
+			currentEquipment.excpetedNextRefresh = float(random.randint(0,50)) /10
 			gv.addEquipment(newird)
 			t = key
 			break
@@ -164,6 +190,7 @@ def determine_type(args):
 		elif subtype == "RX8200-2RF":
 		    newird = equipment.ericsson.RX8200_2RF(equipmentID, ip, name)
 		newird.lastRefreshTime = 0
+		currentEquipment.excpetedNextRefresh = float(random.randint(0,50)) /10
 		gv.addEquipment(newird)
 		t = "Rx8200"
 		
@@ -175,6 +202,7 @@ def determine_type(args):
 		elif subtype == "NS2000_SNMP":
 		    newird = equipment.novelsat.NS2000_SNMP(equipmentID, ip, name)
 		newird.lastRefreshTime = 0
+		currentEquipment.excpetedNextRefresh = float(random.randint(0,50)) /10
 		gv.addEquipment(newird)
 		t = "NS2000"
 		
@@ -185,12 +213,12 @@ def determine_type(args):
 	
 	if gv.loud:
 		print "IRD " + str(equipmentID) + " is a " + t
-	gv.sql.qselect(query)
+	gv.dbQ.put(query)
 	u = 'Online'
 	if t == 'OFFLINE':
 	    u = 'Offline'
 	query = "UPDATE `UMD`.`status` SET `aspectratio` = '',`status` = '%s', `ebno` = '', `frequency` = '', `symbolrate` = '', `asi` = '', `sat_input` = '', `castatus` = '', `videoresolution` = '', `framerate` = '', `videostate` = '', `asioutencrypted` = '', `framerate` = '',`muxbitrate` = '', `muxstate` = '' WHERE `status`.`id` = '%i'"%(u, equipmentID)
-	gv.sql.qselect(query)
+	gv.dbQ.put(query)
 	if autostart:
 		if gv.threadJoinFlag == False:
 			if equipTypeStr != "OFFLINE":
@@ -200,12 +228,12 @@ def refresh(equipmentID):
 	currentEquipment = gv.equipmentDict[equipmentID]
 	import time
 	try:
-		t = currentEquipment.lastRefreshTime
+		t = currentEquipment.excpetedNextRefresh
 	except:
 		t = 0
 	
 	if not currentEquipment.get_offline():
-		if t > (time.time() - currentEquipment.min_refresh_time()):
+		if t > time.time():
 			#if gv.loud: print "sleeping %s seconds" % max(0, (gv.min_refresh_time - (time.time() - t) ))
 			#sleepytime = min(max(0, (currentEquipment.min_refresh_time() - (time.time() - t) )), 1)
 			if gv.threadJoinFlag == False:
@@ -222,14 +250,14 @@ def refresh(equipmentID):
 	if not currentEquipment.get_offline():		    
 		
 		updatesql = currentEquipment.updatesql()
-		msg = gv.sql.qselect(updatesql)
-		
+		gv.dbQ.put(updatesql)
+		msg = None # not needed i think
 		#except: raise "gv.sql ERRROR"
 		
 		# process channel
 		updatechannel = currentEquipment.getChannel()
-		re = gv.sql.qselect(updatechannel)
-		
+		gv.dbQ.put(updatechannel)
+		re = None# not needed i think
 		currentEquipment.lastRefreshTime = time.time()
 		try:
 			
@@ -244,8 +272,31 @@ def refresh(equipmentID):
 			gv.ThreadCommandQueue.put((refresh, equipmentID))
 	else:
 		updatesql = "UPDATE `UMD`.`status` SET `aspectratio` = '',`status` = 'Offline', `ebno` = '', `frequency` = '', `symbolrate` = '', `asi` = '', `sat_input` = '', `castatus` = '', `videoresolution` = '', `framerate` = '', `videostate` = '', `asioutencrypted` = '', `framerate` = '',`muxbitrate` = '', `muxstate` = '' WHERE `status`.`id` = '%i'"%equipmentID
-		gv.sql.qselect(updatesql)
+		gv.dbQ.put(updatesql)
 		
+def dbworker(myQ):
+	import time
+	item = 1
+	
+	gotdata = True
+	while gv.threadTerminationFlag == False:
+		#while not gv.ThreadCommandQueue.empty():
+		#print "still in while"
+		#func, data = gv.ThreadCommandQueue.get()
+		try:
+			cmd = myQ.get(1)
+			gotdata = True
+			
+		except Queue.Empty:
+			time.sleep(0.1)
+			gotdata = False
+			
+		if gotdata:
+			#print  "Processing Item %s" % item
+			gv.sql.qselect(cmd)
+	#thread.exit()
+	
+
 def backgroundworker(myQ):
 	import time
 	item = 1
@@ -277,7 +328,6 @@ def backgroundworker(myQ):
 			if error:
 				gv.exceptions.append(error)
 			item +=1
-	#thread.exit()
 
 
 def cleanup(exit_status=0):
@@ -334,7 +384,7 @@ def main(debugBreak = False):
 			time.sleep(30)
 			if not finishedStarting:
 				cmd = "UPDATE `UMD`.`management` SET `value` = 'RUNNING' WHERE `management`.`key` = 'current_status';"
-				gv.sql.qselect(cmd)
+				gv.dbQ.put(cmd)
 			finishedStarting = True
 			
 			if loopcounter > 3:
@@ -412,6 +462,10 @@ def main(debugBreak = False):
 							gv.addEquipment(newird)
 							gv.offlineQueue.put((determine_type, [k, True]))
 					else:
+						currentEquipment = gv.equipmentDict[k]
+						mr = currentEquipment.min_refresh_time() * 10
+						nr = random.randint(0, mr)
+						currentEquipment.excpetedNextRefresh = time.time() + float(nr) /100 
 						gv.ThreadCommandQueue.put((refresh, k))
 				loopcounter = 0
 				if gv.loud:
@@ -464,17 +518,17 @@ def main(debugBreak = False):
 				mj = float(min(jitterlist))
 				xj = float(max(jitterlist))
 				aj = float(avg(jitterlist))
-				gv.sql.qselect("UPDATE `UMD`.`management` SET `value` = '%s' WHERE `management`.`key` = 'min_jitter';" %mj )
-				gv.sql.qselect("UPDATE `UMD`.`management` SET `value` = '%s' WHERE `management`.`key` = 'max_jitter';" %xj  )
-				gv.sql.qselect("UPDATE `UMD`.`management` SET `value` = '%s' WHERE `management`.`key` = 'avg_jitter';" %aj)
-				gv.sql.qselect("UPDATE `UMD`.`management` SET `value` = '%s' WHERE `management`.`key` = 'equipment_online';" %oncount    )
-				gv.sql.qselect("UPDATE `UMD`.`management` SET `value` = '%s' WHERE `management`.`key` = 'equipment_offline';"%offcount)
-				gv.sql.qselect("UPDATE `UMD`.`management` SET `value` = '%s' WHERE `management`.`key` = 'last_self_check';"% time.strftime("%Y %m %d %H:%M:%S"))
-				gv.sql.qselect("UPDATE `UMD`.`management` SET `value` = '%s' WHERE `management`.`key` = 'errors';"%len(gv.exceptions))   
-				gv.sql.qselect("UPDATE `UMD`.`management` SET `value` = '%s' WHERE `management`.`key` = 'running_threads';"%runningThreads)
+				gv.dbQ.put("UPDATE `UMD`.`management` SET `value` = '%s' WHERE `management`.`key` = 'min_jitter';" %mj )
+				gv.dbQ.put("UPDATE `UMD`.`management` SET `value` = '%s' WHERE `management`.`key` = 'max_jitter';" %xj  )
+				gv.dbQ.put("UPDATE `UMD`.`management` SET `value` = '%s' WHERE `management`.`key` = 'avg_jitter';" %aj)
+				gv.dbQ.put("UPDATE `UMD`.`management` SET `value` = '%s' WHERE `management`.`key` = 'equipment_online';" %oncount    )
+				gv.dbQ.put("UPDATE `UMD`.`management` SET `value` = '%s' WHERE `management`.`key` = 'equipment_offline';"%offcount)
+				gv.dbQ.put("UPDATE `UMD`.`management` SET `value` = '%s' WHERE `management`.`key` = 'last_self_check';"% time.strftime("%Y %m %d %H:%M:%S"))
+				gv.dbQ.put("UPDATE `UMD`.`management` SET `value` = '%s' WHERE `management`.`key` = 'errors';"%len(gv.exceptions))   
+				gv.dbQ.put("UPDATE `UMD`.`management` SET `value` = '%s' WHERE `management`.`key` = 'running_threads';"%runningThreads)
 				
 				
-				new_poll_time = gv.sql.qselect("SELECT * FROM `management` WHERE `key` LIKE 'min_poll_time'")
+				new_poll_time = gv.dbQ.put("SELECT * FROM `management` WHERE `key` LIKE 'min_poll_time'")
 				try:
 					fpoll_time = float(new_poll_time[0][1])
 					if fpoll_time > 0:
