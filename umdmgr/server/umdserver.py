@@ -176,7 +176,7 @@ def determine_type(args):
 		if  any( ( (key in equipTypeStr), isinstance(gv.equipmentDict[equipmentID], simpleTypes[key]) ) ):
 			newird = simpleTypes[key](equipmentID, ip, name)
 			newird.lastRefreshTime = 0
-			currentEquipment.excpetedNextRefresh = float(random.randint(0,50)) /10
+			newird.excpetedNextRefresh = float(random.randint(0,50)) /10
 			gv.addEquipment(newird)
 			t = key
 			break
@@ -190,7 +190,7 @@ def determine_type(args):
 		elif subtype == "RX8200-2RF":
 		    newird = equipment.ericsson.RX8200_2RF(equipmentID, ip, name)
 		newird.lastRefreshTime = 0
-		currentEquipment.excpetedNextRefresh = float(random.randint(0,50)) /10
+		newird.excpetedNextRefresh = float(random.randint(0,50)) /10
 		gv.addEquipment(newird)
 		t = "Rx8200"
 		
@@ -202,7 +202,7 @@ def determine_type(args):
 		elif subtype == "NS2000_SNMP":
 		    newird = equipment.novelsat.NS2000_SNMP(equipmentID, ip, name)
 		newird.lastRefreshTime = 0
-		currentEquipment.excpetedNextRefresh = float(random.randint(0,50)) /10
+		newird.excpetedNextRefresh = float(random.randint(0,50)) /10
 		gv.addEquipment(newird)
 		t = "NS2000"
 		

@@ -78,7 +78,8 @@ offlineCheckThreads = 2
 parity = "1/1"
 suppressEquipCheck = False
 loud = False
-quitWhenSlow = True
+loudSNMP = False
+quitWhenSlow = False
 logfile = "/var/www/programming/server/server_log.txt"
 loglock = threading.RLock()
 def log(stuff):
