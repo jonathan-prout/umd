@@ -148,6 +148,7 @@ def determine_type(args):
 	t = "ERROR"
 	equipTypeStr = "OFFLINE"
 	equipmentID, autostart = args
+	gv.statDict[equipmentID] = {"determined":"undetermined","last action":"determine type", "timestamp":time.time()}
 	try: #remove from offline equip list if it's in there
 		gv.offlineEquip.remove(equipmentID)
 	except ValueError:
@@ -176,7 +177,7 @@ def determine_type(args):
 		if  any( ( (key in equipTypeStr), isinstance(gv.equipmentDict[equipmentID], simpleTypes[key]) ) ):
 			newird = simpleTypes[key](equipmentID, ip, name)
 			newird.lastRefreshTime = 0
-			currentEquipment.excpetedNextRefresh = float(random.randint(0,50)) /10
+			newird.excpetedNextRefresh = float(random.randint(0,50)) /10
 			gv.addEquipment(newird)
 			t = key
 			break
@@ -190,7 +191,7 @@ def determine_type(args):
 		elif subtype == "RX8200-2RF":
 		    newird = equipment.ericsson.RX8200_2RF(equipmentID, ip, name)
 		newird.lastRefreshTime = 0
-		currentEquipment.excpetedNextRefresh = float(random.randint(0,50)) /10
+		newird.excpetedNextRefresh = float(random.randint(0,50)) /10
 		gv.addEquipment(newird)
 		t = "Rx8200"
 		
@@ -202,7 +203,7 @@ def determine_type(args):
 		elif subtype == "NS2000_SNMP":
 		    newird = equipment.novelsat.NS2000_SNMP(equipmentID, ip, name)
 		newird.lastRefreshTime = 0
-		currentEquipment.excpetedNextRefresh = float(random.randint(0,50)) /10
+		newird.excpetedNextRefresh = float(random.randint(0,50)) /10
 		gv.addEquipment(newird)
 		t = "NS2000"
 		
@@ -219,14 +220,19 @@ def determine_type(args):
 	    u = 'Offline'
 	query = "UPDATE `UMD`.`status` SET `aspectratio` = '',`status` = '%s', `ebno` = '', `frequency` = '', `symbolrate` = '', `asi` = '', `sat_input` = '', `castatus` = '', `videoresolution` = '', `framerate` = '', `videostate` = '', `asioutencrypted` = '', `framerate` = '',`muxbitrate` = '', `muxstate` = '' WHERE `status`.`id` = '%i'"%(u, equipmentID)
 	gv.dbQ.put(query)
+	gv.sqlUpdateDict[equipmentID] = time.time()
 	if autostart:
 		if gv.threadJoinFlag == False:
 			if equipTypeStr != "OFFLINE":
+				gv.statDict[equipmentID]["last action"]= "checkin"
+				gv.statDict[equipmentID]["timestamp"] = time.time()
 				gv.ThreadCommandQueue.put((refresh, equipmentID))
 
 def refresh(equipmentID):
 	currentEquipment = gv.equipmentDict[equipmentID]
 	import time
+	gv.statDict[equipmentID]["last action"]= "checkout"
+	gv.statDict[equipmentID]["timestamp"] = time.time()
 	try:
 		t = currentEquipment.excpetedNextRefresh
 	except:
@@ -238,6 +244,8 @@ def refresh(equipmentID):
 			#sleepytime = min(max(0, (currentEquipment.min_refresh_time() - (time.time() - t) )), 1)
 			if gv.threadJoinFlag == False:
 				gv.ThreadCommandQueue.put((refresh, equipmentID))
+				gv.statDict[equipmentID]["last action"]= "checkin"
+				gv.statDict[equipmentID]["timestamp"] = time.time()
 			sleepytime = 0.1
 			time.sleep(sleepytime)
 			return 
@@ -251,12 +259,14 @@ def refresh(equipmentID):
 		
 		updatesql = currentEquipment.updatesql()
 		gv.dbQ.put(updatesql)
+		gv.sqlUpdateDict[equipmentID] = time.time()
 		msg = None # not needed i think
 		#except: raise "gv.sql ERRROR"
 		
 		# process channel
 		updatechannel = currentEquipment.getChannel()
 		gv.dbQ.put(updatechannel)
+		gv.sqlUpdateDict[equipmentID] = time.time()
 		re = None# not needed i think
 		currentEquipment.lastRefreshTime = time.time()
 		try:
@@ -270,9 +280,12 @@ def refresh(equipmentID):
 		# Add itself to end of queue
 		if gv.threadJoinFlag == False:
 			gv.ThreadCommandQueue.put((refresh, equipmentID))
+			gv.statDict[equipmentID]["last action"]= "checkin"
+			gv.statDict[equipmentID]["timestamp"] = time.time()
 	else:
 		updatesql = "UPDATE `UMD`.`status` SET `aspectratio` = '',`status` = 'Offline', `ebno` = '', `frequency` = '', `symbolrate` = '', `asi` = '', `sat_input` = '', `castatus` = '', `videoresolution` = '', `framerate` = '', `videostate` = '', `asioutencrypted` = '', `framerate` = '',`muxbitrate` = '', `muxstate` = '' WHERE `status`.`id` = '%i'"%equipmentID
 		gv.dbQ.put(updatesql)
+		gv.sqlUpdateDict[equipmentID] = time.time()
 		
 def dbworker(myQ):
 	import time
@@ -478,8 +491,14 @@ def main(debugBreak = False):
 				offcount = 0
 				runningThreads = 0
 				stoppedThreads = 0
-				
+				tallyDict = {}
+				def tally(key):
+					if tallyDict.has_key(key):
+						tallyDict[key] += 1
+					else:
+						tallyDict[key] = 1
 				jitterlist = []
+				
 				for equipmentID in gv.equipmentDict.keys():
 					try:
 						if gv.equipmentDict[equipmentID].get_offline():
@@ -500,6 +519,16 @@ def main(debugBreak = False):
 							oncount += 1
 							
 					except: pass
+					if gv.statDict.has_key(equipmentID):
+						try:
+							tally(gv.statDict[equipmentID]["last action"])
+						except KeyError:
+							tally("KeyError")
+						if gv.loud:
+							if gv.statDict[equipmentID][timestamp] < time.time() - gv.equipmentDict[equipmentID].min_refresh_time():
+								print "%d %f seconds late with status %s"%(equipmentID, time.time() - gv.equipmentDict[equipmentID].min_refresh_time() - gv.statDict[equipmentID][timestamp], gv.statDict[equipmentID]["last action"] )
+					else:
+						tally("missing")
 				def avg(L):
 					return float(sum(L)) / len(L)
 				for t in gv.threads:
@@ -515,6 +544,8 @@ def main(debugBreak = False):
 					print "Minimum refresh time %s seconds" % gv.min_refresh_time
 					print "MAX: %s MIN: %s AVG:%s "%(max(jitterlist)+ gv.min_refresh_time, min(jitterlist)+ gv.min_refresh_time, avg(jitterlist)+ gv.min_refresh_time)
 					print "%s stopped threads. %s running threads"%(stoppedThreads, runningThreads)
+					for k,v in tallyDict:
+						print "%d in status %s"%(v,k)
 				mj = float(min(jitterlist))
 				xj = float(max(jitterlist))
 				aj = float(avg(jitterlist))
@@ -540,7 +571,8 @@ def main(debugBreak = False):
 				possibleErrors = []
 				possibleErrors.append( (oncount < offcount, "More equipment off than on. Most likely an error there"))
 				possibleErrors.append( (len(gv.exceptions) > 20, "Program has errors"))
-				possibleErrors.append( (aj > (gv.min_refresh_time * 2 + 10), "Program is running slowly so quitting"))
+				if gv.quitWhenSlow:
+					possibleErrors.append( (aj > (gv.min_refresh_time * 2 + 10), "Program is running slowly so quitting"))
 				possibleErrors.append((gv.programCrashed == True, "Program Crashed flag has been raised so quitting"))
 				for case, problemText in possibleErrors:
 					if case:
