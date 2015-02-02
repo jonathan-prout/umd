@@ -66,8 +66,7 @@ programCrashed = False
 exceptions = []
 
 """Keeping track of theads"""
-ThreadCommandQueue = Queue.Queue()
-offlineQueue = Queue.Queue()
+
 dbQ =  Queue.Queue()
 offlineEquip = []
 threads = []
@@ -75,6 +74,8 @@ threadTerminationFlag = False
 threadJoinFlag = False
 bg_worker_threads =20
 offlineCheckThreads = 2
+ThreadCommandQueue = Queue.Queue(bg_worker_threads)
+offlineQueue = Queue.Queue(offlineCheckThreads)
 parity = "1/1"
 suppressEquipCheck = False
 loud = False

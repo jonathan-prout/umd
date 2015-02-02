@@ -1,7 +1,58 @@
 from server import gv
-
+from server import bgtask
 from helpers import snmp
+
 snmp.gv = gv #in theory we don't want to import explictly the server's version of gv
+import threading
+
+class checkout(object):
+	STAT_INIT = 0
+	STAT_SLEEP = 1
+	STAT_READY = 2
+	STAT_INQUEUE =3
+	STAT_CHECKEDOUT = 4
+	STAT_STUCK = 5
+	
+	def __init__(self, parent):
+		self.parent = parent
+		self.rlock = threading.Rlock()
+		self.status = checkout.STAT_INIT
+		self.timestamp = time.time()
+	def __enter__(self):
+		self.rlock.acquire()
+		self.status = checkout.STAT_CHECKEDOUT
+		self.timestamp = time.time()
+	def __exit__(self ):
+		self.status = checkout.STAT_SLEEP
+		self.timestamp = time.time()	
+		self.rlock.release()
+		
+	def getStatus(self):
+		if self.status in [checkout.STAT_INIT, checkout.STAT_INQUEUE, checkout.STAT_READY]:
+			return int(self.status)
+		elif self.status == checkout.STAT_SLEEP:
+			if time.time() > self.timestamp() + self.parent.min_refresh_time():
+				self.status = checkout.STAT_READY
+			return int(self.status)
+		elif self.status == checkout.STAT_CHECKEDOUT:
+			if time.time() > self.timestamp() + 60: #Checked out for 1 minute
+				self.status = checkout.STAT_STUCK
+			return int(self.status)
+		else:
+			raise NotImplementedError("status %d"%self.status) #should never happen
+	def checkout(self ):
+		self.rlock.acquire()
+		self.status = checkout.STAT_CHECKEDOUT
+		self.timestamp = time.time()
+	def checkin(self):
+		self.status = checkout.STAT_SLEEP
+		self.timestamp = time.time()	
+		self.rlock.release()
+	def enqueue(self):
+		self.status = checkout.STAT_INQUEUE
+		self.timestamp = time.time()	
+
+
 class equipment(object):
 	modelType = "Not Set"
 	def getoid(self):
@@ -192,7 +243,7 @@ class IRD(equipment):
 		self.sat_dict = {}
 		self.offline = False
 		self.masked_oids = {}
-		
+		self.checkout = checkout(self)
 		
 	def oid_mask(self):
 		try:
