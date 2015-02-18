@@ -55,7 +55,7 @@ class IPGridport(OmneonHelper):
 		self.offline = False			
 	def get_offline(self):
 		
-		import httpcaller
+		#import httpcaller
 		#response, stringfromserver = httpcaller.get(self.ip, '9980', "csvoutput?--login=auto")
 		try:
 			response, stringfromserver = httpcaller.get(self.ip, '9980', "csvoutput?--login=auto")

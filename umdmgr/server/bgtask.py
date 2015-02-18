@@ -1,51 +1,5 @@
-#!/usr/bin/env python
-import pika
-import time
-from  ..helpers import mysql
-from  ..helpers import httpacaller
-import equipment
-import bgtask
-gv.sql = mysql.mysql()
 
-# Step #1: Connect to RabbitMQ
-connection = pika.BlockingConnection( pika.ConnectionParameters(host='localhost') )
-channel = connection.channel()
-channel.queue_declare(queue='task_queue', durable=True)
-print ' [*] Waiting for messages. To exit press CTRL+C'
-def callback(ch, method, properties, body):
-		print " [x] Received %r" % (body,)
-		time.sleep( body.count('.') )
-		print " [x] Done"
-		
-		
-ch.basic_ack(delivery_tag = method.delivery_tag)
-channel.basic_qos(prefetch_count=1)
-channel.basic_consume(callback,
-						queue='task_queue')
-channel.start_consuming()
-
-
-def deserialize(data):
-	""" Instanciates equip with data. Beware of keyerrors and Typeerrors"""
-	equipTypes = {
-		"GenericIRD":equipment.generic.GenericIRD,
-		"TT1260":equipment.ericsson.TT1260,
-		"RX1290":equipment.ericsson.RX1290,
-		"DR5000":equipment.ateme.DR5000,
-		"TVG420":equipment.tvips.TVG420,
-		"IP Gridport":equipment.omneon.IPGridport,
-		"NS2000":equipment.novelsat.NS2000,
-		"NS2000_WEB":equipment.novelsat.NS2000_WEB,
-		"NS2000_SNMP":equipment.novelsat.NS2000_SNMP,
-		"RX8200":equipment.ericsson.RX8200,
-		"RX8200-4RF":equipment.ericsson.RX8200_4RF,
-		"RX8200-2RF":equipment.ericsson.RX8200_2RF,
-	}
-	equip = equipTypes["modelType" ](data["equipmentId"], data["ip"], data["name"])
-	equip.deserialise(data)
-	return equip
-
-def determine_type(args, ins):
+def determine_type(args):
 	t = "ERROR"
 	equipTypeStr = "OFFLINE"
 	equipmentID, autostart = args
@@ -70,9 +24,9 @@ def determine_type(args, ins):
 		"DR5000":equipment.ateme.DR5000,
 		"TVG420":equipment.tvips.TVG420,
 		"IP Gridport":equipment.omneon.IPGridport
-
+		
 	}
-	
+		
 	
 	for key in simpleTypes.keys():
 		if  any( ( (key in equipTypeStr), isinstance(gv.equipmentDict[equipmentID], simpleTypes[key]) ) ):
@@ -129,8 +83,8 @@ def determine_type(args, ins):
 				gv.statDict[equipmentID]["timestamp"] = time.time()
 				gv.ThreadCommandQueue.put((refresh, equipmentID))
 
-def refresh(currentEquipment):
-	
+def refresh(equipmentID):
+	currentEquipment = gv.equipmentDict[equipmentID]
 	import time
 	gv.statDict[equipmentID]["last action"]= "checkout"
 	gv.statDict[equipmentID]["timestamp"] = time.time()
@@ -187,3 +141,4 @@ def refresh(currentEquipment):
 		updatesql = "UPDATE `UMD`.`status` SET `aspectratio` = '',`status` = 'Offline', `ebno` = '', `frequency` = '', `symbolrate` = '', `asi` = '', `sat_input` = '', `castatus` = '', `videoresolution` = '', `framerate` = '', `videostate` = '', `asioutencrypted` = '', `framerate` = '',`muxbitrate` = '', `muxstate` = '' WHERE `status`.`id` = '%i'"%equipmentID
 		gv.dbQ.put(updatesql)
 		gv.sqlUpdateDict[equipmentID] = time.time()
+	

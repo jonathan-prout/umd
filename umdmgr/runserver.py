@@ -17,7 +17,7 @@ if __name__ == "__main__":
 	from server import gv
 	from helpers import mysql
 	try:                                
-		opts, args = getopt.getopt(sys.argv[1:], "vles", ["verbose", "loop", "errors", "suppress"]) 
+		opts, args = getopt.getopt(sys.argv[1:], "vlesn", ["verbose", "loop", "errors", "suppress","snail"]) 
 	except getopt.GetoptError, err:
 		print str(err)	
 		print "error in arguments"
@@ -34,6 +34,8 @@ if __name__ == "__main__":
 			errors_in_stdout = True
 		elif opt in ("-s", "--suppress"):
 			gv.suppressEquipCheck = True
+		elif opt in ("-n", "--snail"):
+			gv.quitWhenSlow = False
 		else:
 			print "option '%s' not recognised"%opt
 			#assert False, 'option not recognised'
@@ -43,6 +45,7 @@ if __name__ == "__main__":
 		print "Starting in verbose mode"
 		
 	gv.sql = mysql.mysql()
-	gv.sql.semaphore = threading.BoundedSemaphore(value=10)
+	gv.sql.autocommit = True
+	#gv.sql.semaphore = threading.BoundedSemaphore(value=10)
 	gv.sql.mutex = threading.RLock()
 	umdserver.main()
