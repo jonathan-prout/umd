@@ -1,8 +1,12 @@
 #!/usr/bin/env python
 import pika
 import time
-from  ..helpers import mysql
-from  ..helpers import httpacaller
+try:
+	from  ..helpers import mysql
+	from  ..helpers import httpcaller
+except ValueError:
+	from  helpers import mysql
+	from  helpers import httpcaller
 import equipment
 import bgtask
 gv.sql = mysql.mysql()
