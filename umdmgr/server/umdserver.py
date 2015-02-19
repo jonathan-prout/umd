@@ -95,14 +95,23 @@ def beginthreads():
 			bg.myQ = gv.offlineQueue
 		bg.start()
 	t += 1
-	bg = myThread(t, "dbThread0", t)
+	bg = dbthread(t, "dbThread0", t)
+	bg.daemon = True
+	gv.threads.append(bg)
+	t += 1
+	bg = dispatcher(t, "dispatcher0", t)
+	bg.daemon = True
+	gv.threads.append(bg)
+	t += 1
+	bg = checkin(t, "checkin0", t)
 	bg.daemon = True
 	gv.threads.append(bg)
 	
 
 def start(_id=None):
 	#Begin background worker threads
-	beginthreads()
+	if not gv.threads:
+		beginthreads()
 	# Equipment Types 
 	simpleTypes = {
 		"TT1260":equipment.ericsson.TT1260,
@@ -134,8 +143,8 @@ def start(_id=None):
 	#print gv.equipmentDict
 	if gv.loud:
 		print "Determining types"
-	for equipmentID in gv.equipmentDict.keys():
-		gv.ThreadCommandQueue.put((bgtask.determine_type, [equipmentID, False]))
+	for currentEquipment in gv.equipmentDict.values():
+		gv.ThreadCommandQueue.put((bgtask.determine_type, currentEquipment.serialize()), block = True)
 	
 def dbworker(myQ):
 	import time
@@ -158,7 +167,7 @@ def dbworker(myQ):
 			#print  "Processing Item %s" % item
 			gv.sql.qselect(cmd)
 	#thread.exit()
-class dispatcher(MyThread):
+class dispatcher(myThread):
 	def run(self):
 		STAT_INIT = 0
 		STAT_SLEEP = 1
@@ -166,7 +175,7 @@ class dispatcher(MyThread):
 		STAT_INQUEUE =3
 		STAT_CHECKEDOUT = 4
 		STAT_STUCK = 5
-		while 1:
+		while gv.threadTerminationFlag == False:
 			if gv.threadJoinFlag == False:
 				for equipmentID, instance in gv.equipmentDict.iteritems():
 					
@@ -186,12 +195,13 @@ class dispatcher(MyThread):
 						instance.checkout.enqueue()
 					except Queue.Full:
 						continue
-			time.sleep(0.1)
+			else:
+				time.sleep(0.1)
 
-class checkin(MyThread):
+class checkin(myThread):
 	def run(self):
 		queue = gv.CheckInQueue
-		while 1:
+		while gv.threadTerminationFlag == False:
 			try:
 				data = queue.get(0.1)
 				if data.has_key["equipmentID"]:
