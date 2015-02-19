@@ -124,24 +124,32 @@ def get_subprocess(commandDict, ip):
 		commands.append(v)
 		invdict[v] = k
 	supressErrors = []
+	returncode = 0
 	
-	sub = subprocess.Popen(["/usr/bin/snmpget", "-v1", "-cpublic", ip] + commands, stdout=subprocess.PIPE)
-	returncode = sub.wait() #Block here waiting for subprocess to return. Next thrad should execute from here
-	sout = sub.stdout.readlines()
+	try:
+		#sub = subprocess.Popen(["/usr/bin/snmpget", "-v1", "-cpublic", ip] + commands, stdout=subprocess.PIPE)
+		sout = subprocess.check_output(["/usr/bin/snmpget", "-v1", "-cpublic", ip] + commands, stderr=subprocess.STDOUT)
+		
+	except subprocess.CalledProcessError, e:
+		returncode = 1
+
+	#returncode = sub.wait() #Block here waiting for subprocess to return. Next thrad should execute from here
+	#sout = sub.stdout.readlines()
 	try:
 		serr = sub.stderr.read()
 	except:
 		serr = ""
 	if returncode != 0:
 		if gv.loudSNMP:
-			print returncode
-			print sout
-			print serr
-	del(sub)
+			print e.__repr__()
+	#del(sub)
 	assert(returncode == 0) #Error if NET SNMP has an error. Fall back to PYSNMP which is slower but with better error handling
-	for outputLine in sout:	
-		oid, valtype, value = process_netsnmp_line(outputLine)
-		n = oidFromDict(oid , invdict)
+	for outputLine in sout.split('\n'):
+		try:	
+			oid, valtype, value = process_netsnmp_line(outputLine)
+			n = oidFromDict(oid , invdict)
+		except:
+			continue
 		try:
 			#returndict[invdict[ n ] ] = str(value) #To be checked
 			returndict[invdict[ n ] ] = value

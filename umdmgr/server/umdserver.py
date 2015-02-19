@@ -481,6 +481,8 @@ def main(debugBreak = False):
 						currentEquipment.excpetedNextRefresh = time.time() + float(nr) /100 
 						gv.ThreadCommandQueue.put((refresh, k))
 				loopcounter = 0
+				""" BREAK HERE (test) """
+				return
 				if gv.loud:
 					print "Resuming Threads"
 				gv.threadJoinFlag = False
@@ -525,8 +527,8 @@ def main(debugBreak = False):
 						except KeyError:
 							tally("KeyError")
 						if gv.loud:
-							if gv.statDict[equipmentID][timestamp] < time.time() - gv.equipmentDict[equipmentID].min_refresh_time():
-								print "%d %f seconds late with status %s"%(equipmentID, time.time() - gv.equipmentDict[equipmentID].min_refresh_time() - gv.statDict[equipmentID][timestamp], gv.statDict[equipmentID]["last action"] )
+							if gv.statDict[equipmentID]["timestamp"] < time.time() - gv.equipmentDict[equipmentID].min_refresh_time():
+								print "%d %f seconds late with status %s"%(equipmentID, time.time() - gv.equipmentDict[equipmentID].min_refresh_time() - gv.statDict[equipmentID]["timestamp"], gv.statDict[equipmentID]["last action"] )
 					else:
 						tally("missing")
 				def avg(L):
@@ -544,7 +546,7 @@ def main(debugBreak = False):
 					print "Minimum refresh time %s seconds" % gv.min_refresh_time
 					print "MAX: %s MIN: %s AVG:%s "%(max(jitterlist)+ gv.min_refresh_time, min(jitterlist)+ gv.min_refresh_time, avg(jitterlist)+ gv.min_refresh_time)
 					print "%s stopped threads. %s running threads"%(stoppedThreads, runningThreads)
-					for k,v in tallyDict:
+					for k,v in tallyDict.iteritems():
 						print "%d in status %s"%(v,k)
 				mj = float(min(jitterlist))
 				xj = float(max(jitterlist))
