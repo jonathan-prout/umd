@@ -92,22 +92,22 @@ class equipment(object):
 		#self.oid_get2 = self.oid_get #there is a bug that overwrites self.oid_get. I can't find it
 		#gv.sql.close()
 	
-	def serialise(self ):
+	def serialize(self ):
 		"""serialize data without using pickle. Returns dict"""
 		
 		serial_data = {}
-		seriralisabledata = ["ip", "equipmentId", "name", "snmp_res_dict", "oid_get", "oid_getBulk" "multicast_id_dict", "streamDict", "addressesbyname","online",  "modelType"]
+		seriralisabledata = ["ip", "equipmentId", "name", "snmp_res_dict", "oid_get", "oid_getBulk" "multicast_id_dict", "streamDict", "addressesbyname","online",  "modelType", "refreshType", "refreshCounter"]
 		for key in seralisabledata:
 			if hasattr(self, key):
 				serial_data[key] = copy.copy(getattr(self, key))
 		return serial_data
 		
-	def deserialise(self, data):
+	def deserialize(self, data):
 		""" deserialise the data from above
 		expected errors are KeyError (no modelType), Type Error (wrong model Type)"""
 		if not data["modelType"] == self.modelType:
 			raise TypeError("Tried to serialise data from %s into %s"%(data["modelType"],self.modelType))
-		seriralisabledata = ["ip", "id", "name", "snmp_res_dict", "oid_get", "oid_getBulk" "multicast_id_dict", "streamDict", "addressesbyname","online",  "modelType"]
+		seriralisabledata = ["ip", "equipmentId", "name", "snmp_res_dict", "oid_get", "oid_getBulk" "multicast_id_dict", "streamDict", "addressesbyname","online",  "modelType", "refreshType", "refreshCounter"]
 		for key in self.seralisabledata:
 				if hasattr(self, key):
 					setattr(self, key, data[key])
@@ -117,6 +117,7 @@ class equipment(object):
 		""" removed import snmp here """
 		try:
 			self.snmp_res_dict  = snmp.get(self.getoids(), self.ip)
+			
 		except:
 			self.set_offline()
 		if len(self.snmp_res_dict.keys()) < len(self.getoids().keys()):
@@ -247,7 +248,8 @@ class equipment(object):
 			return "Unknown"
 	def set_offline(self):
 		self.offline = True
-
+	def set_online(self):
+		self.offline = False
 	def get_offline(self):
 		try:
 			return self.offline

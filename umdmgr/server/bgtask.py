@@ -1,22 +1,46 @@
 
-def determine_type(args):
+def deserialize(data):
+	""" Instanciates equip with data. Beware of keyerrors and Typeerrors"""
+	equipTypes = {
+		"GenericIRD":equipment.generic.GenericIRD,
+		"TT1260":equipment.ericsson.TT1260,
+		"RX1290":equipment.ericsson.RX1290,
+		"DR5000":equipment.ateme.DR5000,
+		"TVG420":equipment.tvips.TVG420,
+		"IP Gridport":equipment.omneon.IPGridport,
+		"NS2000":equipment.novelsat.NS2000,
+		"NS2000_WEB":equipment.novelsat.NS2000_WEB,
+		"NS2000_SNMP":equipment.novelsat.NS2000_SNMP,
+		"RX8200":equipment.ericsson.RX8200,
+		"RX8200-4RF":equipment.ericsson.RX8200_4RF,
+		"RX8200-2RF":equipment.ericsson.RX8200_2RF,
+	}
+	equip = equipTypes["modelType" ](data["equipmentId"], data["ip"], data["name"])
+	equip.deserialise(data)
+	return equip
+
+def checkin(data):
+	gv.CheckInQueue.put(data)
+
+def sendToSQL(query):
+	gv.dbQ.put(query)
+
+
+def determine_type(data):
 	t = "ERROR"
 	equipTypeStr = "OFFLINE"
-	equipmentID, autostart = args
-	gv.statDict[equipmentID] = {"determined":"undetermined","last action":"determine type", "timestamp":time.time()}
-	try: #remove from offline equip list if it's in there
-		gv.offlineEquip.remove(equipmentID)
-	except ValueError:
-		pass
-	if not all( (gv.suppressEquipCheck, (not isinstance(gv.equipmentDict[equipmentID], equipment.generic.GenericIRD ) ) ) ):
+	currentEquipment = deserialize(data)
+	
+
+	if not all( (gv.suppressEquipCheck, (not isinstance(currentEquipment, equipment.generic.GenericIRD ) ) ) ):
 		try:
-			equipTypeStr = gv.equipmentDict[equipmentID].determine_type()
+			equipTypeStr = currentEquipment.determine_type()
 		except:
 			equipTypeStr = "OFFLINE"
+	equipmentID = currentEquipment.equipmentID
+	ip = currentEquipment.ip
 	
-	ip = gv.equipmentDict[equipmentID].ip
-	
-	name = gv.equipmentDict[equipmentID].name
+	name = currentEquipment.name
 	# Equipment equipTypeStrs without subtype
 	simpleTypes = {
 		"TT1260":equipment.ericsson.TT1260,
@@ -24,33 +48,29 @@ def determine_type(args):
 		"DR5000":equipment.ateme.DR5000,
 		"TVG420":equipment.tvips.TVG420,
 		"IP Gridport":equipment.omneon.IPGridport
-		
+
 	}
-		
+	
 	
 	for key in simpleTypes.keys():
-		if  any( ( (key in equipTypeStr), isinstance(gv.equipmentDict[equipmentID], simpleTypes[key]) ) ):
+		if  any( ( (key in equipTypeStr), isinstance(currentEquipment, simpleTypes[key]) ) ):
 			newird = simpleTypes[key](equipmentID, ip, name)
-			newird.lastRefreshTime = 0
-			newird.excpetedNextRefresh = float(random.randint(0,50)) /10
 			gv.addEquipment(newird)
 			t = key
 			break
 		
 	# Equipment equipTypeStr with subtype
-	if any( ( ("Rx8000"in equipTypeStr), isinstance(gv.equipmentDict[equipmentID], equipment.ericsson.RX8200) ) ):
+	if any( ( ("Rx8000"in equipTypeStr), isinstance(currentEquipment, equipment.ericsson.RX8200) ) ):
 		newird = equipment.ericsson.RX8200(equipmentID, ip, name)
 		subtype = newird.determine_subtype()
 		if subtype == "RX8200-4RF":
 		    newird = equipment.ericsson.RX8200_4RF(equipmentID, ip, name)
 		elif subtype == "RX8200-2RF":
 		    newird = equipment.ericsson.RX8200_2RF(equipmentID, ip, name)
-		newird.lastRefreshTime = 0
-		newird.excpetedNextRefresh = float(random.randint(0,50)) /10
 		gv.addEquipment(newird)
 		t = "Rx8200"
 		
-	elif  any( ( ("NS2000"in equipTypeStr), isinstance(gv.equipmentDict[equipmentID], equipment.novelsat.NS2000) ) ):
+	elif  any( ( ("NS2000"in equipTypeStr), isinstance(currentEquipment, equipment.novelsat.NS2000) ) ):
 		newird = equipment.novelsat.NS2000(equipmentID, ip, name)
 		subtype = newird.determine_subtype()
 		if subtype == "NS2000_WEB":
@@ -64,47 +84,23 @@ def determine_type(args):
 		
 	elif equipTypeStr == "OFFLINE":	
 		t = "OFFLINE"
-		gv.equipmentDict[equipmentID].offline = True
+		currentEquipment.offline = True
 	query = "UPDATE equipment SET model_id ='%s' WHERE id ='%i'"%(t, equipmentID)
 	
 	if gv.loud:
 		print "IRD " + str(equipmentID) + " is a " + t
-	gv.dbQ.put(query)
+	sendToSQL(query)
 	u = 'Online'
 	if t == 'OFFLINE':
 	    u = 'Offline'
 	query = "UPDATE `UMD`.`status` SET `aspectratio` = '',`status` = '%s', `ebno` = '', `frequency` = '', `symbolrate` = '', `asi` = '', `sat_input` = '', `castatus` = '', `videoresolution` = '', `framerate` = '', `videostate` = '', `asioutencrypted` = '', `framerate` = '',`muxbitrate` = '', `muxstate` = '' WHERE `status`.`id` = '%i'"%(u, equipmentID)
-	gv.dbQ.put(query)
-	gv.sqlUpdateDict[equipmentID] = time.time()
-	if autostart:
-		if gv.threadJoinFlag == False:
-			if equipTypeStr != "OFFLINE":
-				gv.statDict[equipmentID]["last action"]= "checkin"
-				gv.statDict[equipmentID]["timestamp"] = time.time()
-				gv.ThreadCommandQueue.put((refresh, equipmentID))
+	sendToSQL(query)
+	checkin(currentEquipment.serialize())
 
-def refresh(equipmentID):
-	currentEquipment = gv.equipmentDict[equipmentID]
-	import time
-	gv.statDict[equipmentID]["last action"]= "checkout"
-	gv.statDict[equipmentID]["timestamp"] = time.time()
-	try:
-		t = currentEquipment.excpetedNextRefresh
-	except:
-		t = 0
-	
-	if not currentEquipment.get_offline():
-		if t > time.time():
-			#if gv.loud: print "sleeping %s seconds" % max(0, (gv.min_refresh_time - (time.time() - t) ))
-			#sleepytime = min(max(0, (currentEquipment.min_refresh_time() - (time.time() - t) )), 1)
-			if gv.threadJoinFlag == False:
-				gv.ThreadCommandQueue.put((refresh, equipmentID))
-				gv.statDict[equipmentID]["last action"]= "checkin"
-				gv.statDict[equipmentID]["timestamp"] = time.time()
-			sleepytime = 0.1
-			time.sleep(sleepytime)
-			return 
-		
+
+def refresh(data):
+	currentEquipment = deserialize(data)
+
 	try:
 		currentEquipment.refresh()
 	except:
@@ -113,17 +109,13 @@ def refresh(equipmentID):
 	if not currentEquipment.get_offline():		    
 		
 		updatesql = currentEquipment.updatesql()
-		gv.dbQ.put(updatesql)
-		gv.sqlUpdateDict[equipmentID] = time.time()
-		msg = None # not needed i think
-		#except: raise "gv.sql ERRROR"
-		
-		# process channel
+		sendToSQL(updatesql)
+
 		updatechannel = currentEquipment.getChannel()
-		gv.dbQ.put(updatechannel)
-		gv.sqlUpdateDict[equipmentID] = time.time()
-		re = None# not needed i think
-		currentEquipment.lastRefreshTime = time.time()
+		sendToSQL(updatechannel)
+		
+	
+
 		try:
 			
 			currentEquipment.refreshjitter = time.time() - currentEquipment.excpetedNextRefresh 
@@ -131,14 +123,10 @@ def refresh(equipmentID):
 		
 		
 		currentEquipment.excpetedNextRefresh = time.time() + currentEquipment.min_refresh_time()
-		gv.hit(equipmentID)
+		
 		# Add itself to end of queue
-		if gv.threadJoinFlag == False:
-			gv.ThreadCommandQueue.put((refresh, equipmentID))
-			gv.statDict[equipmentID]["last action"]= "checkin"
-			gv.statDict[equipmentID]["timestamp"] = time.time()
+		checkin(currentEquipment.serialize())
 	else:
 		updatesql = "UPDATE `UMD`.`status` SET `aspectratio` = '',`status` = 'Offline', `ebno` = '', `frequency` = '', `symbolrate` = '', `asi` = '', `sat_input` = '', `castatus` = '', `videoresolution` = '', `framerate` = '', `videostate` = '', `asioutencrypted` = '', `framerate` = '',`muxbitrate` = '', `muxstate` = '' WHERE `status`.`id` = '%i'"%equipmentID
-		gv.dbQ.put(updatesql)
-		gv.sqlUpdateDict[equipmentID] = time.time()
-	
+		sendToSQL(updatesql)
+		checkin(currentEquipment.serialize())

@@ -67,15 +67,23 @@ exceptions = []
 
 """Keeping track of theads"""
 
-dbQ =  Queue.Queue()
+
 offlineEquip = []
 threads = []
 threadTerminationFlag = False
 threadJoinFlag = False
 bg_worker_threads =20
 offlineCheckThreads = 2
+
+""" Queues """
 ThreadCommandQueue = Queue.Queue(bg_worker_threads)
 offlineQueue = Queue.Queue(offlineCheckThreads)
+dbQ =  Queue.Queue()
+CheckInQueue = Queue.Queue()
+
+
+gotCheckedInData = False
+
 parity = "1/1"
 suppressEquipCheck = False
 loud = False
@@ -99,8 +107,7 @@ def log(stuff):
 		finally:
 			f.close()
 			loglock.release()
-def hit(equipmentId):
-    last_refresh_dict[equipmentId] = time.time()
+
 
 def get_inactive():
 	list_of_timeouts = []

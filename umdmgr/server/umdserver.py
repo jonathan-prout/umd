@@ -182,11 +182,30 @@ class dispatcher(MyThread):
 								else:
 									task = bgtask.refresh
 									queue = gv.ThreadCommandQueue
-						queue.put((task, equipmentID),0.1)
+						queue.put((task, gv.equipmentDict[equipmentID].serialize()),0.1)
 						instance.checkout.enqueue()
 					except Queue.Full:
 						continue
 			time.sleep(0.1)
+
+class checkin(MyThread):
+	def run(self):
+		queue = gv.CheckInQueue
+		while 1:
+			try:
+				data = queue.get(0.1)
+				if data.has_key["equipmentID"]:
+					gv.gotCheckedInData = True
+					equipmentID = data["equipmentID"]
+					try:
+						gv.equipment[equipmentID].deserialize(data)
+					except TypeError: #Equipment Type Changed
+						gv.equipment[equipmentID] = bgtask.deserialize(data)
+					gv.equipment[equipmentID].checkout.checkin()
+				else:
+					gv.gotCheckedInData = False
+			except Queue.Empty:
+				gv.gotCheckedInData = False
 
 def backgroundworker(myQ):
 	import time
