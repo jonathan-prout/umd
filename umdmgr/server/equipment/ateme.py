@@ -233,6 +233,17 @@ class DR5000(IRD):
 		""" Refresh method of Dr5000 """
 		
 		try:
+			refresh_params = [self.getinput_selection(),
+								["","Locked"][self.getlockState() == "Lock"],
+								["","Locked"][int(self.getinputTsBitrate()) >1]
+							]
+		except KeyError:
+			refresh_params = ["full"]
+		except ValueError:
+			refresh_params = ["full"]
+		self.set_refreshType(" ".join(refresh_params).lower())
+		
+		try:
 			self.snmp_res_dict  = snmp.get(self.getoids(), self.ip)
 		except:
 			self.set_offline()
@@ -241,36 +252,64 @@ class DR5000(IRD):
 
 		if len(self.snmp_res_dict) == 0:
 			self.set_offline()
-		if len(self.oid_getBulk) !=0:
+		if len(self.bulkoids()) !=0:
 			if self.getNumServices(): 
-				self.snmp_res_dict.update( snmp.getbulk(self.bulkoids(), self.ip, self.getNumServices() ) )
+				self.snmp_res_dict.update( snmp.getbulk(self.bulkoids(), self.ip, self.getNumServices() +1  ) )
+				
+		
+		try:
+			self.refreshCounter +=1
+		except AttributeError:
+			self.refreshCounter = 0
+			
+		if not self.getRefreshType("lock"): #Did we just lock? full refresh next time.
+			if any([self.getlockState() == "Lock",int(self.getinputTsBitrate()) >1]):
+				self.set_refreshType("full")
 	
 	def updatesql(self):
 		sql =  "UPDATE status SET status = '%s' , "% self.getStatus()
-		sql += "servicename = '%s', "% self.getServiceName()
-		sql += "aspectratio ='%s', "% self.getAspectRatio()
-		sql += "ebno='%s', "% self.getEbno()
-		sql += "pol='%s', "% self.getPol()
-		sql += "castatus='%s', "% self.getBissStatus()
-		sql += "videoresolution='%s', "% self.getVResol()
-		sql += "framerate='%s', "% self.getFrameRate()
-		sql += "videostate='%s',"% self.getVState()
-		sql += "asioutencrypted='%s',"% self.getAsiOutEncrypted()
-		sql += "frequency='%s',"% self.getinSatSetupSatelliteFreq()
-		sql += "symbolrate='%s',"% self.getinSatSetupSymbolRate()
-		sql += "fec='%s',"% self.getinSatSetupFecRate()
-		sql += "rolloff='%s',"% self.getinSatSetupRollOff()
-		sql += "modulationtype='%s',"% self.getinSatSetupModType()
 		sql += "asi='%s',"% self.getinput_selection()
 		sql += "muxbitrate='%s', "% self.getinputTsBitrate()
 		sql += "muxstate='%s' ,"% self.getlockState()
-		sql += "sat_input='%i' ,"% self.getinSatSetupInputSelect()
-		sql += "ipinusesvlan='%d' ,"% self.getIPInputUsesVlan()
-		sql += "ipoutencrypted='%s' ,"%self.getIPoutEncrypted()
-		sql += "ServiceID='%s', "%self.getServiceID()
-		sql += "numServices='%s', "%self.getNumServices()
+		# Full Only
+		if self.getRefreshType("full"):
+			sql += "asioutencrypted='%s',"% self.getAsiOutEncrypted()
+			sql += "ipoutencrypted='%s' ,"%self.getIPoutEncrypted()
+			sql += "numServices='%s', "%self.getNumServices()
+			
+		if self.getRefreshType("sat"):
+			sql += "frequency='%s',"% self.getinSatSetupSatelliteFreq()
+			sql += "symbolrate='%s',"% self.getinSatSetupSymbolRate()
+			sql += "fec='%s',"% self.getinSatSetupFecRate()
+			sql += "rolloff='%s',"% self.getinSatSetupRollOff()
+			sql += "modulationtype='%s',"% self.getinSatSetupModType()
+			sql += "ebno='%s', "% self.getEbno()
+			sql += "pol='%s', "% self.getPol()
+			sql += "sat_input='%i' ,"% self.getinSatSetupInputSelect()
+			
+			
+		if self.getRefreshType("lock"):
+			sql += "servicename = '%s', "% self.getServiceName()
+			sql += "aspectratio ='%s', "% self.getAspectRatio()
+			sql += "castatus='%s', "% self.getBissStatus()
+			sql += "videoresolution='%s', "% self.getVResol()
+			sql += "framerate='%s', "% self.getFrameRate()
+			sql += "videostate='%s',"% self.getVState()
+			sql += "ServiceID='%s', "%self.getServiceID()
+			
+		if self.getRefreshType("ip"):
+			sql += "ipinusesvlan='%d' ,"% self.getIPInputUsesVlan()
+			sql += "ipinaddr='%s' "%self.getIPInputAddress()
+		
+		
+		
+		
+		
+		
+		
+		
 		sql += "updated= CURRENT_TIMESTAMP ,"
-		sql += "ipinaddr='%s' "%self.getIPInputAddress()
+		
 		
 		sql += "WHERE id = %i; " %self.getId()
 		return sql

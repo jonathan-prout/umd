@@ -53,31 +53,84 @@ class RX1290(IRD):
 		self.name = name
 		self.modelType = "RX1290"
 		super( RX1290, self ).__init__()
+	def refresh(self):
+		""" Refresh method of class """
+		""" removed import snmp here """
+		try:
+			refresh_params = [self.getinput_selection(),
+								["","Locked"][self.getlockState() == "Lock"],
+								["","Locked"][int(self.getinputTsBitrate()) >1]
+							]
+		except KeyError:
+			refresh_params = ["full"]
+		except ValueError:
+			refresh_params = ["full"]
+		self.set_refreshType(" ".join(refresh_params).lower())
+		
+		try:
+			self.snmp_res_dict  = snmp.get(self.getoids(), self.ip)
+		except:
+			self.set_offline()
+		if len(self.snmp_res_dict.keys()) < len(self.getoids().keys()):
+			self.oid_mask()
 
+		if len(self.snmp_res_dict) == 0:
+			self.set_offline()
+		if len(self.oid_getBulk) !=0:
+			self.snmp_res_dict.update( snmp.walk(self.bulkoids(), self.ip) )
+		
+		try:
+			self.refreshCounter +=1
+		except AttributeError:
+			self.refreshCounter = 0
+		
+		if not self.getRefreshType("lock"): #Did we just lock? full refresh next time.
+			if any([self.getlockState() == "Lock",int(self.getinputTsBitrate()) >1]):
+				self.set_refreshType("full")
 	def updatesql(self):
 		#return  "UPDATE status SET status = '%s' , servicename = '%s', aspectratio ='%s', ebno='%s', pol='%s', castatus='%s', videoresolution='%s', framerate='%s',videostate='%s',asioutencrypted='%s',frequency='%s',symbolrate='%s',fec='%s',rolloff='%s',modulationtype='%s',asi='%s',muxbitrate='%s', sat_input='%i' WHERE id = %i; " %(self.getStatus(),self.getServiceName(),self.getAspectRatio(),self.getEbno(),self.getPol(),self.getBissStatus(),self.getVResol(),self.getFrameRate(),self.getVState(),self.getAsiOutEncrypted(),self.getinSatSetupSatelliteFreq(),self.getinSatSetupSymbolRate(),self.getinSatSetupFecRate(),self.getinSatSetupRollOff(),self.getinSatSetupModType(),self.getinput_selection(),self.getinputTsBitrate(),self.getinSatSetupInputSelect(),self.getId())
+		#ALL
 		sql =  "UPDATE status SET status = '%s' , "% self.getStatus()
-		sql += "servicename = '%s', "% self.getServiceName()
-		sql += "aspectratio ='%s', "% self.getAspectRatio()
-		sql += "ebno='%s', "% self.getEbno()
-		sql += "pol='%s', "% self.getPol()
-		sql += "castatus='%s', "% self.getCAStatus()
-		sql += "videoresolution='%s', "% self.getVResol()
-		sql += "framerate='%s', "% self.getFrameRate()
-		sql += "videostate='%s',"% self.getVState()
-		sql += "asioutencrypted='%s',"% self.getAsiOutEncrypted()
-		sql += "frequency='%s',"% self.getinSatSetupSatelliteFreq()
-		sql += "symbolrate='%s',"% self.getinSatSetupSymbolRate()
-		sql += "fec='%s',"% self.getinSatSetupFecRate()
-		sql += "rolloff='%s',"% self.getinSatSetupRollOff()
-		sql += "modulationtype='%s',"% self.getinSatSetupModType()
 		sql += "asi='%s',"% self.getinput_selection()
-		sql += "muxbitrate='%s', "% self.getinputTsBitrate()
 		sql += "muxstate='%s' ,"% self.getlockState()
-		sql += "ServiceID='%s', "%self.getServiceID()
-		sql += "numServices='%s', "%self.getNumServices()
+		sql += "muxbitrate='%s', "% self.getinputTsBitrate()
+		# Full Only
+		if self.getRefreshType("full"):
+			sql += "asioutencrypted='%s',"% self.getAsiOutEncrypted()
+			sql += "ServiceID='%s', "%self.getServiceID()
+			sql += "numServices='%s', "%self.getNumServices()
+		
+		
+		
+		# SAT IN
+		if self.getRefreshType("sat"):
+			sql += "ebno='%s', "% self.getEbno()
+			sql += "pol='%s', "% self.getPol()		
+			sql += "frequency='%s',"% self.getinSatSetupSatelliteFreq()
+			sql += "symbolrate='%s',"% self.getinSatSetupSymbolRate()
+			sql += "fec='%s',"% self.getinSatSetupFecRate()
+			sql += "rolloff='%s',"% self.getinSatSetupRollOff()
+			sql += "modulationtype='%s',"% self.getinSatSetupModType()
+			sql += "sat_input='%i'"% self.getinSatSetupInputSelect()
+		
+		#Locked
+		if self.getRefreshType("locked"):
+			sql += "servicename = '%s', "% self.getServiceName()
+			sql += "aspectratio ='%s', "% self.getAspectRatio()
+	
+			sql += "castatus='%s', "% self.getCAStatus()
+			sql += "videoresolution='%s', "% self.getVResol()
+			sql += "framerate='%s', "% self.getFrameRate()
+			sql += "videostate='%s',"% self.getVState()
+		
+
+		
+		
+		
+
+		
 		sql += "updated= CURRENT_TIMESTAMP ,"
-		sql += "sat_input='%i'"% self.getinSatSetupInputSelect()
+		
 		sql += "WHERE id = %i; " %self.getId()
 		return sql
 	def getinSatSetupModType(self):
@@ -142,6 +195,16 @@ class RX8200(IRD):
 
 	def refresh(self):
 		""" Refresh method of Rx8200 """
+		try:
+			refresh_params = [self.getinput_selection(),
+								["","Locked"][self.getlockState() == "Lock"],
+								["","Locked"][int(self.getinputTsBitrate()) >1]
+							]
+		except KeyError:
+			refresh_params = ["full"]
+		except ValueError:
+			refresh_params = ["full"]
+		self.set_refreshType(" ".join(refresh_params).lower())
 		
 		try:
 			self.snmp_res_dict  = snmp.get(self.getoids(), self.ip)
@@ -152,34 +215,58 @@ class RX8200(IRD):
 
 		if len(self.snmp_res_dict) == 0:
 			self.set_offline()
-		if len(self.oid_getBulk) !=0:
+		if len(self.bulkoids()) !=0:
 			if self.getNumServices(): 
 				self.snmp_res_dict.update( snmp.getbulk(self.bulkoids(), self.ip, self.getNumServices() +1  ) )
-	
+				
 		
+		try:
+			self.refreshCounter +=1
+		except AttributeError:
+			self.refreshCounter = 0
+			
+		if not self.getRefreshType("lock"): #Did we just lock? full refresh next time.
+			if any([self.getlockState() == "Lock",int(self.getinputTsBitrate()) >1]):
+				self.set_refreshType("full")
 	def updatesql(self):
 		sql =  "UPDATE status SET status = '%s' , "% self.getStatus()
-		sql += "servicename = '%s', "% self.getServiceName()
-		sql += "aspectratio ='%s', "% self.getAspectRatio()
-		sql += "ebno='%s', "% self.getEbno()
-		sql += "pol='%s', "% self.getPol()
-		sql += "castatus='%s', "% self.getCAStatus()
-		sql += "videoresolution='%s', "% self.getVResol()
-		sql += "framerate='%s', "% self.getFrameRate()
-		sql += "videostate='%s',"% self.getVState()
-		sql += "asioutencrypted='%s',"% self.getAsiOutEncrypted()
-		sql += "frequency='%s',"% self.getinSatSetupSatelliteFreq()
-		sql += "symbolrate='%s',"% self.getinSatSetupSymbolRate()
-		sql += "fec='%s',"% self.getinSatSetupFecRate()
-		sql += "rolloff='%s',"% self.getinSatSetupRollOff()
-		sql += "modulationtype='%s',"% self.getinSatSetupModType()
+		sql += "updated= CURRENT_TIMESTAMP ,"
+		
 		sql += "asi='%s',"% self.getinput_selection()
 		sql += "muxbitrate='%s', "% self.getinputTsBitrate()
 		sql += "muxstate='%s' ,"% self.getlockState()
-		sql += "ServiceID='%s', "%self.getServiceID()
-		sql += "numServices='%s', "%self.getNumServices()
-		sql += "updated= CURRENT_TIMESTAMP ,"
-		sql += "sat_input='%i'"% self.getinSatSetupInputSelect()
+		# Full Only
+		if self.getRefreshType("full"):
+			sql += "asioutencrypted='%s',"% self.getAsiOutEncrypted()
+			
+			sql += "numServices='%s', "%self.getNumServices()
+		
+		if self.getRefreshType("sat"):
+			sql += "sat_input='%i'"% self.getinSatSetupInputSelect()
+			sql += "frequency='%s',"% self.getinSatSetupSatelliteFreq()
+			sql += "ebno='%s', "% self.getEbno()
+			sql += "symbolrate='%s',"% self.getinSatSetupSymbolRate()
+			sql += "fec='%s',"% self.getinSatSetupFecRate()
+			sql += "rolloff='%s',"% self.getinSatSetupRollOff()
+			sql += "modulationtype='%s',"% self.getinSatSetupModType()
+			
+			
+		sql += "pol='%s', "% self.getPol()
+		if self.getRefreshType("lock"):
+			sql += "ServiceID='%s', "%self.getServiceID()
+			sql += "servicename = '%s', "% self.getServiceName()
+			sql += "aspectratio ='%s', "% self.getAspectRatio()
+			sql += "castatus='%s', "% self.getCAStatus()
+			sql += "videoresolution='%s', "% self.getVResol()
+			sql += "framerate='%s', "% self.getFrameRate()
+			sql += "videostate='%s',"% self.getVState()
+		
+		
+		
+		
+
+		
+		
 		sql += "WHERE id = %i; " %self.getId()
 		return sql
 

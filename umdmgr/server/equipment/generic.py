@@ -1,7 +1,7 @@
 from server import gv
 from server import bgtask
 from helpers import snmp
-
+from helpers import static_parameters
 snmp.gv = gv #in theory we don't want to import explictly the server's version of gv
 import threading
 import copy
@@ -255,7 +255,8 @@ class equipment(object):
 			return True
 	def min_refresh_time(self):
 		return gv.min_refresh_time
-			
+	
+	
 class IRD(equipment):
 	def __init__(self):
 		self.oid_get = {}
@@ -289,17 +290,28 @@ class IRD(equipment):
 		for k, v in dic.items():
 			v = v.replace('enterprises.','.1.3.6.1.4.1.')
 			v = v.replace('X', str(self.getinSatSetupInputSelect()))
+			dic[k] = v
+			try:
+				if not self.getRefreshType(static_parameters.snmp_refresh_types[k]):
+					del dic[k]
+			except KeyError:
+				pass
 			if k in masks:
 				del dic[k]
-			else:
-				dic[k] = v
+			
+				
 		#if self.getinSatSetupInputSelect() = 1:
 		#    print "%s is on imput %s"%(self.name, self.getinSatSetupInputSelect())
 		return dic
 	
 	def bulkoids(self):
-		return self.oid_getBulk
-	
+		dic  = self.oid_getBulk.copy()
+		for k in dic.keys():
+			try:
+				if not self.getRefreshType(static_parameters.snmp_refresh_types[k]):
+					del dic[k]
+			except KeyError:
+				pass	
 	def getServiceName(self):
 		try:
 			serviceName = self.snmp_res_dict["service name"]
@@ -540,7 +552,28 @@ class IRD(equipment):
 				result = gv.sql.qselect(order)
 			except: pass
 			
-		
+	def getRefreshType(criteria):
+		if not hasattr(self, "refreshType"):
+			self.refreshType = "full"
+		if not hasattr(self, "refreshCounter"):
+			self.refreshCounter = 0
+		if self.refreshCounter == 10:
+			self.refreshCounter = 0
+		if self.refreshCounter == 0:
+			self.refreshType = "full"	
+		if self.refreshType == "full":
+			return True
+		if criteria == "all":
+			return True
+		if criteria in self.refreshType:
+			return True
+		return False
+	def set_refreshType(newType):
+		if newType.replace(" ", "") != "":
+			self.refreshType = newType
+		else:
+			self.refreshType = "full"
+	
 class GenericIRD(IRD):
 	def __init__(self, equipmentId, ip, name):
 		self.equipmentId = equipmentId
