@@ -100,7 +100,8 @@ def determine_type(data):
 
 def refresh(data):
 	currentEquipment = deserialize(data)
-
+	print "refresh method"
+	print "deserialized %s: %s"%(currentEquipment.equipmentID,currentEquipment.modelID, )
 	try:
 		currentEquipment.refresh()
 	except:
@@ -130,3 +131,4 @@ def refresh(data):
 		updatesql = "UPDATE `UMD`.`status` SET `aspectratio` = '',`status` = 'Offline', `ebno` = '', `frequency` = '', `symbolrate` = '', `asi` = '', `sat_input` = '', `castatus` = '', `videoresolution` = '', `framerate` = '', `videostate` = '', `asioutencrypted` = '', `framerate` = '',`muxbitrate` = '', `muxstate` = '' WHERE `status`.`id` = '%i'"%equipmentID
 		sendToSQL(updatesql)
 		checkin(currentEquipment.serialize())
+	print "end refresh method"
