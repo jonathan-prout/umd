@@ -267,39 +267,38 @@ class DR5000(IRD):
 				self.set_refreshType("full")
 	
 	def updatesql(self):
-		sql =  "UPDATE status SET status = '%s' , "% self.getStatus()
-		sql += "asi='%s',"% self.getinput_selection()
-		sql += "muxbitrate='%s', "% self.getinputTsBitrate()
-		sql += "muxstate='%s' ,"% self.getlockState()
-		# Full Only
-		if self.getRefreshType("full"):
-			sql += "asioutencrypted='%s',"% self.getAsiOutEncrypted()
-			sql += "ipoutencrypted='%s' ,"%self.getIPoutEncrypted()
-			sql += "numServices='%s', "%self.getNumServices()
-			
-		if self.getRefreshType("sat"):
-			sql += "frequency='%s',"% self.getinSatSetupSatelliteFreq()
-			sql += "symbolrate='%s',"% self.getinSatSetupSymbolRate()
-			sql += "fec='%s',"% self.getinSatSetupFecRate()
-			sql += "rolloff='%s',"% self.getinSatSetupRollOff()
-			sql += "modulationtype='%s',"% self.getinSatSetupModType()
-			sql += "ebno='%s', "% self.getEbno()
-			sql += "pol='%s', "% self.getPol()
-			sql += "sat_input='%i' ,"% self.getinSatSetupInputSelect()
-			
-			
-		if self.getRefreshType("lock"):
-			sql += "servicename = '%s', "% self.getServiceName()
-			sql += "aspectratio ='%s', "% self.getAspectRatio()
-			sql += "castatus='%s', "% self.getBissStatus()
-			sql += "videoresolution='%s', "% self.getVResol()
-			sql += "framerate='%s', "% self.getFrameRate()
-			sql += "videostate='%s',"% self.getVState()
-			sql += "ServiceID='%s', "%self.getServiceID()
-			
-		if self.getRefreshType("ip"):
-			sql += "ipinusesvlan='%d' ,"% self.getIPInputUsesVlan()
-			sql += "ipinaddr='%s' "%self.getIPInputAddress()
+		sql = [ "UPDATE status SET status = '%s'  "% self.getStatus()              ]
+		sql +=[ "asi='%s'"% self.getinput_selection()                              ]
+		sql +=[ "muxbitrate='%s' "% self.getinputTsBitrate()                       ]
+		sql +=[ "muxstate='%s' "% self.getlockState()                              ]
+		# Full Only                                                                ]
+		if self.getRefreshType("full"):                
+			sql += ["asioutencrypted='%s'"% self.getAsiOutEncrypted()              ]
+			sql += ["ipoutencrypted='%s' "%self.getIPoutEncrypted()                ]
+			sql += ["numServices='%s' "%self.getNumServices()                      ]
+
+		if self.getRefreshType("sat"):                
+			sql += ["frequency='%s'"% self.getinSatSetupSatelliteFreq()            ]
+			sql += ["symbolrate='%s'"% self.getinSatSetupSymbolRate()              ]
+			sql += ["fec='%s'"% self.getinSatSetupFecRate()                        ]
+			sql += ["rolloff='%s'"% self.getinSatSetupRollOff()                    ]
+			sql += ["modulationtype='%s'"% self.getinSatSetupModType()             ]
+			sql += ["ebno='%s' "% self.getEbno()                                   ]
+			sql += ["pol='%s' "% self.getPol()                                     ]
+			sql += ["sat_input='%i' "% self.getinSatSetupInputSelect()             ]
+
+		if self.getRefreshType("lock"):           
+			sql += ["servicename = '%s' "% self.getServiceName()                   ]
+			sql += ["aspectratio ='%s' "% self.getAspectRatio()                    ]
+			sql += ["castatus='%s' "% self.getBissStatus()                         ]
+			sql += ["videoresolution='%s' "% self.getVResol()                      ]
+			sql += ["framerate='%s' "% self.getFrameRate()                         ]
+			sql += ["videostate='%s'"% self.getVState()                            ]
+			sql += ["ServiceID='%s' "%self.getServiceID()                          ]
+
+		if self.getRefreshType("ip"):                
+			sql += ["ipinusesvlan='%d' "% self.getIPInputUsesVlan()                ]
+			sql += ["ipinaddr='%s' "%self.getIPInputAddress()                      ]
 		
 		
 		
@@ -308,7 +307,7 @@ class DR5000(IRD):
 		
 		
 		
-		sql += "updated= CURRENT_TIMESTAMP ,"
+		sql += ["updated= CURRENT_TIMESTAMP "]
 		
 		
 		sql += "WHERE id = %i; " %self.getId()
