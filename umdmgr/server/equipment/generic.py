@@ -37,7 +37,7 @@ class checkout(object):
 				self.status = checkout.STAT_READY
 			return int(self.status)
 		elif self.status == checkout.STAT_CHECKEDOUT:
-			if time.time() > self.timestamp() + 60: #Checked out for 1 minute
+			if time.time() > self.timestamp + 60: #Checked out for 1 minute
 				self.status = checkout.STAT_STUCK
 			return int(self.status)
 		else:
@@ -314,7 +314,9 @@ class IRD(equipment):
 				if not self.getRefreshType(static_parameters.snmp_refresh_types[k]):
 					del dic[k]
 			except KeyError:
-				pass	
+				pass
+		return dic
+	
 	def getServiceName(self):
 		try:
 			serviceName = self.snmp_res_dict["service name"]
