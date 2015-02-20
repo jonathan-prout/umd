@@ -2,5 +2,6 @@
 
 import umdserver
 import equipment
-import pollWorker
+#import pollWorker
+import bgtask
 

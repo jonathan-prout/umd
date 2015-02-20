@@ -5,6 +5,7 @@ from helpers import static_parameters
 snmp.gv = gv #in theory we don't want to import explictly the server's version of gv
 import threading
 import copy
+import time
 
 class checkout(object):
 	STAT_INIT = 0
@@ -16,7 +17,7 @@ class checkout(object):
 	
 	def __init__(self, parent):
 		self.parent = parent
-		self.rlock = threading.Rlock()
+		self.rlock = threading.RLock()
 		self.status = checkout.STAT_INIT
 		self.timestamp = time.time()
 	def __enter__(self):
@@ -96,7 +97,7 @@ class equipment(object):
 		"""serialize data without using pickle. Returns dict"""
 		
 		serial_data = {}
-		seriralisabledata = ["ip", "equipmentId", "name", "snmp_res_dict", "oid_get", "oid_getBulk" "multicast_id_dict", "streamDict", "addressesbyname","online",  "modelType", "refreshType", "refreshCounter"]
+		seralisabledata = ["ip", "equipmentId", "name", "snmp_res_dict", "oid_get", "oid_getBulk" "multicast_id_dict", "streamDict", "addressesbyname","online",  "modelType", "refreshType", "refreshCounter"]
 		for key in seralisabledata:
 			if hasattr(self, key):
 				serial_data[key] = copy.copy(getattr(self, key))
@@ -107,8 +108,8 @@ class equipment(object):
 		expected errors are KeyError (no modelType), Type Error (wrong model Type)"""
 		if not data["modelType"] == self.modelType:
 			raise TypeError("Tried to serialise data from %s into %s"%(data["modelType"],self.modelType))
-		seriralisabledata = ["ip", "equipmentId", "name", "snmp_res_dict", "oid_get", "oid_getBulk" "multicast_id_dict", "streamDict", "addressesbyname","online",  "modelType", "refreshType", "refreshCounter"]
-		for key in self.seralisabledata:
+		seralisabledata = ["ip", "equipmentId", "name", "snmp_res_dict", "oid_get", "oid_getBulk" "multicast_id_dict", "streamDict", "addressesbyname","online",  "modelType", "refreshType", "refreshCounter"]
+		for key in seralisabledata:
 				if hasattr(self, key):
 					setattr(self, key, data[key])
 		

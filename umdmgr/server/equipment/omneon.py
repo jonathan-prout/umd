@@ -2,7 +2,8 @@ from plugin_omneon import OmneonHelper
 from server import gv
 from helpers import httpcaller
 from generic import checkout
-class IPGridport(OmneonHelper):
+import generic
+class IPGridport(OmneonHelper, generic.equipment):
 	def __init__(self, equipmentId, ip, name):
 		
 		self.equipmentId = equipmentId
@@ -13,7 +14,7 @@ class IPGridport(OmneonHelper):
 		self.get_equipment_ids()
 		self.offline = False
 		self.checkout = checkout
-		
+			
 	def get_equipment_ids(self):
 	
 		self.multicast_id_dict = {}

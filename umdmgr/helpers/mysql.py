@@ -21,10 +21,10 @@ class mysql:
 			self.db = MySQLdb.Connection(self.dhost,self.duser,self.dpass,self.dname)
 			self.cursor = self.db.cursor()
 
-		except MySQLdb.Error, e:
+		except Exception, e:
 			now = datetime.datetime.now()
 			print "Database error at ", now.strftime("%H:%M:%S")
-			print "Error %d: %s" % (e.args[0], e.args[1])
+			print "Error %s" % (e.__repr__())
 			try:
 				self.close()
 			except:

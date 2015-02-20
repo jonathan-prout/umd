@@ -5,6 +5,7 @@ import string,threading,time, Queue, getopt
 import random
 import equipment
 import gv
+import bgtask
 from helpers import snmp
 snmp.gv = gv #in theory we don't want to import explictly the server's version of gv
 
