@@ -99,14 +99,17 @@ def beginthreads():
 	bg = dbthread(t, "dbThread0", t)
 	bg.daemon = True
 	gv.threads.append(bg)
+	bg.start()
 	t += 1
 	bg = dispatcher(t, "dispatcher0", t)
 	bg.daemon = True
 	gv.threads.append(bg)
+	gv.dispatcherThread = t
 	t += 1
 	bg = checkin(t, "checkin0", t)
 	bg.daemon = True
 	gv.threads.append(bg)
+	bg.start()
 	
 
 def start(_id=None):
@@ -205,16 +208,18 @@ class checkin(myThread):
 		while gv.threadTerminationFlag == False:
 			try:
 				data = queue.get(0.1)
-				if data.has_key["equipmentID"]:
+				if data.has_key("equipmentId"):
 					gv.gotCheckedInData = True
-					equipmentID = data["equipmentID"]
+					equipmentID = data["equipmentId"]
 					try:
-						gv.equipment[equipmentID].deserialize(data)
+						gv.equipmentDict[equipmentID].deserialize(data)
 					except TypeError: #Equipment Type Changed
-						gv.equipment[equipmentID] = bgtask.deserialize(data)
-					gv.equipment[equipmentID].checkout.checkin()
+						gv.equipmentDict[equipmentID] = bgtask.deserialize(data)
+					gv.equipmentDict[equipmentID].checkout.checkin()
 				else:
 					gv.gotCheckedInData = False
+					print "checkin fail"
+					print data
 			except Queue.Empty:
 				gv.gotCheckedInData = False
 
@@ -281,8 +286,8 @@ def main(debugBreak = False):
 	#backgroundworker()
 	gv.ThreadCommandQueue.join()
 	print "Types determined. Took %s seconds. Begininng main loop. Press CTRL C to quit"% (time.time() - time1)
-	for k in gv.equipmentDict.keys():
-		gv.ThreadCommandQueue.put((bgtask.refresh, k))
+	for e in gv.equipmentDict.values():
+		gv.ThreadCommandQueue.put((bgtask.refresh, e.serialize()))
 	
 	"""
 	for i in range(5):
@@ -292,7 +297,8 @@ def main(debugBreak = False):
 	#backgroundworker()
 	gv.ThreadCommandQueue.join()
 	print "Took %s seconds. "% (time.time() - time1)
-	
+	print "Starting Dispatcher"
+	gv.threads[gv.dispatcherThread].start()
 	
 	
 	for k in gv.equipmentDict.keys():

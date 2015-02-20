@@ -67,8 +67,9 @@ class mysql:
                                                 self.db.commit()
 
 		except Exception as e:
-			pass
-		
+			with open("sqlerror.log", "a") as fobj:
+				fobj.write( "%s,%s,%s"%(time.strftime("%d-%m-%Y %H:%M:%S"), e.__repr__(),sql) )
+				print "%s SQL error %s, %s"%(time.strftime("%d-%m-%Y %H:%M:%S"), e.__repr__(),sql)
 		
 		
 		
@@ -79,10 +80,10 @@ class mysql:
 			if self.semaphore:
 				self.semaphore.release()
 		
-		
+		"""
 		if e != None:
 			raise(e)
-		
+		"""
 		return rows
 		
 	def close(self):

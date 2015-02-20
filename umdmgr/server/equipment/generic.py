@@ -33,7 +33,7 @@ class checkout(object):
 		if self.status in [checkout.STAT_INIT, checkout.STAT_INQUEUE, checkout.STAT_READY]:
 			return int(self.status)
 		elif self.status == checkout.STAT_SLEEP:
-			if time.time() > self.timestamp() + self.parent.min_refresh_time():
+			if time.time() > self.timestamp + self.parent.min_refresh_time():
 				self.status = checkout.STAT_READY
 			return int(self.status)
 		elif self.status == checkout.STAT_CHECKEDOUT:
@@ -48,8 +48,11 @@ class checkout(object):
 		self.timestamp = time.time()
 	def checkin(self):
 		self.status = checkout.STAT_SLEEP
-		self.timestamp = time.time()	
-		self.rlock.release()
+		self.timestamp = time.time()
+		try:	
+			self.rlock.release()
+		except RuntimeError:
+			pass #Error raised from releasing a non aquired lock error. Don't care.
 	def enqueue(self):
 		self.status = checkout.STAT_INQUEUE
 		self.timestamp = time.time()	
@@ -315,8 +318,7 @@ class IRD(equipment):
 					del dic[k]
 			except KeyError:
 				pass
-		return dic
-	
+		return dic	
 	def getServiceName(self):
 		try:
 			serviceName = self.snmp_res_dict["service name"]
@@ -557,7 +559,7 @@ class IRD(equipment):
 				result = gv.sql.qselect(order)
 			except: pass
 			
-	def getRefreshType(criteria):
+	def getRefreshType(self, criteria):
 		if not hasattr(self, "refreshType"):
 			self.refreshType = "full"
 		if not hasattr(self, "refreshCounter"):
@@ -573,7 +575,7 @@ class IRD(equipment):
 		if criteria in self.refreshType:
 			return True
 		return False
-	def set_refreshType(newType):
+	def set_refreshType(self, newType):
 		if newType.replace(" ", "") != "":
 			self.refreshType = newType
 		else:
