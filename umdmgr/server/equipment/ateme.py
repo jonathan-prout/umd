@@ -309,6 +309,6 @@ class DR5000(IRD):
 		
 		sql += ["updated= CURRENT_TIMESTAMP "]
 		
-		
+		sql = ", ".join(sql)
 		sql += "WHERE id = %i; " %self.getId()
 		return sql
