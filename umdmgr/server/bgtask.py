@@ -1,4 +1,5 @@
-
+import equipment
+import gv
 def deserialize(data):
 	""" Instanciates equip with data. Beware of keyerrors and Typeerrors"""
 	equipTypes = {
@@ -15,8 +16,8 @@ def deserialize(data):
 		"RX8200-4RF":equipment.ericsson.RX8200_4RF,
 		"RX8200-2RF":equipment.ericsson.RX8200_2RF,
 	}
-	equip = equipTypes["modelType" ](data["equipmentId"], data["ip"], data["name"])
-	equip.deserialise(data)
+	equip = equipTypes[data["modelType"] ](data["equipmentId"], data["ip"], data["name"])
+	equip.deserialize(data)
 	return equip
 
 def checkin(data):
@@ -37,7 +38,7 @@ def determine_type(data):
 			equipTypeStr = currentEquipment.determine_type()
 		except:
 			equipTypeStr = "OFFLINE"
-	equipmentID = currentEquipment.equipmentID
+	equipmentID = currentEquipment.equipmentId
 	ip = currentEquipment.ip
 	
 	name = currentEquipment.name
@@ -100,8 +101,8 @@ def determine_type(data):
 
 def refresh(data):
 	currentEquipment = deserialize(data)
-	print "refresh method"
-	print "deserialized %s: %s"%(currentEquipment.equipmentID,currentEquipment.modelID, )
+	#print "refresh method"
+	#print "deserialized %s: %s"%(currentEquipment.equipmentId,currentEquipment.modelType )
 	try:
 		currentEquipment.refresh()
 	except:
@@ -116,7 +117,7 @@ def refresh(data):
 		sendToSQL(updatechannel)
 		
 	
-
+		"""
 		try:
 			
 			currentEquipment.refreshjitter = time.time() - currentEquipment.excpetedNextRefresh 
@@ -124,11 +125,11 @@ def refresh(data):
 		
 		
 		currentEquipment.excpetedNextRefresh = time.time() + currentEquipment.min_refresh_time()
-		
+		"""
 		# Add itself to end of queue
 		checkin(currentEquipment.serialize())
 	else:
-		updatesql = "UPDATE `UMD`.`status` SET `aspectratio` = '',`status` = 'Offline', `ebno` = '', `frequency` = '', `symbolrate` = '', `asi` = '', `sat_input` = '', `castatus` = '', `videoresolution` = '', `framerate` = '', `videostate` = '', `asioutencrypted` = '', `framerate` = '',`muxbitrate` = '', `muxstate` = '' WHERE `status`.`id` = '%i'"%equipmentID
+		updatesql = "UPDATE `UMD`.`status` SET `aspectratio` = '',`status` = 'Offline', `ebno` = '', `frequency` = '', `symbolrate` = '', `asi` = '', `sat_input` = '', `castatus` = '', `videoresolution` = '', `framerate` = '', `videostate` = '', `asioutencrypted` = '', `framerate` = '',`muxbitrate` = '', `muxstate` = '' WHERE `status`.`id` = '%i'"%currentEquipment.equipmentId
 		sendToSQL(updatesql)
 		checkin(currentEquipment.serialize())
-	print "end refresh method"
+	#print "end refresh method"
