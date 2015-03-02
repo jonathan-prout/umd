@@ -395,6 +395,8 @@ def main(debugBreak = False):
 						currentEquipment.excpetedNextRefresh = time.time() + float(nr) /100 
 						gv.ThreadCommandQueue.put((bgtask.refresh, k))
 				loopcounter = 0
+				""" BREAK HERE (test) """
+				return
 				if gv.loud:
 					print "Resuming Threads"
 				gv.threadJoinFlag = False
