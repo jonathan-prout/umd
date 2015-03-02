@@ -490,7 +490,7 @@ def main(debugBreak = False):
 				gv.dbQ.put("UPDATE `UMD`.`management` SET `value` = '%s' WHERE `management`.`key` = 'running_threads';"%runningThreads)
 				
 				
-				new_poll_time = gv.dbQ.put("SELECT * FROM `management` WHERE `key` LIKE 'min_poll_time'")
+				new_poll_time = gv.sql.qselect("SELECT * FROM `management` WHERE `key` LIKE 'min_poll_time'")
 				try:
 					fpoll_time = float(new_poll_time[0][1])
 					if fpoll_time > 0:
