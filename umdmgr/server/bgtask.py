@@ -50,7 +50,7 @@ def determine_type(data):
 		"RX1290":equipment.ericsson.RX1290,
 		"DR5000":equipment.ateme.DR5000,
 		"TVG420":equipment.tvips.TVG420,
-		"IP Gridport":equipment.omneon.IPGridport
+		"IP GRIDPORT":equipment.omneon.IPGridport
 
 	}
 	

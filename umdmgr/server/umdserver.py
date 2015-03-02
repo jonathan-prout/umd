@@ -424,6 +424,8 @@ def main(debugBreak = False):
 					try:
 						if gv.equipmentDict[equipmentID].get_offline():
 							offcount += 1
+						elif isinstance(gv.equipmentDict[equipmentID], equipment.generic.GenericIRD):
+							offcount += 1
 						else:
 							
 							jitter = gv.equipmentDict[equipmentID].checkout.jitter
