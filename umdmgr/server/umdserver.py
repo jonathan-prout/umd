@@ -342,6 +342,8 @@ def main(debugBreak = False):
 					pass
 			loopcounter += 1
 			if loopcounter > 10: # Restart all threads every 10 minutes
+				loopcounter = 0
+				"""
 				try:
 					while 1:
 						gv.offlineQueue.get_nowait() #Truncate Queue
@@ -360,12 +362,13 @@ def main(debugBreak = False):
 				except Queue.Empty:
 					pass
 				gv.ThreadCommandQueue.join()
+				
 				for equipmentID in gv.equipmentDict.keys():
 					try:
 						if gv.equipmentDict[equipmentID].get_offline():
 							offcount += 1
 						else:
-							jitter = float(gv.equipmentDict[equipmentID].refreshjitter)
+							jitter = float(gv.equipmentDict[equipmentID].checkout.jitter)
 						jitterlist.append(jitter)
 						
 						if gv.loud:
@@ -378,6 +381,7 @@ def main(debugBreak = False):
 								print "kicking %s, %s now %s"%(equipmentID, gv.equipmentDict[equipmentID].ip, ["online","offline"][gv.equipmentDict[equipmentID].get_offline()])
 						else:
 							oncount += 1
+						
 					except:
 						continue
 				for k in gv.equipmentDict.keys():
@@ -395,13 +399,12 @@ def main(debugBreak = False):
 						currentEquipment.excpetedNextRefresh = time.time() + float(nr) /100 
 						gv.ThreadCommandQueue.put((bgtask.refresh, k))
 				loopcounter = 0
-				""" BREAK HERE (test) """
-				return
+				
 				if gv.loud:
 					print "Resuming Threads"
 				gv.threadJoinFlag = False
 				gv.threadTerminationFlag = False
-			
+				"""
 			if loopcounter > 2:
 				oncount = 0
 				offcount = 0
@@ -435,14 +438,22 @@ def main(debugBreak = False):
 							oncount += 1
 							
 					except: pass
-					if gv.statDict.has_key(equipmentID):
+					statuses = {
+						0:"STAT_INIT",
+						1:"STAT_SLEEP",
+						2:"STAT_READY",
+						3:"STAT_INQUEUE",
+						4:"STAT_CHECKEDOUT",
+						5:"STAT_STUCK"
+					}
+					if hasattr(gv.equipmentDict[equipmentID], "checkout"):
 						try:
-							tally(gv.statDict[equipmentID]["last action"])
+							tally(statuses[gv.equipmentDict[equipmentID].checkout.status])
 						except KeyError:
 							tally("KeyError")
 						if gv.loud:
-							if gv.statDict[equipmentID]["timestamp"] < time.time() - gv.equipmentDict[equipmentID].min_refresh_time():
-								print "%d %f seconds late with status %s"%(equipmentID, time.time() - gv.equipmentDict[equipmentID].min_refresh_time() - gv.statDict[equipmentID]["timestamp"], gv.statDict[equipmentID]["last action"] )
+							if gv.equipmentDict[equipmentID].checkout.timestamp < time.time() - gv.equipmentDict[equipmentID].min_refresh_time():
+								print "%d %f seconds late with status %s"%(equipmentID, time.time() - gv.equipmentDict[equipmentID].min_refresh_time() - gv.equipmentDict[equipmentID].checkout.timestamp, statuses[gv.equipmentDict[equipmentID].checkout.status] )
 					else:
 						tally("missing")
 				def avg(L):

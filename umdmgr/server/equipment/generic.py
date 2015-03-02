@@ -20,6 +20,7 @@ class checkout(object):
 		self.rlock = threading.RLock()
 		self.status = checkout.STAT_INIT
 		self.timestamp = time.time()
+		self.jitter = 0
 	def __enter__(self):
 		self.rlock.acquire()
 		self.status = checkout.STAT_CHECKEDOUT
@@ -48,6 +49,7 @@ class checkout(object):
 		self.timestamp = time.time()
 	def checkin(self):
 		self.status = checkout.STAT_SLEEP
+		self.jitter = time.time() - time.timestamp
 		self.timestamp = time.time()
 		try:	
 			self.rlock.release()
