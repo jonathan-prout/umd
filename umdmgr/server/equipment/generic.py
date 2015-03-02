@@ -74,8 +74,28 @@ class checkout(object):
 		self.status = checkout.STAT_INQUEUE
 		self.timestamp = time.time()	
 
+class serializableObj(object):
+	def serialize(self ):
+		"""serialize data without using pickle. Returns dict"""
+		
+		serial_data = {}
+		seralisabledata = ["ip", "equipmentId", "name", "snmp_res_dict", "oid_get", "oid_getBulk" "multicast_id_dict", "streamDict", "addressesbyname","online",  "modelType", "refreshType", "refreshCounter"]
+		for key in seralisabledata:
+			if hasattr(self, key):
+				serial_data[key] = copy.copy(getattr(self, key))
+		return serial_data
+		
+	def deserialize(self, data):
+		""" deserialise the data from above
+		expected errors are KeyError (no modelType), Type Error (wrong model Type)"""
+		if not data["modelType"] == self.modelType:
+			raise TypeError("Tried to serialise data from %s into %s"%(data["modelType"],self.modelType))
+		seralisabledata = ["ip", "equipmentId", "name", "snmp_res_dict", "oid_get", "oid_getBulk" "multicast_id_dict", "streamDict", "addressesbyname","online",  "modelType", "refreshType", "refreshCounter"]
+		for key in seralisabledata:
+				if hasattr(self, key):
+					setattr(self, key, data[key])
 
-class equipment(object):
+class equipment(serializableObj):
 	modelType = "Not Set"
 	def getoid(self):
 		""" Obtains SNMP Paramaters for ModelType according to database"""
@@ -113,25 +133,7 @@ class equipment(object):
 		#self.oid_get2 = self.oid_get #there is a bug that overwrites self.oid_get. I can't find it
 		#gv.sql.close()
 	
-	def serialize(self ):
-		"""serialize data without using pickle. Returns dict"""
-		
-		serial_data = {}
-		seralisabledata = ["ip", "equipmentId", "name", "snmp_res_dict", "oid_get", "oid_getBulk" "multicast_id_dict", "streamDict", "addressesbyname","online",  "modelType", "refreshType", "refreshCounter"]
-		for key in seralisabledata:
-			if hasattr(self, key):
-				serial_data[key] = copy.copy(getattr(self, key))
-		return serial_data
-		
-	def deserialize(self, data):
-		""" deserialise the data from above
-		expected errors are KeyError (no modelType), Type Error (wrong model Type)"""
-		if not data["modelType"] == self.modelType:
-			raise TypeError("Tried to serialise data from %s into %s"%(data["modelType"],self.modelType))
-		seralisabledata = ["ip", "equipmentId", "name", "snmp_res_dict", "oid_get", "oid_getBulk" "multicast_id_dict", "streamDict", "addressesbyname","online",  "modelType", "refreshType", "refreshCounter"]
-		for key in seralisabledata:
-				if hasattr(self, key):
-					setattr(self, key, data[key])
+
 		
 	def refresh(self):
 		""" Refresh method of class """

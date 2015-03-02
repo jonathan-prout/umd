@@ -3,7 +3,7 @@ from server import gv
 from helpers import httpcaller
 from generic import checkout
 import generic
-class IPGridport(OmneonHelper, generic.equipment):
+class IPGridport(OmneonHelper, generic.serializableObj):
 	def __init__(self, equipmentId, ip, name):
 		
 		self.equipmentId = equipmentId
