@@ -465,7 +465,7 @@ def main(debugBreak = False):
 					return float(sum(L)) / len(L)
 				for t in gv.threads:
 					try:
-						if t.running:
+						if t.isAlive():
 							runningThreads += 1
 						else:
 							stoppedThreads += 1
@@ -478,6 +478,13 @@ def main(debugBreak = False):
 					print "%s stopped threads. %s running threads"%(stoppedThreads, runningThreads)
 					for k,v in tallyDict.iteritems():
 						print "%d in status %s"%(v,k)
+					for k in statuses.values(): #returns names
+						try:
+							v = tallyDict[k]
+						except KeyError:
+							v = 0
+						
+						gv.dbQ.put("UPDATE `UMD`.`management` SET `value` = '%s' WHERE `management`.`key` = '%s';" %(v,k) )
 				mj = float(min(jitterlist))
 				xj = float(max(jitterlist))
 				aj = float(avg(jitterlist))
