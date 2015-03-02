@@ -1,5 +1,7 @@
 import equipment
 import gv
+import random
+
 def deserialize(data):
 	""" Instanciates equip with data. Beware of keyerrors and Typeerrors"""
 	equipTypes = {
@@ -56,7 +58,7 @@ def determine_type(data):
 	for key in simpleTypes.keys():
 		if  any( ( (key in equipTypeStr), isinstance(currentEquipment, simpleTypes[key]) ) ):
 			currentEquipment = simpleTypes[key](equipmentID, ip, name)
-			gv.addEquipment(currentEquipment)
+			#gv.addEquipment(currentEquipment)
 			t = key
 			break
 		
@@ -71,7 +73,7 @@ def determine_type(data):
 		elif subtype == "RX8200-2RF":
 			t = "Rx8200-2RF"
 			currentEquipment = equipment.ericsson.RX8200_2RF(equipmentID, ip, name)
-		gv.addEquipment(currentEquipment)
+		#gv.addEquipment(currentEquipment)
 		
 		
 	elif  any( ( ("NS2000"in equipTypeStr), isinstance(currentEquipment, equipment.novelsat.NS2000) ) ):
@@ -84,9 +86,9 @@ def determine_type(data):
 		elif subtype == "NS2000_SNMP":
 			currentEquipment = equipment.novelsat.NS2000_SNMP(equipmentID, ip, name)
 			t = subtype
-		currentEquipment.lastRefreshTime = 0
-		currentEquipment.excpetedNextRefresh = float(random.randint(0,50)) /10
-		gv.addEquipment(currentEquipment)
+		#currentEquipment.lastRefreshTime = 0
+		#currentEquipment.excpetedNextRefresh = float(random.randint(0,50)) /10
+		#gv.addEquipment(currentEquipment)
 		
 		
 	elif equipTypeStr == "OFFLINE":	

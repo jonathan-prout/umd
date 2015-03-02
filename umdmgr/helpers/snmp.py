@@ -1,3 +1,8 @@
+import sys
+import traceback
+from pysnmp.entity.rfc3413.oneliner import cmdgen
+from pysnmp.proto import rfc1902
+
 def oidFromDict(n , invdict):
 	if not invdict.has_key(n):
 		if invdict.has_key("." + n):
@@ -16,20 +21,19 @@ def get(commandDict, ip):
 		return get_subprocess(commandDict, ip)
 	except Exception as e:
 		if any( ( isinstance(e, AssertionError), isinstance(e, AttributeError) ) ):
-		    if gv.loudSNMP:
-			    print "NETSNP Errored so using PYSNMP on %s"% ip
-		    return get_pysnmp(commandDict, ip)
+			if gv.loudSNMP:
+				print "NETSNP Errored so using PYSNMP on %s"% ip
+			return get_pysnmp(commandDict, ip)
 		else:
 			print "snmp.get: %s Error on %s"% (type(e),ip)
-			gv.exceptions.append(e)
+			gv.exceptions.append((e, traceback.format_tb( sys.exc_info()[2]) ))
 			raise e
 		
 			
 
 
 def get_pysnmp(commandDict, ip):
-	from pysnmp.entity.rfc3413.oneliner import cmdgen
-	from pysnmp.proto import rfc1902 
+
 	#import gv
 	if commandDict == {}:
 		return {}
@@ -260,7 +264,7 @@ def walk_subprocess(commandDict, ip):
 	return returndict
 	
 def walk_pysnmp(commandDict, ip):
-	from pysnmp.entity.rfc3413.oneliner import cmdgen
+	
 	commands = []
 	invdict = {}
 	returndict = {}

@@ -8,6 +8,7 @@ import gv
 import bgtask
 from helpers import snmp
 from helpers import debug
+import traceback
 snmp.gv = gv #in theory we don't want to import explictly the server's version of gv
 
 from helpers import mysql
@@ -247,13 +248,13 @@ def backgroundworker(myQ):
 			try:
 				func(data)
 			except Exception, e:
-				error = e	
+				error = sys.exc_info()	
 			
 			finally:	
 				#print "processed a thred command!s"
 				myQ.task_done()
 			if error:
-				gv.exceptions.append(error)
+				gv.exceptions.append(( error[1], traceback.format_tb(error[2]) ))
 			item +=1
 
 
@@ -557,7 +558,7 @@ def main(debugBreak = False):
 				crashdump()
 		except Exception as e:
 			
-			gv.exceptions.append(e)
+			gv.exceptions.append( (e, traceback.format_tb( sys.exc_info()[2]) ) )
 			print "%s: %s."%(e,str(e))
 			if gv.debug:
 				gv.threadJoinFlag = True
