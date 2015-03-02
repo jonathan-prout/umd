@@ -10,7 +10,12 @@ class tvips(object):
 	""" For shared class parts"""
 	
 class asiport:
-	pass
+	def __init__(self, d = None):
+		if d:
+				for k,v in d.iteritems():
+					setattr(self, k,v)
+	
+		
 		
 		
 
@@ -52,7 +57,7 @@ class TVG420(tvips):
 			destlist = [""] *8
 			ip_tx_rate = ["0"] *8
 			ip_rx_rate = ["0"] *8
-		ports = range(len(ids))
+		self.ports = range(len(ids))
 		self.ids = []
 		self.ip_tx_rate = []
 		self.ip_rx_rate = []
@@ -66,17 +71,17 @@ class TVG420(tvips):
 			
 		self.enablelist = enablelist
 		self.labellist = labellist
-		self.dirlist = dir
+		self.dirlist = dirlist
 		self.destlist = destlist
 		
 		
-		for item in ports:
-			ports[item] = asiport()
-			ports[item].id = ids[item]
-			ports[item].enable = enablelist[item]
-			ports[item].dir = dirlist[item]
-			ports[item].dest = destlist[item]
-			ports[item].label = labellist[item]
+		for item in self.ports:
+			self.ports[item] = asiport()
+			self.ports[item].id = ids[item]
+			self.ports[item].enable = enablelist[item]
+			self.ports[item].dir = dirlist[item]
+			self.ports[item].dest = destlist[item]
+			self.ports[item].label = labellist[item]
 	
 	def get_tx_bw_only(self): #To be used after get_port_config
 		
