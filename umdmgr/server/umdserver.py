@@ -448,12 +448,12 @@ def main(debugBreak = False):
 					}
 					if hasattr(gv.equipmentDict[equipmentID], "checkout"):
 						try:
-							tally(statuses[gv.equipmentDict[equipmentID].checkout.status])
+							tally(statuses[gv.equipmentDict[equipmentID].checkout.getStatus()])
 						except KeyError:
 							tally("KeyError")
 						if gv.loud:
 							if gv.equipmentDict[equipmentID].checkout.timestamp < time.time() - gv.equipmentDict[equipmentID].min_refresh_time():
-								print "%d %f seconds late with status %s"%(equipmentID, time.time() - gv.equipmentDict[equipmentID].min_refresh_time() - gv.equipmentDict[equipmentID].checkout.timestamp, statuses[gv.equipmentDict[equipmentID].checkout.status] )
+								print "%d %f seconds late with status %s"%(equipmentID, time.time() - gv.equipmentDict[equipmentID].min_refresh_time() - gv.equipmentDict[equipmentID].checkout.timestamp, statuses[gv.equipmentDict[equipmentID].checkout.getStatus()] )
 					else:
 						tally("missing")
 				def avg(L):

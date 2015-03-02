@@ -7,6 +7,9 @@ import threading
 import copy
 import time
 
+
+	
+
 class checkout(object):
 	STAT_INIT = 0
 	STAT_SLEEP = 1
@@ -14,10 +17,22 @@ class checkout(object):
 	STAT_INQUEUE =3
 	STAT_CHECKEDOUT = 4
 	STAT_STUCK = 5
-	
+	def __getattribute__(self, x):
+		if x == "status":
+			with self.lock:
+				return object.__getattribute__(self, x)
+		else:
+			return object.__getattribute__(self, x)
+	def __setattribute__(self, x):
+		if x == "status":
+			with self.lock:
+				return object.__setattribute__(self, x)
+		else:
+			return object.__setattribute__(self, x)	
 	def __init__(self, parent):
 		self.parent = parent
 		self.rlock = threading.RLock()
+		self.lock = threading.Lock()
 		self.status = checkout.STAT_INIT
 		self.timestamp = time.time()
 		self.jitter = 0
@@ -283,7 +298,7 @@ class IRD(equipment):
 		for key in self.oid_get.keys():
 			if not self.snmp_res_dict.has_key(key):
 				if gv.loud:
-					print "Unit returned no such name for %s so masking"%key
+					print "%s at %s returned no such name for %s so masking"%(self.modelType, self.ip, key)
 				masks.append(key)
 		self.masked_oids[self.getinSatSetupInputSelect()] = masks
 		
