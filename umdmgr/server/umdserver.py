@@ -427,11 +427,11 @@ def main(debugBreak = False):
 						elif isinstance(gv.equipmentDict[equipmentID], equipment.generic.GenericIRD):
 							offcount += 1
 						else:
-							
+							oncount += 1
 							jitter = gv.equipmentDict[equipmentID].checkout.jitter
 							jitterlist.append(jitter)
 							if gv.loud:
-								print "%s: %s"%(equipmentID, gv.equipmentDict[equipmentID].refreshjitter)
+								print "%s: %s"%(equipmentID, jitter)
 							"""
 							if float(jitter) > 30:
 								gv.equipmentDict[equipmentID].set_offline()
@@ -439,9 +439,10 @@ def main(debugBreak = False):
 							else:
 								oncount += 1
 							"""
-							oncount += 1
 							
-					except: pass
+							
+					except:
+						continue
 					statuses = {
 						0:"STAT_INIT",
 						1:"STAT_SLEEP",
@@ -541,7 +542,7 @@ def main(debugBreak = False):
 		except AssertionError as e:
 			if gv.debug:
 				gv.threadJoinFlag = True
-				print "Pausing to debug"
+				print "Pausing to debug because of %s"%e.message
 				debug.debug_breakpoint()
 			else:
 				print "Program Self Check has caused program to quit."
