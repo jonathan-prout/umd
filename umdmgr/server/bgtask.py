@@ -10,6 +10,7 @@ def deserialize(data):
 		"RX1290":equipment.ericsson.RX1290,
 		"DR5000":equipment.ateme.DR5000,
 		"TVG420":equipment.tvips.TVG420,
+		"IP GRIDPORT":equipment.omneon.IPGridport,
 		"IP Gridport":equipment.omneon.IPGridport,
 		"NS2000":equipment.novelsat.NS2000,
 		"NS2000_WEB":equipment.novelsat.NS2000_WEB,
@@ -50,7 +51,8 @@ def determine_type(data):
 		"RX1290":equipment.ericsson.RX1290,
 		"DR5000":equipment.ateme.DR5000,
 		"TVG420":equipment.tvips.TVG420,
-		"IP GRIDPORT":equipment.omneon.IPGridport
+		"IP GRIDPORT":equipment.omneon.IPGridport,
+		"IP Gridport":equipment.omneon.IPGridport
 
 	}
 	
