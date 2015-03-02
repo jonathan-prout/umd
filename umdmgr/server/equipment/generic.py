@@ -24,7 +24,7 @@ class checkout(object):
 		else:
 			return object.__getattribute__(self, x)
 	def __setattribute__(self, x):
-		f x in ["status", "jitter"]:
+		if x in ["status", "jitter"]:
 			with self.lock:
 				return object.__setattribute__(self, x)
 		else:
