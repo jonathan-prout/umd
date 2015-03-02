@@ -18,13 +18,13 @@ class checkout(object):
 	STAT_CHECKEDOUT = 4
 	STAT_STUCK = 5
 	def __getattribute__(self, x):
-		if x == "status":
+		if x in ["status", "jitter"]:
 			with self.lock:
 				return object.__getattribute__(self, x)
 		else:
 			return object.__getattribute__(self, x)
 	def __setattribute__(self, x):
-		if x == "status":
+		f x in ["status", "jitter"]:
 			with self.lock:
 				return object.__setattribute__(self, x)
 		else:

@@ -90,7 +90,10 @@ loud = False
 loudSNMP = False
 quitWhenSlow = False
 logfile = "/var/www/programming/server/server_log.txt"
+debug = False
 loglock = threading.RLock()
+
+
 def log(stuff):
 	out = "%s: Instance %s: %s \n"%(time.strftime("%Y-%m-d %H:%M:%S"), parity, stuff)
 	

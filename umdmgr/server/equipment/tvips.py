@@ -1,3 +1,4 @@
+import copy
 import plugin_tvips
 from server import gv
 from generic import checkout, serializableObj

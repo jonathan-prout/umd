@@ -17,7 +17,7 @@ if __name__ == "__main__":
 	from server import gv
 	from helpers import mysql
 	try:                                
-		opts, args = getopt.getopt(sys.argv[1:], "vlesn", ["verbose", "loop", "errors", "suppress","snail"]) 
+		opts, args = getopt.getopt(sys.argv[1:], "vlesnd", ["verbose", "loop", "errors", "suppress","snail","debug"]) 
 	except getopt.GetoptError, err:
 		print str(err)	
 		print "error in arguments"
@@ -36,6 +36,8 @@ if __name__ == "__main__":
 			gv.suppressEquipCheck = True
 		elif opt in ("-n", "--snail"):
 			gv.quitWhenSlow = False
+		elif opt in ("-d", "--debug"):
+			gv.debug = True
 		else:
 			print "option '%s' not recognised"%opt
 			#assert False, 'option not recognised'

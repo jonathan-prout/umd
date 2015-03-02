@@ -7,6 +7,7 @@ import equipment
 import gv
 import bgtask
 from helpers import snmp
+from helpers import debug
 snmp.gv = gv #in theory we don't want to import explictly the server's version of gv
 
 from helpers import mysql
@@ -285,9 +286,9 @@ def main(debugBreak = False):
 	start()
 	#backgroundworker()
 	gv.ThreadCommandQueue.join()
-	print "Types determined. Took %s seconds. Begininng main loop. Press CTRL C to quit"% (time.time() - time1)
-	for e in gv.equipmentDict.values():
-		gv.ThreadCommandQueue.put((bgtask.refresh, e.serialize()))
+	print "Types determined. Took %s seconds. Begininng main loop. Press CTRL C to %s"% (time.time() - time1, ["quit","enter debug console"])
+	print "Starting dispatch"
+	gv.threads[gv.dispatcherThread].start()
 	
 	"""
 	for i in range(5):
@@ -424,7 +425,7 @@ def main(debugBreak = False):
 							offcount += 1
 						else:
 							
-							jitter = gv.equipmentDict[equipmentID].refreshjitter
+							jitter = gv.equipmentDict[equipmentID].checkout.jitter
 							jitterlist.append(jitter)
 							if gv.loud:
 								print "%s: %s"%(equipmentID, gv.equipmentDict[equipmentID].refreshjitter)
@@ -526,28 +527,44 @@ def main(debugBreak = False):
 				"""
 	
 		except KeyboardInterrupt:
-			print "Quitting"
-			cleanup()
-			break
+			if gv.debug:
+				gv.threadJoinFlag = True
+				print "Pausing to debug"
+				debug.debug_breakpoint()
+			else:
+				print "Quitting"
+				cleanup()
+				break
 		except AssertionError as e:
-			print "Program Self Check has caused program to quit."
-			print ""
-			print "%s Error."%str(e)
-			
-			print "Offline Equipment:"
-			for equipmentID in gv.equipmentDict.keys():
-				try:
-					if gv.equipmentDict[equipmentID].get_offline():
-						eq = gv.equipmentDict[equipmentID]
-						print eq.name.ljust(10, " ") + eq.modelType.ljust(10, " ") + eq.ip
-				except: continue
-			print "errors:"
-			print gv.exceptions
-			crashdump()
+			if gv.debug:
+				gv.threadJoinFlag = True
+				print "Pausing to debug"
+				debug.debug_breakpoint()
+			else:
+				print "Program Self Check has caused program to quit."
+				print ""
+				print "%s Error."%str(e)
+				
+				print "Offline Equipment:"
+				for equipmentID in gv.equipmentDict.keys():
+					try:
+						if gv.equipmentDict[equipmentID].get_offline():
+							eq = gv.equipmentDict[equipmentID]
+							print eq.name.ljust(10, " ") + eq.modelType.ljust(10, " ") + eq.ip
+					except: continue
+				print "errors:"
+				print gv.exceptions
+				crashdump()
 		except Exception as e:
+			
 			gv.exceptions.append(e)
 			print "%s: %s."%(e,str(e))
-			crashdump()
+			if gv.debug:
+				gv.threadJoinFlag = True
+				print "Pausing to debug"
+				debug.debug_breakpoint()
+			else:
+				crashdump()
 		
 
     
