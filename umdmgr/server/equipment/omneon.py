@@ -13,7 +13,7 @@ class IPGridport(OmneonHelper, generic.equipment):
 		self.addressesbyname = {}
 		self.get_equipment_ids()
 		self.offline = False
-		self.checkout = checkout
+		self.checkout = checkout(self)
 			
 	def get_equipment_ids(self):
 	

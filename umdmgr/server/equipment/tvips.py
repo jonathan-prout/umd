@@ -10,7 +10,7 @@ class TVG420(plugin_tvips.TVG420):
 		self.modelType = "TVG420"
 		super( TVG420, self ).__init__(self.ip, "admin", "salvador")
 		self.get_equipment_ids()
-		self.checkout = checkout()
+		self.checkout = checkout(self)
 		
 	def get_offline(self):
 		try:

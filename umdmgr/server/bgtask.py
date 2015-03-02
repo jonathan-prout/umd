@@ -55,33 +55,39 @@ def determine_type(data):
 	
 	for key in simpleTypes.keys():
 		if  any( ( (key in equipTypeStr), isinstance(currentEquipment, simpleTypes[key]) ) ):
-			newird = simpleTypes[key](equipmentID, ip, name)
-			gv.addEquipment(newird)
+			currentEquipment = simpleTypes[key](equipmentID, ip, name)
+			gv.addEquipment(currentEquipment)
 			t = key
 			break
 		
 	# Equipment equipTypeStr with subtype
 	if any( ( ("Rx8000"in equipTypeStr), isinstance(currentEquipment, equipment.ericsson.RX8200) ) ):
-		newird = equipment.ericsson.RX8200(equipmentID, ip, name)
-		subtype = newird.determine_subtype()
-		if subtype == "RX8200-4RF":
-		    newird = equipment.ericsson.RX8200_4RF(equipmentID, ip, name)
-		elif subtype == "RX8200-2RF":
-		    newird = equipment.ericsson.RX8200_2RF(equipmentID, ip, name)
-		gv.addEquipment(newird)
 		t = "Rx8200"
+		currentEquipment = equipment.ericsson.RX8200(equipmentID, ip, name)
+		subtype = currentEquipment.determine_subtype()
+		if subtype == "RX8200-4RF":
+			t = "Rx8200-4RF"
+			currentEquipment = equipment.ericsson.RX8200_4RF(equipmentID, ip, name)
+		elif subtype == "RX8200-2RF":
+			t = "Rx8200-2RF"
+			currentEquipment = equipment.ericsson.RX8200_2RF(equipmentID, ip, name)
+		gv.addEquipment(currentEquipment)
+		
 		
 	elif  any( ( ("NS2000"in equipTypeStr), isinstance(currentEquipment, equipment.novelsat.NS2000) ) ):
-		newird = equipment.novelsat.NS2000(equipmentID, ip, name)
-		subtype = newird.determine_subtype()
-		if subtype == "NS2000_WEB":
-		    newird = equipment.novelsat.NS2000_WEB(equipmentID, ip, name)
-		elif subtype == "NS2000_SNMP":
-		    newird = equipment.novelsat.NS2000_SNMP(equipmentID, ip, name)
-		newird.lastRefreshTime = 0
-		newird.excpetedNextRefresh = float(random.randint(0,50)) /10
-		gv.addEquipment(newird)
+		currentEquipment = equipment.novelsat.NS2000(equipmentID, ip, name)
 		t = "NS2000"
+		subtype = currentEquipment.determine_subtype()
+		if subtype == "NS2000_WEB":
+			t = subtype
+			currentEquipment = equipment.novelsat.NS2000_WEB(equipmentID, ip, name)
+		elif subtype == "NS2000_SNMP":
+			currentEquipment = equipment.novelsat.NS2000_SNMP(equipmentID, ip, name)
+			t = subtype
+		currentEquipment.lastRefreshTime = 0
+		currentEquipment.excpetedNextRefresh = float(random.randint(0,50)) /10
+		gv.addEquipment(currentEquipment)
+		
 		
 	elif equipTypeStr == "OFFLINE":	
 		t = "OFFLINE"
