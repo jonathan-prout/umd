@@ -49,7 +49,7 @@ class checkout(object):
 		self.timestamp = time.time()
 	def checkin(self):
 		self.status = checkout.STAT_SLEEP
-		self.jitter = time.time() - time.timestamp
+		self.jitter = time.time() - self.timestamp
 		self.timestamp = time.time()
 		try:	
 			self.rlock.release()
