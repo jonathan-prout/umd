@@ -287,7 +287,7 @@ def main(debugBreak = False):
 	start()
 	#backgroundworker()
 	gv.ThreadCommandQueue.join()
-	print "Types determined. Took %s seconds. Begininng main loop. Press CTRL C to %s"% (time.time() - time1, ["quit","enter debug console"])
+	print "Types determined. Took %s seconds. Begininng main loop. Press CTRL C to %s"% (time.time() - time1, ["quit","enter debug console"][gv.debug])
 	print "Starting dispatch"
 	gv.threads[gv.dispatcherThread].start()
 	

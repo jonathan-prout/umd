@@ -79,7 +79,7 @@ class serializableObj(object):
 		"""serialize data without using pickle. Returns dict"""
 		
 		serial_data = {}
-		seralisabledata = ["ip", "equipmentId", "name", "snmp_res_dict", "oid_get", "oid_getBulk" "multicast_id_dict", "streamDict", "addressesbyname","online",  "modelType", "refreshType", "refreshCounter"]
+		seralisabledata = ["ip", "equipmentId", "name", "snmp_res_dict", "oid_get", "masked_oids", "oid_getBulk" "multicast_id_dict", "streamDict", "addressesbyname","online",  "modelType", "refreshType", "refreshCounter"]
 		for key in seralisabledata:
 			if hasattr(self, key):
 				serial_data[key] = copy.copy(getattr(self, key))
@@ -90,7 +90,7 @@ class serializableObj(object):
 		expected errors are KeyError (no modelType), Type Error (wrong model Type)"""
 		if not data["modelType"] == self.modelType:
 			raise TypeError("Tried to serialise data from %s into %s"%(data["modelType"],self.modelType))
-		seralisabledata = ["ip", "equipmentId", "name", "snmp_res_dict", "oid_get", "oid_getBulk" "multicast_id_dict", "streamDict", "addressesbyname","online",  "modelType", "refreshType", "refreshCounter"]
+		seralisabledata = ["ip", "equipmentId", "name", "snmp_res_dict", "oid_get", "masked_oids", "oid_getBulk" "multicast_id_dict", "streamDict", "addressesbyname","online",  "modelType", "refreshType", "refreshCounter"]
 		for key in seralisabledata:
 				if hasattr(self, key):
 					setattr(self, key, data[key])
