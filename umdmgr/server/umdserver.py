@@ -289,8 +289,12 @@ def main(debugBreak = False):
 	gv.ThreadCommandQueue.join()
 	print "Types determined. Took %s seconds. Begininng main loop. Press CTRL C to %s"% (time.time() - time1, ["quit","enter debug console"][gv.debug])
 	if gv.debug:
-		from pympler import tracker
-		gv.tr = tracker.SummaryTracker()
+		from pympler import muppy
+		from pympler import summary	
+				
+		all_objects = muppy.get_objects()
+		gv.mem_sum1 = summary.summarize(all_objects)
+		
 	print "Starting dispatch"
 	gv.threads[gv.dispatcherThread].start()
 	
@@ -501,6 +505,11 @@ def main(debugBreak = False):
 				gv.dbQ.put("UPDATE `UMD`.`management` SET `value` = '%s' WHERE `management`.`key` = 'errors';"%len(gv.exceptions))   
 				gv.dbQ.put("UPDATE `UMD`.`management` SET `value` = '%s' WHERE `management`.`key` = 'running_threads';"%runningThreads)
 				
+				if gv.debug:
+					all_objects = muppy.get_objects()
+					mem_sum2 = summary.summarize(all_objects)
+					diff = summary.get_diff(gv.mem_sum1, mem_sum2)
+					summary.print_(diff)
 				
 				new_poll_time = gv.sql.qselect("SELECT * FROM `management` WHERE `key` LIKE 'min_poll_time'")
 				try:
@@ -540,8 +549,7 @@ def main(debugBreak = False):
 				for thread in gv.threads:
 					thread.run()
 				"""
-				if gv.debug:
-					gv.tr.print_diff()
+				
 	
 		except KeyboardInterrupt:
 			if gv.debug:
