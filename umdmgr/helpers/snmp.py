@@ -3,6 +3,8 @@ import traceback
 from pysnmp.entity.rfc3413.oneliner import cmdgen
 from pysnmp.proto import rfc1902
 
+import helpers.subprocesspatch as subprocess
+
 def oidFromDict(n , invdict):
 	if not invdict.has_key(n):
 		if invdict.has_key("." + n):
@@ -115,7 +117,7 @@ def process_netsnmp_line(outputLine):
 
 def get_subprocess(commandDict, ip):
 	""" Uses subporcess.popen to getch snmp rather than PYSNMP """
-	import subprocess
+	
 	#import gv
 	if commandDict == {}:
 		return {}
@@ -189,7 +191,7 @@ def getbulk(commandDict, ip, numItems):
 			print "snmp.getbulk: %s Error on %s"% (type(e),ip)
 def getbulk_subprocess(commandDict, ip, numItems):
 	""" Uses subporcess.popen to getch snmp rather than PYSNMP """
-	import subprocess
+	
 	#import gv
 	if commandDict == {}:
 		return {}
@@ -228,7 +230,7 @@ def getbulk_subprocess(commandDict, ip, numItems):
 		
 def walk_subprocess(commandDict, ip):
 	""" Uses subporcess.popen to getch snmp rather than PYSNMP """
-	import subprocess
+	
 	#import gv
 	if commandDict == {}:
 		return {}
