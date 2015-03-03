@@ -1,9 +1,23 @@
 import sys
 import traceback
-from pysnmp.entity.rfc3413.oneliner import cmdgen
-from pysnmp.proto import rfc1902
+import threading
+import py
+
 
 import helpers.subprocesspatch as subprocess
+
+from pysnmp.entity.rfc3413.oneliner import cmdgen
+def get_pysnmp_instance():
+	t = threading.currentThread()
+	try:
+		return t.pysnmp_instance
+	except AttributeError:
+		t.pysnmp_instance = cmdgen.CommandGenerator()
+		return t.pysnmp_instance
+
+
+
+
 
 def oidFromDict(n , invdict):
 	if not invdict.has_key(n):
@@ -47,7 +61,7 @@ def get_pysnmp(commandDict, ip):
 		v = v.replace(' ', '' ) #no spaces
 		commands.append(v)
 		invdict[v] = k
-	errorIndication, errorStatus, errorIndex, varBinds = cmdgen.CommandGenerator().getCmd(
+	errorIndication, errorStatus, errorIndex, varBinds = get_pysnmp_instance().getCmd(
 	cmdgen.CommunityData('my-agent', 'public', 0), cmdgen.UdpTransportTarget((ip, 161)), *commands )
 	if errorStatus:
 		if gv.loudSNMP:
@@ -275,7 +289,7 @@ def walk_pysnmp(commandDict, ip):
 		commands.append(v)
 		invdict[v] = k
 	for command in commands:
-		errorIndication, errorStatus, errorIndex, varBindsTable = cmdgen.CommandGenerator().nextCmd(
+		errorIndication, errorStatus, errorIndex, varBindsTable = get_pysnmp_instance().nextCmd(
 		cmdgen.CommunityData('my-agent', 'public', 0), cmdgen.UdpTransportTarget((ip, 161)),
 		command
 		)
