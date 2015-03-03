@@ -1,12 +1,13 @@
 import sys
 import traceback
 import threading
-import py
+
 
 
 import helpers.subprocesspatch as subprocess
-
+from pysnmp.proto import rfc1902
 from pysnmp.entity.rfc3413.oneliner import cmdgen
+
 def get_pysnmp_instance():
 	t = threading.currentThread()
 	try:
