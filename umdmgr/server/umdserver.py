@@ -288,6 +288,9 @@ def main(debugBreak = False):
 	#backgroundworker()
 	gv.ThreadCommandQueue.join()
 	print "Types determined. Took %s seconds. Begininng main loop. Press CTRL C to %s"% (time.time() - time1, ["quit","enter debug console"][gv.debug])
+	if gv.debug:
+		from pympler import tracker
+		gv.tr = tracker.SummaryTracker()
 	print "Starting dispatch"
 	gv.threads[gv.dispatcherThread].start()
 	
@@ -310,6 +313,7 @@ def main(debugBreak = False):
 	loopcounter = 0
 	while gv.threadTerminationFlag == False:
 		try:
+			
 			time.sleep(30)
 			if not finishedStarting:
 				cmd = "UPDATE `UMD`.`management` SET `value` = 'RUNNING' WHERE `management`.`key` = 'current_status';"
@@ -536,6 +540,8 @@ def main(debugBreak = False):
 				for thread in gv.threads:
 					thread.run()
 				"""
+				if gv.debug:
+					gv.tr.print_diff()
 	
 		except KeyboardInterrupt:
 			if gv.debug:
