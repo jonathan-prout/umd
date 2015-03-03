@@ -1,7 +1,100 @@
 #!/usr/bin/env python
 """ SEE https://hg.python.org/cpython/rev/e67620048d2f#l1.2"""
-from subprocess import *
+from subprocess import Popen
 
+""" Code block from subprocess """
+import sys
+mswindows = (sys.platform == "win32")
+
+import os
+import types
+import traceback
+import gc
+import signal
+import errno
+
+# Exception classes used by this module.
+class CalledProcessError(Exception):
+    """This exception is raised when a process run by check_call() or
+    check_output() returns a non-zero exit status.
+    The exit status will be stored in the returncode attribute;
+    check_output() will also store the output in the output attribute.
+    """
+    def __init__(self, returncode, cmd, output=None):
+        self.returncode = returncode
+        self.cmd = cmd
+        self.output = output
+    def __str__(self):
+        return "Command '%s' returned non-zero exit status %d" % (self.cmd, self.returncode)
+
+
+if mswindows:
+    import threading
+    import msvcrt
+    import _subprocess
+    class STARTUPINFO:
+        dwFlags = 0
+        hStdInput = None
+        hStdOutput = None
+        hStdError = None
+        wShowWindow = 0
+    class pywintypes:
+        error = IOError
+else:
+    import select
+    _has_poll = hasattr(select, 'poll')
+    import fcntl
+    import pickle
+
+    # When select or poll has indicated that the file is writable,
+    # we can write up to _PIPE_BUF bytes without risk of blocking.
+    # POSIX defines PIPE_BUF as >= 512.
+    _PIPE_BUF = getattr(select, 'PIPE_BUF', 512)
+
+
+
+
+if mswindows:
+    from _subprocess import (CREATE_NEW_CONSOLE, CREATE_NEW_PROCESS_GROUP,
+                             STD_INPUT_HANDLE, STD_OUTPUT_HANDLE,
+                             STD_ERROR_HANDLE, SW_HIDE,
+                             STARTF_USESTDHANDLES, STARTF_USESHOWWINDOW)
+
+    __all__.extend(["CREATE_NEW_CONSOLE", "CREATE_NEW_PROCESS_GROUP",
+                    "STD_INPUT_HANDLE", "STD_OUTPUT_HANDLE",
+                    "STD_ERROR_HANDLE", "SW_HIDE",
+                    "STARTF_USESTDHANDLES", "STARTF_USESHOWWINDOW"])
+try:
+    MAXFD = os.sysconf("SC_OPEN_MAX")
+except:
+    MAXFD = 256
+
+_active = []
+
+def _cleanup():
+    for inst in _active[:]:
+        res = inst._internal_poll(_deadstate=sys.maxint)
+        if res is not None:
+            try:
+                _active.remove(inst)
+            except ValueError:
+                # This can happen if two threads create a new Popen instance.
+                # It's harmless that it was already removed, so ignore.
+                pass
+
+PIPE = -1
+STDOUT = -2
+
+
+def _eintr_retry_call(func, *args):
+    while True:
+        try:
+            return func(*args)
+        except (OSError, IOError) as e:
+            if e.errno == errno.EINTR:
+                continue
+            raise
+""" Patch"""
 class PopenFix(Popen):
     def __init__(self, args, bufsize=0, executable=None,
                  stdin=None, stdout=None, stderr=None,
@@ -106,5 +199,5 @@ class PopenFix(Popen):
                 self.stderr = os.fdopen(errread, 'rU', bufsize)
             else:
                 self.stderr = os.fdopen(errread, 'rb', bufsize)
-
+from subprocess import *	
 Popen = PopenFix

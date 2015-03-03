@@ -133,14 +133,14 @@ def get_subprocess(commandDict, ip):
 	returncode = 0
 	
 	try:
-		#sub = subprocess.Popen(["/usr/bin/snmpget", "-v1", "-cpublic", ip] + commands, stdout=subprocess.PIPE)
-		sout = subprocess.check_output(["/usr/bin/snmpget", "-v1", "-cpublic", ip] + commands, stderr=subprocess.STDOUT)
+		sub = subprocess.Popen(["/usr/bin/snmpget", "-v1", "-cpublic", ip] + commands, stdout=subprocess.PIPE, close_fds=True)
+		#sout = subprocess.check_output(["/usr/bin/snmpget", "-v1", "-cpublic", ip] + commands, stderr=subprocess.STDOUT)
 		
 	except subprocess.CalledProcessError, e:
 		returncode = 1
 
-	#returncode = sub.wait() #Block here waiting for subprocess to return. Next thrad should execute from here
-	#sout = sub.stdout.readlines()
+	returncode = sub.wait() #Block here waiting for subprocess to return. Next thrad should execute from here
+	sout = sub.stdout.readlines()
 	try:
 		serr = sub.stderr.read()
 	except:
@@ -204,7 +204,7 @@ def getbulk_subprocess(commandDict, ip, numItems):
 		commands.append(v)
 		invdict[v] = k
 	for command in commands:
-		sub = subprocess.Popen(["/usr/bin/snmpbulkget", "-v2c","-Of", "-cpublic", "-Cr%d"%numItems, ip, command], stdout=subprocess.PIPE)
+		sub = subprocess.Popen(["/usr/bin/snmpbulkget", "-v2c","-Of", "-cpublic", "-Cr%d"%numItems, ip, command], stdout=subprocess.PIPE, close_fds=True)
 		#/usr/bin/snmpbulkget -cpublic -v2c -Of -Cr3 192.168.1.111 .1.3.6.1.4.1.27338.5.5.1.5.1.1.9
 
 		returncode = sub.wait() #Block here waiting for subprocess to return. Next thrad should execute from here
