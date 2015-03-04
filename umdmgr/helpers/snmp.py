@@ -273,6 +273,8 @@ def getbulk(commandDict, ip, numItems):
 		return getbulk_subprocess(commandDict, ip, numItems)
 	except NetSNMPTooBig:
 		return walk(commandDict, ip)
+	except NetSNMPTimedOut:
+		return {}
 	except NetSNMPUnknownOID, e:
 		if e.failedOid:
 			for k in commandDict.keys():
@@ -304,7 +306,7 @@ def getbulk_subprocess(commandDict, ip, numItems):
 		commands.append(v)
 		invdict[v] = k
 	for command in commands:
-		sub = subprocess.Popen(["/usr/bin/snmpbulkget", "-v2c","-Of", "-cpublic", "-Cr%d"%numItems, ip, command], stdout=subprocess.PIPE, close_fds=True)
+		sub = subprocess.Popen(["/usr/bin/snmpbulkget", "-v2c","-Of", "-cpublic", "-Cr%d"%numItems, ip, command], stdout=subprocess.PIPE,  stderr=subprocess.PIPE, close_fds=True)
 		#/usr/bin/snmpbulkget -cpublic -v2c -Of -Cr3 192.168.1.111 .1.3.6.1.4.1.27338.5.5.1.5.1.1.9
 
 		returncode = sub.wait() #Block here waiting for subprocess to return. Next thrad should execute from here
