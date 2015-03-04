@@ -199,5 +199,17 @@ class PopenFix(Popen):
                 self.stderr = os.fdopen(errread, 'rU', bufsize)
             else:
                 self.stderr = os.fdopen(errread, 'rb', bufsize)
+    def __del__(self, _maxint=sys.maxint, _active=_active):
+        # If __init__ hasn't had a chance to execute (e.g. if it
+        # was passed an undeclared keyword argument), we don't
+        # have a _child_created attribute at all.
+        if not getattr(self, '_child_created', False):
+            # We didn't get to successfully create a child process.
+            return
+        # In case the child hasn't been waited on, check if it's done.
+        self._internal_poll(_deadstate=_maxint)
+        #Kill process to stop leak
+        if self.returncode is None and _active is not None:
+            self.kill()
 from subprocess import *	
 Popen = PopenFix
