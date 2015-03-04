@@ -96,6 +96,7 @@ def get(commandDict, ip):
 	except NetSNMPTimedOut:
 		return {}
 	except Exception as e:
+		"""
 		if any( ( isinstance(e, AssertionError), isinstance(e, AttributeError) ) ):
 			if gv.loudSNMP:
 				print "NETSNP Errored so using PYSNMP on %s"% ip
@@ -104,7 +105,8 @@ def get(commandDict, ip):
 			print "snmp.get: %s Error on %s"% (type(e),ip)
 			gv.exceptions.append((e, traceback.format_tb( sys.exc_info()[2]) ))
 			raise e
-		
+		"""
+		raise e
 			
 
 
@@ -219,7 +221,7 @@ def get_subprocess(commandDict, ip):
 		returncode = 1
 
 	returncode = sub.wait() #Block here waiting for subprocess to return. Next thrad should execute from here
-	sout = sub.stdout.readlines()
+	sout = sub.stdout.read()
 	try:
 		serr = sub.stderr.read()
 	except:
@@ -243,7 +245,7 @@ def get_subprocess(commandDict, ip):
 		try:	
 			oid, valtype, value = process_netsnmp_line(outputLine)
 			n = oidFromDict(oid , invdict)
-		except:
+		except ValueError:
 			continue
 		try:
 			#returndict[invdict[ n ] ] = str(value) #To be checked
@@ -261,12 +263,16 @@ def walk(commandDict, ip):
 	try:
 		return walk_subprocess(commandDict, ip)
 	except Exception as e:
+		"""
 		if isinstance(e, AssertionError):
 			if gv.loudSNMP:
 				print "NETSNP WALK Errored so using PYSNMP on %s"% ip
 				return walk_pysnmp(commandDict, ip)
 		else:
 			print "snmp.walk: %s Error on %s"% (type(e),ip)
+		"""
+		raise e
+
 def getbulk(commandDict, ip, numItems):
 	
 	try:
@@ -285,12 +291,16 @@ def getbulk(commandDict, ip, numItems):
 						return getbulk(commandDict, ip, numItems ) # Call itself
 		
 	except Exception as e:
+		"""
 		if isinstance(e, AssertionError):
 			if gv.loudSNMP:
 				print "NETSNP GETBULK Errored so using PYSNMP on %s"% ip
 				return walk_pysnmp(commandDict, ip)
 		else:
 			print "snmp.getbulk: %s Error on %s"% (type(e),ip)
+		"""
+		raise e
+
 def getbulk_subprocess(commandDict, ip, numItems):
 	""" Uses subporcess.popen to getch snmp rather than PYSNMP """
 	
@@ -310,7 +320,7 @@ def getbulk_subprocess(commandDict, ip, numItems):
 		#/usr/bin/snmpbulkget -cpublic -v2c -Of -Cr3 192.168.1.111 .1.3.6.1.4.1.27338.5.5.1.5.1.1.9
 
 		returncode = sub.wait() #Block here waiting for subprocess to return. Next thrad should execute from here
-		sout = sub.stdout.readlines()
+		sout = sub.stdout.read()
 		try:
 			serr = sub.stderr.read()
 		except:
@@ -328,9 +338,12 @@ def getbulk_subprocess(commandDict, ip, numItems):
 			
 		assert(returncode == 0) #Error if NET SNMP has an error. Fall back to PYSNMP which is slower but with better error handling
 		results = []
-		for outputLine in sout:	
-			oid, valtype, value = process_netsnmp_line(outputLine)
-			results.append(value)
+		for outputLine in sout.split("\n"):
+			try:	
+				oid, valtype, value = process_netsnmp_line(outputLine)
+				results.append(value)
+			except ValueError:
+				continue
 		n = oidFromDict(command , invdict)
 		returndict[invdict[n]] = results
 	return returndict
@@ -352,7 +365,7 @@ def walk_subprocess(commandDict, ip):
 	for command in commands:
 		sub = subprocess.Popen(["/usr/bin/snmpwalk", "-v1", "-cpublic", ip, command], stdout=subprocess.PIPE)
 		returncode = sub.wait() #Block here waiting for subprocess to return. Next thrad should execute from here
-		sout = sub.stdout.readlines()
+		sout = sub.stdout.read()
 		try:
 			serr = sub.stderr.read()
 		except:
@@ -365,9 +378,12 @@ def walk_subprocess(commandDict, ip):
 		del(sub)
 		assert(returncode == 0) #Error if NET SNMP has an error. Fall back to PYSNMP which is slower but with better error handling
 		results = []
-		for outputLine in sout:	
-			oid, valtype, value = process_netsnmp_line(outputLine)
-			results.append(value)
+		for outputLine in sout.split("\n"):
+			try:	
+				oid, valtype, value = process_netsnmp_line(outputLine)
+				results.append(value)
+			except ValueError:
+				continue
 		n = oidFromDict(command , invdict)
 		returndict[invdict[n]] = results
 	return returndict
