@@ -7,6 +7,16 @@ import py
 import helpers.subprocesspatch as subprocess
 
 from pysnmp.entity.rfc3413.oneliner import cmdgen
+
+
+
+class NetSNMPTimedOut(Exception):
+	def __init__(self, msg):
+		self.msg = msg
+
+	def __str__(self):
+		return "NetSNMPTimedOut with %s" % self.msg
+
 def get_pysnmp_instance():
 	t = threading.currentThread()
 	try:
@@ -35,6 +45,8 @@ def get(commandDict, ip):
 	
 	try:
 		return get_subprocess(commandDict, ip)
+	except NetSNMPTimedOut:
+		return {}
 	except Exception as e:
 		if any( ( isinstance(e, AssertionError), isinstance(e, AttributeError) ) ):
 			if gv.loudSNMP:
@@ -103,6 +115,10 @@ def get_pysnmp(commandDict, ip):
 			except KeyError:
 				print invdict
 				print str(item[0]), str(item[1])
+	del errorIndication
+	del errorStatus
+	del errorIndex
+	del varBinds
 	return returndict
 
 def process_netsnmp_line(outputLine):
@@ -143,11 +159,12 @@ def get_subprocess(commandDict, ip):
 		v = v.replace(' ', '' ) #no spaces
 		commands.append(v)
 		invdict[v] = k
+	
 	supressErrors = []
 	returncode = 0
 	
 	try:
-		sub = subprocess.Popen(["/usr/bin/snmpget", "-v1", "-cpublic", ip] + commands, stdout=subprocess.PIPE, close_fds=True)
+		sub = subprocess.Popen(["/usr/bin/snmpget", "-v1", "-cpublic", ip] + commands, stdout=subprocess.PIPE, stderr=subprocess.PIPE, close_fds=True)
 		#sout = subprocess.check_output(["/usr/bin/snmpget", "-v1", "-cpublic", ip] + commands, stderr=subprocess.STDOUT)
 		
 	except subprocess.CalledProcessError, e:
@@ -159,10 +176,29 @@ def get_subprocess(commandDict, ip):
 		serr = sub.stderr.read()
 	except:
 		serr = ""
+	del(sub)
 	if returncode != 0:
-		if gv.loudSNMP:
-			print e.__repr__()
-	#del(sub)
+		if "Timeout:" in serr:
+			raise NetSNMPTimedOut(serr)
+		elif 'Reason: (noSuchName) There is no such variable name in this MIB.' in serr:
+			failedOid = None
+			try:
+				"""Failed object: iso.3.6.1.4.1.37576.2.3.1.5.1.2.1"""
+				line = serr.split("\n")[2]
+				line = line.replace("Failed object: ","")
+				line = line.replace("iso","")
+				failedOid = line.strip()
+			except:
+				pass
+			if failedOid:
+				for k in commandDict.keys():
+					if commandDict[k] == failedOid:
+						if gv.loudSNMP:
+							print "Removing %s and trying again"%k
+							del commandDict[k]
+							return get(commandDict, ip) # Call itself
+
+	
 	assert(returncode == 0) #Error if NET SNMP has an error. Fall back to PYSNMP which is slower but with better error handling
 	for outputLine in sout.split('\n'):
 		try:	
