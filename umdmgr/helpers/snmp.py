@@ -1,8 +1,7 @@
 import sys
 import traceback
 import threading
-import py
-
+from pysnmp.proto import rfc1902
 
 import helpers.subprocesspatch as subprocess
 
@@ -16,6 +15,55 @@ class NetSNMPTimedOut(Exception):
 
 	def __str__(self):
 		return "NetSNMPTimedOut with %s" % self.msg
+
+class NetSNMPUnknownOID(Exception):
+	failedOid = None
+	def __init__(self, msg):
+		self.msg = msg
+
+	def __str__(self):
+		return "NetSNMPUnknownOID with %s" % self.msg
+
+class NetSNMPTooBig(Exception):
+	failedOid = None
+	def __init__(self, msg):
+		self.msg = msg
+
+	def __str__(self):
+		return "NetSNMPTooBig with %s" % self.msg
+
+def handle_netSNMP_error(serr):
+	if "Timeout:" in serr:
+			raise NetSNMPTimedOut(serr)
+	elif 'Reason: (noSuchName) There is no such variable name in this MIB.' in serr:
+		failedOid = None
+		try:
+			"""Failed object: iso.3.6.1.4.1.37576.2.3.1.5.1.2.1"""
+			line = serr.split("\n")[2]
+			line = line.replace("Failed object: ","")
+			line = line.replace("iso","")
+			failedOid = line.strip()
+			
+		except:
+			pass
+		e = NetSNMPUnknownOID(serr)
+		e.failedOid = failedOid
+		raise e
+	elif 'Reason: (tooBig) Response message would have been too large.' in serr:
+		failedOid = None
+		try:
+			"""Failed object: iso.3.6.1.4.1.37576.2.3.1.5.1.2.1"""
+			line = serr.split("\n")[2]
+			line = line.replace("Failed object: ","")
+			line = line.replace("iso","")
+			failedOid = line.strip()
+			
+		except:
+			pass
+		e = NetSNMPTooBig(serr)
+		e.failedOid = failedOid
+		raise e
+	
 
 def get_pysnmp_instance():
 	t = threading.currentThread()
@@ -178,23 +226,14 @@ def get_subprocess(commandDict, ip):
 		serr = ""
 	del(sub)
 	if returncode != 0:
-		if "Timeout:" in serr:
-			raise NetSNMPTimedOut(serr)
-		elif 'Reason: (noSuchName) There is no such variable name in this MIB.' in serr:
-			failedOid = None
-			try:
-				"""Failed object: iso.3.6.1.4.1.37576.2.3.1.5.1.2.1"""
-				line = serr.split("\n")[2]
-				line = line.replace("Failed object: ","")
-				line = line.replace("iso","")
-				failedOid = line.strip()
-			except:
-				pass
-			if failedOid:
+		try:
+			handle_netSNMP_error(serr)
+		except NetSNMPUnknownOID, e:
+			if e.failedOid:
 				for k in commandDict.keys():
-					if commandDict[k] == failedOid:
+					if commandDict[k] == e.failedOid:
 						if gv.loudSNMP:
-							print "Removing %s and trying again"%k
+							print "Removing %s for %s and trying again"%(k, ip)
 							del commandDict[k]
 							return get(commandDict, ip) # Call itself
 
@@ -232,6 +271,17 @@ def getbulk(commandDict, ip, numItems):
 	
 	try:
 		return getbulk_subprocess(commandDict, ip, numItems)
+	except NetSNMPTooBig:
+		return walk(commandDict, ip)
+	except NetSNMPUnknownOID, e:
+		if e.failedOid:
+			for k in commandDict.keys():
+				if commandDict[k] == e.failedOid:
+					if gv.loudSNMP:
+						print "Removing %s for %s and trying again"%(k, ip)
+						del commandDict[k]
+						return getbulk(commandDict, ip, numItems ) # Call itself
+		
 	except Exception as e:
 		if isinstance(e, AssertionError):
 			if gv.loudSNMP:
@@ -263,12 +313,17 @@ def getbulk_subprocess(commandDict, ip, numItems):
 			serr = sub.stderr.read()
 		except:
 			serr = ""
+		
 		if returncode != 0:
 			if gv.loudSNMP:
 				print returncode
 				print sout
 				print serr
 		del(sub)
+		
+		if serr:
+			handle_netSNMP_error(serr)
+			
 		assert(returncode == 0) #Error if NET SNMP has an error. Fall back to PYSNMP which is slower but with better error handling
 		results = []
 		for outputLine in sout:	
