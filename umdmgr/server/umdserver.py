@@ -188,7 +188,8 @@ class dispatcher(myThread):
 		while gv.threadTerminationFlag.value == False:
 			if gv.threadJoinFlag == False:
 				for equipmentID, instance in gv.equipmentDict.iteritems():
-					
+					if gv.threadJoinFlag:
+						break
 					try:
 						if instance.checkout.getStatus() in [STAT_INIT, STAT_READY, STAT_STUCK]:
 							if isinstance(instance, gv.equipment.generic.GenericIRD):
@@ -201,9 +202,10 @@ class dispatcher(myThread):
 								else:
 									task = "refresh"
 									queue = gv.ThreadCommandQueue
-						queue.put((task, gv.equipmentDict[equipmentID].serialize()),0.1)
+						queue.put((task, gv.equipmentDict[equipmentID].serialize()))
 						instance.checkout.enqueue()
 					except Queue.Full:
+						time.sleep(0.1)
 						continue
 			else:
 				time.sleep(0.1)
