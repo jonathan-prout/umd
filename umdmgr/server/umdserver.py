@@ -427,7 +427,8 @@ def main(debugBreak = False):
 					else:
 						tallyDict[key] = 1
 				jitterlist = []
-				
+				lateCounter = 0
+				onTimeCounter = 0
 				for equipmentID in gv.equipmentDict.keys():
 					try:
 						if gv.equipmentDict[equipmentID].get_offline():
@@ -464,9 +465,15 @@ def main(debugBreak = False):
 							tally(statuses[gv.equipmentDict[equipmentID].checkout.getStatus()])
 						except KeyError:
 							tally("KeyError")
-						if gv.loud:
-							if gv.equipmentDict[equipmentID].checkout.timestamp < time.time() - gv.equipmentDict[equipmentID].min_refresh_time():
+						
+						
+						
+						if gv.equipmentDict[equipmentID].checkout.timestamp < time.time() - gv.equipmentDict[equipmentID].min_refresh_time():
+							if gv.loud:
 								print "%d %f seconds late with status %s"%(equipmentID, time.time() - gv.equipmentDict[equipmentID].min_refresh_time() - gv.equipmentDict[equipmentID].checkout.timestamp, statuses[gv.equipmentDict[equipmentID].checkout.getStatus()] )
+							lateCounter += 1
+						else:
+							onTimeCounter += 1
 					else:
 						tally("missing")
 				def avg(L):
@@ -491,8 +498,9 @@ def main(debugBreak = False):
 							v = tallyDict[k]
 						except KeyError:
 							v = 0
-						
 						gv.dbQ.put("UPDATE `UMD`.`management` SET `value` = '%s' WHERE `management`.`key` = '%s';" %(v,k) )
+					if gv.loud:
+						print "%d / %d late"%(lateCounter, onTimeCounter)
 				mj = float(min(jitterlist))
 				xj = float(max(jitterlist))
 				aj = float(avg(jitterlist))
@@ -524,7 +532,7 @@ def main(debugBreak = False):
 				possibleErrors.append( (oncount < offcount, "More equipment off than on. Most likely an error there"))
 				possibleErrors.append( (len(gv.exceptions) > 20, "Program has errors"))
 				if gv.quitWhenSlow:
-					possibleErrors.append( (aj > (gv.min_refresh_time * 2 + 10), "Program is running slowly so quitting"))
+					possibleErrors.append( (lateCounter > (onTimeCounter * 3), "Program is running slowly so quitting"))
 				possibleErrors.append((gv.programCrashed == True, "Program Crashed flag has been raised so quitting"))
 				for case, problemText in possibleErrors:
 					if case:
