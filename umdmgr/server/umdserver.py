@@ -259,6 +259,7 @@ def backgroundworker(myQ, endFlag = None):
 		#while not gv.ThreadCommandQueue.empty():
 		#print "still in while"
 		#func, data = gv.ThreadCommandQueue.get()
+		
 		try:
 			func, data = myQ.get()
 			gotdata = True
@@ -274,14 +275,14 @@ def backgroundworker(myQ, endFlag = None):
 				bgtask.funcs[func](data)
 			except KeyboardInterrupt:
 				return
-			except Exception, e:
-				error = sys.exc_info()	
-			
+				"""
+				except Exception, e:
+					error = sys.exc_info()	
+				"""
 			finally:	
 				#print "processed a thred command!s"
 				myQ.task_done()
-			if e:
-				raise e
+			
 			#if error:
 				#gv.exceptions.append(( error[1], traceback.format_tb(error[2]) ))
 			item +=1
