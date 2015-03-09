@@ -235,10 +235,11 @@ def backgroundProcessWorker(myQ, dbQ, checkInQueue, endFlag):
 	from helpers import mysql
 	gv.dbQ = dbQ
 	gv.CheckInQueue = checkInQueue
-	gv.sql = mysql.mysql()
-	gv.sql.autocommit = True
-	#gv.sql.semaphore = threading.BoundedSemaphore(value=10)
-	gv.sql.mutex = threading.RLock()
+	if not gv.sql:
+		gv.sql = mysql.mysql()
+		gv.sql.autocommit = True
+		#gv.sql.semaphore = threading.BoundedSemaphore(value=10)
+		gv.sql.mutex = threading.RLock()
 	
 	backgroundworker(myQ, endFlag)
 	
