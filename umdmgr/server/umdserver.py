@@ -80,7 +80,7 @@ def crashdump():
 	gv.sql.qselect(cmd)
 	cmdq = []
 	while not gv.ThreadCommandQueue.empty():
-		cmdq.append(gv.ThreadCommandQueue.get())
+		cmdq.append(gv.ThreadCommandQueue.get(False))
 	objs = [ cmdq, gv.equipmentDict, gv.exceptions]
 	with open(filename, "w") as fobj:
 		pickle.dump(objs, fobj)
@@ -166,7 +166,7 @@ def dbworker(myQ):
 		#print "still in while"
 		#func, data = gv.ThreadCommandQueue.get()
 		try:
-			cmd = myQ.get(1)
+			cmd = myQ.get(timeout=1)
 			gotdata = True
 			
 		except Queue.Empty:
@@ -215,7 +215,7 @@ class checkin(myThread):
 		queue = gv.CheckInQueue
 		while gv.threadTerminationFlag.value == False:
 			try:
-				data = queue.get(0.1)
+				data = queue.get(timeout=1)
 				if data.has_key("equipmentId"):
 					gv.gotCheckedInData = True
 					equipmentID = data["equipmentId"]
@@ -230,6 +230,7 @@ class checkin(myThread):
 					print data
 			except Queue.Empty:
 				gv.gotCheckedInData = False
+				time.sleep(0.1)
 
 def backgroundProcessWorker(myQ, dbQ, checkInQueue, endFlag):
 	""" Entry point for sub process """
@@ -263,7 +264,7 @@ def backgroundworker(myQ, endFlag = None):
 		#func, data = gv.ThreadCommandQueue.get()
 		
 		try:
-			func, data = myQ.get()
+			func, data = myQ.get(timeout=1)
 			gotdata = True
 			
 		except Queue.Empty:
@@ -289,13 +290,20 @@ def backgroundworker(myQ, endFlag = None):
 				#gv.exceptions.append(( error[1], traceback.format_tb(error[2]) ))
 			item +=1
 
+import atexit
 
+@atexit.register
 def cleanup(exit_status=0):
 	import sys
 	try:
 		gv.threadTerminationFlag.value = True
+		print "Set termination flag"
+		time.sleep(1)
+		print "Joining threads and waiting for subprocesses"
 		for thread in gv.threads:
+			
 			thread.join(1)
+			print ".",
 		if exit_status == 0:
 			cmd = "UPDATE `UMD`.`management` SET `value` = 'OFFLINE' WHERE `management`.`key` = 'current_status';"
 			gv.sql.qselect(cmd)
@@ -512,7 +520,7 @@ def main(debugBreak = False):
 					return float(sum(L)) / len(L)
 				for t in gv.threads:
 					try:
-						if t.isAlive():
+						if t.is_alive():
 							runningThreads += 1
 						else:
 							stoppedThreads += 1
