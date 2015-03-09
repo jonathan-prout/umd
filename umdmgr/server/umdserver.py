@@ -500,7 +500,7 @@ def main(debugBreak = False):
 							v = 0
 						gv.dbQ.put("UPDATE `UMD`.`management` SET `value` = '%s' WHERE `management`.`key` = '%s';" %(v,k) )
 					if gv.loud:
-						print "%d / %d late"%(lateCounter, onTimeCounter)
+						print "%d / %d late"%(lateCounter, lateCounter + onTimeCounter)
 				mj = float(min(jitterlist))
 				xj = float(max(jitterlist))
 				aj = float(avg(jitterlist))
