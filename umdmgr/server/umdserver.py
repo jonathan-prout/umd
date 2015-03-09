@@ -154,14 +154,14 @@ def start(_id=None):
 	if gv.loud:
 		print "Determining types"
 	for currentEquipment in gv.equipmentDict.values():
-		gv.ThreadCommandQueue.put((bgtask.determine_type, currentEquipment.serialize()), block = True)
+		gv.ThreadCommandQueue.put(("determine_type", currentEquipment.serialize()), block = True)
 	
 def dbworker(myQ):
 	import time
 	item = 1
 	
 	gotdata = True
-	while gv.threadTerminationFlag == False:
+	while gv.threadTerminationFlag.value == False:
 		#while not gv.ThreadCommandQueue.empty():
 		#print "still in while"
 		#func, data = gv.ThreadCommandQueue.get()
@@ -185,7 +185,7 @@ class dispatcher(myThread):
 		STAT_INQUEUE =3
 		STAT_CHECKEDOUT = 4
 		STAT_STUCK = 5
-		while gv.threadTerminationFlag == False:
+		while gv.threadTerminationFlag.value == False:
 			if gv.threadJoinFlag == False:
 				for equipmentID, instance in gv.equipmentDict.iteritems():
 					
@@ -211,7 +211,7 @@ class dispatcher(myThread):
 class checkin(myThread):
 	def run(self):
 		queue = gv.CheckInQueue
-		while gv.threadTerminationFlag == False:
+		while gv.threadTerminationFlag.value == False:
 			try:
 				data = queue.get(0.1)
 				if data.has_key("equipmentId"):
@@ -339,7 +339,7 @@ def main(debugBreak = False):
 		print gv.equipmentDict[k].getChannel()
 	"""
 	loopcounter = 0
-	while gv.threadTerminationFlag == False:
+	while gv.threadTerminationFlag.value == False:
 		try:
 			
 			time.sleep(30)
@@ -371,7 +371,7 @@ def main(debugBreak = False):
 							name = gv.equipmentDict[item].name
 							newird = equipment.generic.GenericIRD(int(item), ip, name)
 							gv.addEquipment(newird)
-							gv.offlineQueue.put((bgtask.determine_type, [item, True]))
+							gv.offlineQueue.put(("determine_type", [item, True]))
 				except TypeError:
 					pass
 			loopcounter += 1
