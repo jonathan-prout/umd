@@ -14,6 +14,14 @@ class asiport:
 		if d:
 				for k,v in d.iteritems():
 					setattr(self, k,v)
+	def getData(self):
+		d = {}
+		for k in ["id", "enable", "dir","dest","label"]:
+			try:
+				d[k] = getattr(self, k)
+			except:
+				continue
+		return d
 	
 		
 		
