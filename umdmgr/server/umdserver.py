@@ -367,97 +367,11 @@ def main(debugBreak = False):
 				gv.dbQ.put(cmd)
 			finishedStarting = True
 			
-			if loopcounter > 3:
-				inactives = gv.get_inactive()
-				if gv.loud:
-					print inactives
-				try:
-					while 1:
-						gv.offlineQueue.get_nowait() #Truncate Queue
-						gv.offlineQueue.task_done()
-				except Queue.Empty:
-					pass
-				
-				gv.offlineEquip = []
-				
-				try:
-					for item in inactives:
-						if gv.loud:
-							print "Restarting UMD for ID %s" %item
-						if not item in gv.offlineEquip:
-							gv.offlineEquip.append(item)
-							ip = gv.equipmentDict[item].ip
-							name = gv.equipmentDict[item].name
-							newird = equipment.generic.GenericIRD(int(item), ip, name)
-							gv.addEquipment(newird)
-							gv.offlineQueue.put(("determine_type", [item, True]))
-				except TypeError:
-					pass
+			
 			loopcounter += 1
 			if loopcounter > 10: # Restart all threads every 10 minutes
 				loopcounter = 0
-				"""
-				try:
-					while 1:
-						gv.offlineQueue.get_nowait() #Truncate Queue
-						gv.offlineQueue.task_done()
-				except Queue.Empty:
-					pass
-				gv.offlineEquip = []
 				
-				if gv.loud:
-					print "Joining Queue"
-				gv.threadJoinFlag = True
-				try:
-					while 1:
-						gv.ThreadCommandQueue.get_nowait() #Truncate Queue
-						gv.ThreadCommandQueue.task_done()
-				except Queue.Empty:
-					pass
-				gv.ThreadCommandQueue.join()
-				
-				for equipmentID in gv.equipmentDict.keys():
-					try:
-						if gv.equipmentDict[equipmentID].get_offline():
-							offcount += 1
-						else:
-							jitter = float(gv.equipmentDict[equipmentID].checkout.jitter)
-						jitterlist.append(jitter)
-						
-						if gv.loud:
-							print "%s: %s"%(equipmentID, jitter)
-						
-						if float(jitter) > 60:
-							gv.equipmentDict[equipmentID].set_offline()
-							offcount += 1
-							if gv.loud:
-								print "kicking %s, %s now %s"%(equipmentID, gv.equipmentDict[equipmentID].ip, ["online","offline"][gv.equipmentDict[equipmentID].get_offline()])
-						else:
-							oncount += 1
-						
-					except:
-						continue
-				for k in gv.equipmentDict.keys():
-					if gv.equipmentDict[k].get_offline():
-						if not k in gv.offlineEquip:
-							ip = gv.equipmentDict[k].ip
-							name = gv.equipmentDict[k].name
-							newird = equipment.generic.GenericIRD(int(k), ip, name)
-							gv.addEquipment(newird)
-							gv.offlineQueue.put((bgtask.determine_type, [k, True]))
-					else:
-						currentEquipment = gv.equipmentDict[k]
-						mr = currentEquipment.min_refresh_time() * 10
-						nr = random.randint(0, mr)
-						currentEquipment.excpetedNextRefresh = time.time() + float(nr) /100 
-						gv.ThreadCommandQueue.put((bgtask.refresh, k))
-				loopcounter = 0
-				
-				if gv.loud:
-					print "Resuming Threads"
-				gv.threadJoinFlag = False
-				gv.threadTerminationFlag = False
-				"""
 			if loopcounter > 2:
 				oncount = 0
 				offcount = 0
