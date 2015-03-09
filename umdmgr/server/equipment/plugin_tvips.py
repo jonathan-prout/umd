@@ -123,10 +123,11 @@ class TVG420(tvips):
 			xmldoc = xmlhelper.stringtoxml(stringfromserver)
 			enablelist = xmlhelper.getAttributesFromTags('asi', 'enable', xmldoc)
 			self.enablelist = enablelist
-			
+			self.online = True
 		except:
 			for item in range(len(self.enablelist)):
 				self.enablelist[item] = "false"
+			self.online = True
 		
 			
 			

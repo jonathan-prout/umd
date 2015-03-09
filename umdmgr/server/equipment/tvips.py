@@ -1,9 +1,9 @@
 import copy
 import plugin_tvips
 from server import gv
-from generic import checkout, serializableObj
+from generic import checkout, equipment
 
-class TVG420(plugin_tvips.TVG420, serializableObj):
+class TVG420(plugin_tvips.TVG420, equipment):
 	def __init__(self, equipmentId, ip, name):
 		self.equipmentId = equipmentId
 		self.ip = ip
@@ -14,7 +14,7 @@ class TVG420(plugin_tvips.TVG420, serializableObj):
 		self.ports = []
 		self.get_equipment_ids()
 		self.checkout = checkout(self)
-		
+		self.online = True
 		
 	def serialize(self ):
 		"""serialize data without using pickle. Returns dict"""
@@ -58,6 +58,7 @@ class TVG420(plugin_tvips.TVG420, serializableObj):
 		self.online = False
 		
 	def refresh(self):
+		
 		if not self.ports:
 			self.get_port_config()
 			
