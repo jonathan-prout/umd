@@ -192,14 +192,14 @@ class dispatcher(myThread):
 					try:
 						if instance.checkout.getStatus() in [STAT_INIT, STAT_READY, STAT_STUCK]:
 							if isinstance(instance, gv.equipment.generic.GenericIRD):
-								task = bgtask.determine_type
+								task = "determine_type"
 								queue = gv.ThreadCommandQueue
 							else:
 								if instance.get_offline():
-									task = bgtask.determine_type
+									task = "determine_type"
 									queue = gv.offlineQueue
 								else:
-									task = bgtask.refresh
+									task = "refresh"
 									queue = gv.ThreadCommandQueue
 						queue.put((task, gv.equipmentDict[equipmentID].serialize()),0.1)
 						instance.checkout.enqueue()
