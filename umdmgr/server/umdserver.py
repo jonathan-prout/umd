@@ -176,6 +176,7 @@ def dbworker(myQ):
 		if gotdata:
 			#print  "Processing Item %s" % item
 			gv.sql.qselect(cmd)
+			myQ.task_done()
 	#thread.exit()
 class dispatcher(myThread):
 	def run(self):
@@ -224,6 +225,7 @@ class checkin(myThread):
 					except TypeError: #Equipment Type Changed
 						gv.equipmentDict[equipmentID] = bgtask.deserialize(data)
 					gv.equipmentDict[equipmentID].checkout.checkin()
+					queue.task_done()
 				else:
 					gv.gotCheckedInData = False
 					print "checkin fail"
@@ -327,6 +329,7 @@ def main(debugBreak = False):
 	start()
 	#backgroundworker()
 	gv.ThreadCommandQueue.join()
+	gv.CheckInQueue.join()
 	print "Types determined. Took %s seconds. Begininng main loop. Press CTRL C to %s"% (time.time() - time1, ["quit","enter debug console"][gv.debug])
 	if gv.debug:
 		from pympler import muppy
