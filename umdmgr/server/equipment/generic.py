@@ -118,13 +118,13 @@ class equipment(serializableObj):
 			self.oid_get[snmp_command[i][0]] =snmp_command[i][1]
 		"""
 		try:
-			snmp_command = gv.sql.qselect(comsel)
+			snmp_command = gv.cachedSNMP(comsel)
 			for i in range(len(snmp_command)):
 				self.oid_get[snmp_command[i][0]] =snmp_command[i][1]    
 		except:
 			raise "DB Error: 'Get SNMP COMMANDS'"
 		try:
-			snmp_command = gv.sql.qselect(comsel_bulk)
+			snmp_command = gv.cachedSNMP(comsel_bulk)
 			for i in range(len(snmp_command)):
 				self.oid_getBulk[snmp_command[i][0]] =snmp_command[i][1]
 					
@@ -452,7 +452,7 @@ class IRD(equipment):
 			satfreq = str(self.getinSatSetupSatelliteFreq())
 		channel_request = "SELECT c.channel, c.modulationtype FROM channel_def c WHERE ((c.sat =\"" + self.getSat() + "\") AND (c.pol =\"" + self.getPol() + "\") AND (c.frequency LIKE \"" + satfreq.split(".")[0] + "%\") AND (c.symbolrate  LIKE \"" + self.getinSatSetupSymbolRate().split(".")[0] + "%\"))"
 		#print channel_request
-		result = gv.sql.qselect(channel_request)
+		result = gv.cachedSNMP(channel_request)
 		if(len(result) != 0 ):
 		   channel = str(result[0][0]) 
 		   modulation = str(result[0][1])

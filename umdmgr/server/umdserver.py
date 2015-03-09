@@ -232,9 +232,13 @@ class checkin(myThread):
 def backgroundProcessWorker(myQ, dbQ, checkInQueue, endFlag):
 	""" Entry point for sub process """
 	import gv
+	from helpers import mysql
 	gv.dbQ = dbQ
 	gv.CheckInQueue = checkInQueue
-	
+	gv.sql = mysql.mysql()
+	gv.sql.autocommit = True
+	#gv.sql.semaphore = threading.BoundedSemaphore(value=10)
+	gv.sql.mutex = threading.RLock()
 	
 	backgroundworker(myQ, endFlag)
 	

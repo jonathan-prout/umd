@@ -140,3 +140,9 @@ def get_inactive():
 			pass
 		
 	return list_of_timeouts
+
+snmp_res = {}
+def cachedSNMP(command):
+	if not snmp_res.has_key(command):
+		snmp_res[command] = sql.qselect(command)
+	return snmp_res[command]
