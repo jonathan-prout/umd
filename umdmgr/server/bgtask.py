@@ -29,8 +29,7 @@ def checkin(data):
 def sendToSQL(query):
 	gv.dbQ.put(query)
 
-funcs = {"determine_type":determine_type,
-		 "refresh":refresh}
+
 
 def determine_type(data):
 	t = "ERROR"
@@ -145,3 +144,6 @@ def refresh(data):
 		sendToSQL(updatesql)
 		checkin(currentEquipment.serialize())
 	#print "end refresh method"
+	
+funcs = {"determine_type":determine_type,
+		 "refresh":refresh}
