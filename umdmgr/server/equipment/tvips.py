@@ -22,7 +22,7 @@ class TVG420(plugin_tvips.TVG420, serializableObj):
 		serial_data = {}
 		seralisabledata = ["ip", "equipmentId", "name", "online",  "modelType", "refreshType", "refreshCounter", "enablelist", "labellist","dirlist", "destlist", "ids", "ip_tx_rate","ip_rx_rate", "multicast_id_dict"]
 		for key in seralisabledata:
-			if hasattr(self, key):
+			if hasattr(self,key):
 				serial_data[key] = copy.copy(getattr(self, key))
 		for i in range(len(self.ports)):
 			serial_data["port-%d"%i] = self.ports[i].getData()
@@ -37,7 +37,7 @@ class TVG420(plugin_tvips.TVG420, serializableObj):
 		seralisabledata = ["ip", "equipmentId", "name", "online",  "modelType", "refreshType", "refreshCounter", "enablelist", "labellist","dirlist", "destlist", "ids", "ip_tx_rate","ip_rx_rate", "multicast_id_dict"]
 		ports = {}
 		for key in seralisabledata:
-				if hasattr(data, key):
+				if data.has_key(key):
 					setattr(self, key, data[key])
 		for key in data.keys():
 			if "port-" in key:
