@@ -4,7 +4,7 @@
 import getopt	
 import sys
 import threading
-
+import multiprocessing
 
 def usage():
 	print "v, verbose logs everything"
@@ -49,5 +49,5 @@ if __name__ == "__main__":
 	gv.sql = mysql.mysql()
 	gv.sql.autocommit = True
 	#gv.sql.semaphore = threading.BoundedSemaphore(value=10)
-	gv.sql.mutex = threading.RLock()
+	gv.sql.mutex = multiprocessing.RLock()
 	umdserver.main()

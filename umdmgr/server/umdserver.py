@@ -239,7 +239,7 @@ def backgroundProcessWorker(myQ, dbQ, checkInQueue, endFlag):
 		gv.sql = mysql.mysql()
 		gv.sql.autocommit = True
 		#gv.sql.semaphore = threading.BoundedSemaphore(value=10)
-		gv.sql.mutex = threading.RLock()
+		gv.sql.mutex = multiprocessing.RLock()
 	
 	backgroundworker(myQ, endFlag)
 	
