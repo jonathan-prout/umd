@@ -1,7 +1,9 @@
 #!/usr/bin/python
 
 import os, re, sys
-import string,threading,time, Queue, getopt
+import string,threading,time, getopt
+import Queue
+import multiprocessing
 import random
 import equipment
 import gv
@@ -50,6 +52,9 @@ class myThread (threading.Thread):
 		finally:
 			self.running = False
 		print "Exiting " + self.name
+
+
+	
 
 class dbthread (myThread):
 	myQ = gv.dbQ
@@ -246,7 +251,7 @@ def backgroundworker(myQ):
 			#print  "Processing Item %s" % item
 			error = None
 			try:
-				func(data)
+				funcs[func](data)
 			except Exception, e:
 				error = sys.exc_info()	
 			

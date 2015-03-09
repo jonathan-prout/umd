@@ -5,7 +5,8 @@ import collections
 import threading 
 import datetime 
 import time 
-import Queue
+#import Queue
+from multiprocessing import Queue
 #Project imports 
 from helpers import mysql
 import equipment.generic
@@ -76,10 +77,10 @@ bg_worker_threads =20
 offlineCheckThreads = 2
 
 """ Queues """
-ThreadCommandQueue = Queue.Queue(bg_worker_threads)
-offlineQueue = Queue.Queue(offlineCheckThreads)
-dbQ =  Queue.Queue()
-CheckInQueue = Queue.Queue()
+ThreadCommandQueue = Queue(bg_worker_threads)
+offlineQueue = Queue(offlineCheckThreads)
+dbQ =  Queue()
+CheckInQueue = Queue()
 
 
 gotCheckedInData = False
