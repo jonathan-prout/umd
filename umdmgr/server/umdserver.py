@@ -91,17 +91,16 @@ def beginthreads():
 	print "Starting %s threads..."% gv.bg_worker_threads
 	gv.threads = []
 	
-	for t in range(gv.bg_worker_threads):
-		if t in range(gv.offlineCheckThreads):
-			name = "offlineCheck-%s"% t
-		else:
-			name = "normalThread-%s"% t
-		bg = myThread(t, name, t)
-		bg.daemon = True
+	
+	for t in range(gv.offlineCheckThreads):
+		bg = multiprocessing.Process(target=backgroundProcessWorker, args=(gv.offlineQueue, gv.dbQ, gv.CheckInQueue, gv.threadTerminationFlag) )
 		gv.threads.append(bg)
-		if t in range(gv.offlineCheckThreads):
-			bg.myQ = gv.offlineQueue
 		bg.start()
+	for t in range(gv.offlineCheckThreads, gv.bg_worker_threads):
+		bg = multiprocessing.Process(target=backgroundProcessWorker, args=(gv.ThreadCommandQueue, gv.dbQ, gv.CheckInQueue, gv.threadTerminationFlag) )
+		gv.threads.append(bg)
+		bg.start()
+	
 	t += 1
 	bg = dbthread(t, "dbThread0", t)
 	bg.daemon = True
@@ -230,12 +229,28 @@ class checkin(myThread):
 			except Queue.Empty:
 				gv.gotCheckedInData = False
 
-def backgroundworker(myQ):
+def backgroundProcessWorker(myQ, dbQ, checkInQueue, endFlag):
+	""" Entry point for sub process """
+	import gv
+	gv.dbQ = dbQ
+	gv.CheckInQueue = checkInQueue
+	
+	
+	backgroundworker(myQ, endFlag)
+	
+def backgroundworker(myQ, endFlag = None):
 	import time
+	import bgtask
 	item = 1
 	
+	def getTerminated():
+		if endFlag:
+			return endFlag.value
+		else:
+			return gv.threadTerminationFlag.value
+	
 	gotdata = True
-	while gv.threadTerminationFlag == False:
+	while not getTerminated():
 		#while not gv.ThreadCommandQueue.empty():
 		#print "still in while"
 		#func, data = gv.ThreadCommandQueue.get()
@@ -251,22 +266,26 @@ def backgroundworker(myQ):
 			#print  "Processing Item %s" % item
 			error = None
 			try:
-				funcs[func](data)
+				bgtask.funcs[func](data)
+			except KeyboardInterrupt:
+				return
 			except Exception, e:
 				error = sys.exc_info()	
 			
 			finally:	
 				#print "processed a thred command!s"
 				myQ.task_done()
-			if error:
-				gv.exceptions.append(( error[1], traceback.format_tb(error[2]) ))
+			if e:
+				raise e
+			#if error:
+				#gv.exceptions.append(( error[1], traceback.format_tb(error[2]) ))
 			item +=1
 
 
 def cleanup(exit_status=0):
 	import sys
 	try:
-		gv.threadTerminationFlag = True
+		gv.threadTerminationFlag.value = True
 		for thread in gv.threads:
 			thread.join(1)
 		if exit_status == 0:

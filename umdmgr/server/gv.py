@@ -6,7 +6,8 @@ import threading
 import datetime 
 import time 
 #import Queue
-from multiprocessing import Queue
+from multiprocessing import JoinableQueue as Queue
+import multiprocessing
 #Project imports 
 from helpers import mysql
 import equipment.generic
@@ -68,12 +69,19 @@ exceptions = []
 
 """Keeping track of theads"""
 
-
+from multiprocessing import Value
 offlineEquip = []
 threads = []
-threadTerminationFlag = False
+threadTerminationFlag = Value("i", False)
 threadJoinFlag = False
 bg_worker_threads =20
+try:
+	cpus = multiprocessing.cpu_count()
+	workers_per_proc = 4
+	bg_worker_threads = cupus * workers_per_proc
+except:
+	pass
+
 offlineCheckThreads = 2
 
 """ Queues """
