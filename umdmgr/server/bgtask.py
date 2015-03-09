@@ -76,6 +76,8 @@ def determine_type(data):
 		elif subtype == "RX8200-2RF":
 			t = "Rx8200-2RF"
 			currentEquipment = equipment.ericsson.RX8200_2RF(equipmentID, ip, name)
+		else:
+			print "WARNING: id %d at %s not subtyped"%(equipmentID, ip)
 		#gv.addEquipment(currentEquipment)
 		
 		
