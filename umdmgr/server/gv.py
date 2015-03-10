@@ -74,15 +74,17 @@ offlineEquip = []
 threads = []
 threadTerminationFlag = Value("i", False)
 threadJoinFlag = False
-bg_worker_threads =20
+offlineCheckThreads = 2
 try:
 	cpus = multiprocessing.cpu_count()
-	workers_per_proc = 4
-	bg_worker_threads = cupus * workers_per_proc
 except:
-	pass
+	cpus = 1
 
-offlineCheckThreads = 2
+workers_per_proc = 4
+bg_worker_threads = cpus * workers_per_proc 
+
+
+
 
 """ Queues """
 ThreadCommandQueue = Queue(bg_worker_threads)

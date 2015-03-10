@@ -88,15 +88,17 @@ def crashdump():
 	cleanup(1)
 
 def beginthreads():
-	print "Starting %s threads..."% gv.bg_worker_threads
+	
 	gv.threads = []
 	
 	
 	for t in range(gv.offlineCheckThreads):
+		print "Starting %s offline check subprocesses..."% gv.offlineCheckThreads
 		bg = multiprocessing.Process(target=backgroundProcessWorker, args=(gv.offlineQueue, gv.dbQ, gv.CheckInQueue, gv.threadTerminationFlag) )
 		gv.threads.append(bg)
 		bg.start()
-	for t in range(gv.offlineCheckThreads, gv.bg_worker_threads):
+	for t in range(gv.offlineCheckThreads, gv.bg_worker_threads +gv.offlineCheckThreads ):
+		print "Starting %s worker subprocesses..."% gv.bg_worker_threads
 		bg = multiprocessing.Process(target=backgroundProcessWorker, args=(gv.ThreadCommandQueue, gv.dbQ, gv.CheckInQueue, gv.threadTerminationFlag) )
 		gv.threads.append(bg)
 		bg.start()
