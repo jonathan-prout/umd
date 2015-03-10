@@ -224,9 +224,12 @@ class checkin(myThread):
 					gv.gotCheckedInData = True
 					equipmentID = data["equipmentId"]
 					try:
+						assert(not gv.equipmentDict[equipmentID].get_offline())
 						gv.equipmentDict[equipmentID].deserialize(data)
+					except AssertionError: #Reinstance when checking in offline equip
+						gv.equipmentDict[equipmentID] = bgtask.deserialize(data, keepData = False)
 					except TypeError: #Equipment Type Changed
-						gv.equipmentDict[equipmentID] = bgtask.deserialize(data)
+						gv.equipmentDict[equipmentID] = bgtask.deserialize(data, keepData = False)
 					gv.equipmentDict[equipmentID].checkout.checkin()
 					queue.task_done()
 				else:

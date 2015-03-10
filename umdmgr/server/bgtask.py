@@ -2,7 +2,7 @@ import equipment
 import gv
 import random
 
-def deserialize(data):
+def deserialize(data, keepData = True):
 	""" Instanciates equip with data. Beware of keyerrors and Typeerrors"""
 	equipTypes = {
 		"GenericIRD":equipment.generic.GenericIRD,
@@ -20,7 +20,8 @@ def deserialize(data):
 		"RX8200-2RF":equipment.ericsson.RX8200_2RF,
 	}
 	equip = equipTypes[data["modelType"] ](data["equipmentId"], data["ip"], data["name"])
-	equip.deserialize(data)
+	if keepData:
+		equip.deserialize(data)
 	return equip
 
 def checkin(data):
