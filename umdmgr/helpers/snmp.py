@@ -90,13 +90,16 @@ def oidFromDict(n , invdict):
 
 def get(commandDict, ip):
 	#import gv
-	
+	return get_subprocess(commandDict, ip)
+	"""
 	try:
 		return get_subprocess(commandDict, ip)
+	
 	except NetSNMPTimedOut:
 		return {}
 	except Exception as e:
-		"""
+	"""
+	"""
 		if any( ( isinstance(e, AssertionError), isinstance(e, AttributeError) ) ):
 			if gv.loudSNMP:
 				print "NETSNP Errored so using PYSNMP on %s"% ip
@@ -106,8 +109,9 @@ def get(commandDict, ip):
 			gv.exceptions.append((e, traceback.format_tb( sys.exc_info()[2]) ))
 			raise e
 		"""
+	"""
 		raise e
-			
+	"""
 
 
 def get_pysnmp(commandDict, ip):
