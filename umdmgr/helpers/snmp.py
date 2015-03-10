@@ -385,7 +385,8 @@ def walk_subprocess(commandDict, ip):
 			except ValueError:
 				continue
 		n = oidFromDict(command , invdict)
-		returndict[invdict[n]] = results
+		if results:
+			returndict[invdict[n]] = results
 	return returndict
 	
 def walk_pysnmp(commandDict, ip):
