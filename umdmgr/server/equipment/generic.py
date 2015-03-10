@@ -92,6 +92,7 @@ class serializableObj(object):
 			raise TypeError("Tried to serialise data from %s into %s"%(data["modelType"],self.modelType))
 		seralisabledata = ["ip", "equipmentId", "name", "snmp_res_dict", "oid_get", "masked_oids", "oid_getBulk" "multicast_id_dict", "streamDict", "addressesbyname","online",  "modelType", "refreshType", "refreshCounter"]
 		for key in seralisabledata:
+			if data.has_key(key):
 				if hasattr(self, key):
 					setattr(self, key, data[key])
 
