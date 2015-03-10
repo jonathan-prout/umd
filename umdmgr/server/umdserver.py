@@ -373,7 +373,7 @@ def main(debugBreak = False):
 	while gv.threadTerminationFlag.value == False:
 		try:
 			
-			time.sleep(30)
+			
 			if not finishedStarting:
 				cmd = "UPDATE `UMD`.`management` SET `value` = 'RUNNING' WHERE `management`.`key` = 'current_status';"
 				gv.dbQ.put(cmd)
@@ -527,7 +527,7 @@ def main(debugBreak = False):
 					thread.run()
 				"""
 				
-	
+			time.sleep(30)
 		except KeyboardInterrupt:
 			if gv.debug:
 				gv.threadJoinFlag = True
