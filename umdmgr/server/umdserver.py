@@ -296,9 +296,14 @@ def backgroundworker(myQ, endFlag = None):
 			item +=1
 
 import atexit
-_prexit = False
+
 @atexit.register
 def cleanup(exit_status=0):
+	try:
+		_prexit = gv.preexit
+	except:
+		gv.preexit = False
+		_prexit = False
 	if not _prexit:
 		import sys
 		try:
@@ -316,7 +321,7 @@ def cleanup(exit_status=0):
 				gv.sql.qselect(cmd)
 			
 			gv.sql.close()
-			_prexit = True
+			gv.preexit = True
 		except Exception as e:
 			print "%s error during shutdown"%type(e)
 			exit_status = 1
