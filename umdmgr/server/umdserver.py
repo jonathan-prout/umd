@@ -295,28 +295,32 @@ def backgroundworker(myQ, endFlag = None):
 			item +=1
 
 import atexit
-
+_prexit = False
 @atexit.register
 def cleanup(exit_status=0):
-	import sys
-	try:
-		gv.threadTerminationFlag.value = True
-		print "Set termination flag"
-		time.sleep(1)
-		print "Joining threads and waiting for subprocesses"
-		for thread in gv.threads:
+	if not _prexit:
+		import sys
+		try:
 			
-			thread.join(1)
-			print ".",
-		if exit_status == 0:
-			cmd = "UPDATE `UMD`.`management` SET `value` = 'OFFLINE' WHERE `management`.`key` = 'current_status';"
-			gv.sql.qselect(cmd)
-		gv.sql.close()
-	except Exception as e:
-		print "%s error during shutdown"%type(e)
-		exit_status = 1
-	finally:
-		sys.exit(exit_status)
+			gv.threadTerminationFlag.value = True
+			print "Set termination flag"
+			time.sleep(1)
+			print "Joining threads and waiting for subprocesses"
+			for thread in gv.threads:
+				
+				thread.join(1)
+				print ".",
+			if exit_status == 0:
+				cmd = "UPDATE `UMD`.`management` SET `value` = 'OFFLINE' WHERE `management`.`key` = 'current_status';"
+				gv.sql.qselect(cmd)
+			
+			gv.sql.close()
+			_prexit = True
+		except Exception as e:
+			print "%s error during shutdown"%type(e)
+			exit_status = 1
+		finally:
+			sys.exit(exit_status)
 
 def main(debugBreak = False):
 	print "Started at " + time.strftime("%H:%M:%S")
