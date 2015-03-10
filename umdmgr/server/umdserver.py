@@ -91,14 +91,15 @@ def beginthreads():
 	
 	gv.threads = []
 	
-	
+	print "Starting %s offline check subprocesses..."% gv.offlineCheckThreads
 	for t in range(gv.offlineCheckThreads):
-		print "Starting %s offline check subprocesses..."% gv.offlineCheckThreads
+		
 		bg = multiprocessing.Process(target=backgroundProcessWorker, args=(gv.offlineQueue, gv.dbQ, gv.CheckInQueue, gv.threadTerminationFlag) )
 		gv.threads.append(bg)
 		bg.start()
+	print "Starting %s worker subprocesses..."% gv.bg_worker_threads
 	for t in range(gv.offlineCheckThreads, gv.bg_worker_threads +gv.offlineCheckThreads ):
-		print "Starting %s worker subprocesses..."% gv.bg_worker_threads
+		
 		bg = multiprocessing.Process(target=backgroundProcessWorker, args=(gv.ThreadCommandQueue, gv.dbQ, gv.CheckInQueue, gv.threadTerminationFlag) )
 		gv.threads.append(bg)
 		bg.start()
