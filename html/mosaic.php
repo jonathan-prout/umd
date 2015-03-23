@@ -16,25 +16,25 @@
  <body>
 <?php
 if ($_SERVER['REQUEST_METHOD'] != 'POST'){
-	include("vancouver_login.php");
+	include("login.php");
 }
 else
 {
 	if ($_POST['formused'] == "table")
 	{
-		include("process2.php");
-		include("vancouver_table.php");
+		include("process.php");
+		include("table.php");
 	}
 	else
 	{
 		if (($_POST['username'] == "evc") && ($_POST['password'] == "evcpass"))
 		{
-			include("vancouver_table.php");
+			include("table.php");
 		}
 		else
 		{
 		echo "Wrong username or password!!";
-		include("vancouver_login.php");
+		include("login.php");
 		}
 	}
 }	

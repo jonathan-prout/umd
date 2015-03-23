@@ -8,7 +8,7 @@
 
  //
  require_once('umd.common.php');
- require_once ('config.inc.php');
+ require_once ('sql.php');
  dbstart();
 
  
@@ -168,10 +168,10 @@ if (ref != "") {land(loc,target);}
 	</tr>
 	
 		<tr>
-		<td>Number of offline equipment</td>
-		<?php if ($mgmt["equipment_offline"] < 10)
+		<td>Equipment starting</td>
+		<?php if ($mgmt["STAT_INIT"] < 10)
 			{$background = "lightgreen";}
-		elseif 	($mgmt["equipment_offline"] < 30)
+		elseif 	($mgmt["STAT_INIT"] < 30)
 		{$background = "yellow";}
 		
 		
@@ -179,10 +179,55 @@ if (ref != "") {land(loc,target);}
 			{$background = "red";}
 			
 		
-		echo '<td bgcolor="'. $background .'">'. $mgmt["equipment_offline"] .'</td>';
+		echo '<td bgcolor="'. $background .'">'. $mgmt["STAT_INIT"] .'</td>';
 		?>
 	       
-	</tr>       
+	</tr>
+		<tr>
+		<td>Equipment recently polled</td>
+		<?php if ($mgmt["STAT_SLEEP"] > 200)
+			{$background = "lightgreen";}
+		elseif 	($mgmt["STAT_SLEEP"] > 100)
+		{$background = "yellow";}
+		
+		
+		else
+			{$background = "red";}
+			
+		
+		echo '<td bgcolor="'. $background .'">'. $mgmt["STAT_SLEEP"] .'</td>';
+		?>
+	       
+	</tr>
+		<tr>
+		<td>Equipment ready to be polled</td>
+		<?php if ($mgmt["STAT_READY"] < 10)
+			{$background = "lightgreen";}
+		elseif 	($mgmt["STAT_READY"] < 100)
+		{$background = "yellow";}
+		
+		
+		else
+			{$background = "red";}
+			
+		
+		echo '<td bgcolor="'. $background .'">'. $mgmt["STAT_READY"] .'</td>';
+		?>
+	       
+	</tr>
+		<tr>
+		<td>Equipment in polling queue</td>
+		<?php 
+		$background = "lightgreen";
+		
+		
+		
+			
+		
+		echo '<td bgcolor="'. $background .'">'. $mgmt["STAT_INQUEUE"] .'</td>';
+		?>
+	       
+	</tr> 
 	</tr>
 		<tr>
 		
