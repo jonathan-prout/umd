@@ -5,6 +5,7 @@ import string,threading,time, getopt
 import Queue
 import multiprocessing
 import random
+import gc
 import equipment
 import gv
 import bgtask
@@ -386,7 +387,16 @@ def main(debugBreak = False):
 			loopcounter += 1
 			if loopcounter > 10: # Restart all threads every 10 minutes
 				loopcounter = 0
-				
+				if gv.loud:
+					print "Stopping dispatcher"
+				gv.threadJoinFlag = True
+				gv.ThreadCommandQueue.join()
+				if gv.loud:
+					print "Garbage Collection"
+				collected = gc.collect()
+				if gv.loud:
+					print "collected %s objects. Resuming"%collected
+				gv.threadJoinFlag = False
 			if loopcounter > 2:
 				oncount = 0
 				offcount = 0
