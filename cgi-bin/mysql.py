@@ -2,7 +2,7 @@
 import os, re, sys,time,datetime
 import threading, MySQLdb
 
-class mysql:
+class mysql(object):
 	dhost="localhost"
 	duser="umd"
 	dpass="umd"
@@ -45,5 +45,13 @@ class mysql:
 	
 	def close(self):
 		#print "Closing database....."
-		mysql.db.close()
+		try:
+			mysql.db.close()
+		except Exception, e:
+			try:
+				message = e.message
+			except:
+				message = "reason unknown"
+			finally:
+				print "Could not close database because: %s"%message
 

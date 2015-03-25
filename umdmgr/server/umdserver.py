@@ -70,23 +70,52 @@ class dbthread (myThread):
 		finally:
 			self.running = False
 		print "Exiting " + self.name
+
+
+def getEquipmentDict():
+	equipmentDict = {}
+	for k,v in gv.equipmentDict.iteritems():
+		try:
+			equipmentDict[k] = v.serialize()
+		except:
+			continue
 		
+
 def crashdump():
-	import pickle, time
 	print "UMD MANAGER HAS MADE AN ERROR AND WILL NOW CLOSE"
-	#filepath = "/var/www/programming/server/"
-	filepath = ""
-	filename = filepath + "server-crashdump-%s.pickle"% time.strftime("%Y_%m_%d_%H_%M_%S")
-	cmd = "UPDATE `UMD`.`management` SET `value` = 'OFFLINE_ERROR' WHERE `management`.`key` = 'current_status';"
-	gv.sql.qselect(cmd)
-	cmdq = []
-	while not gv.ThreadCommandQueue.empty():
-		cmdq.append(gv.ThreadCommandQueue.get(False))
-	objs = [ cmdq, gv.equipmentDict, gv.exceptions]
-	with open(filename, "w") as fobj:
-		pickle.dump(objs, fobj)
-	#ecit with error status
-	cleanup(1)
+	try:
+		gv.threadTerminationFlag.value = True
+		gv.threadJoinFlag = True
+		import pickle, time
+		
+		#filepath = "/var/www/programming/server/"
+		filepath = ""
+		filename = filepath + "server-crashdump-%s.pickle"% time.strftime("%Y_%m_%d_%H_%M_%S")
+		cmd = "UPDATE `UMD`.`management` SET `value` = 'OFFLINE_ERROR' WHERE `management`.`key` = 'current_status';"
+		gv.sql.qselect(cmd)
+		cmdq = [ [],[],[] ]
+		
+		while not gv.ThreadCommandQueue.empty():
+			cmdq[0].append(gv.ThreadCommandQueue.get(False))
+		while not gv.dbQ.empty():
+			cmdq[1].append(gv.dbQ.get(False))
+		while not gv.CheckInQueue.empty():
+			cmdq[2].append(gv.dbQ.get(False))
+			
+		equipmentDict = getEquipmentDict()
+		objs = [ cmdq, equipmentDict, gv.exceptions]
+		
+		with open(filename, "w") as fobj:
+			pickle.dump(objs, fobj)
+		#ecit with error status
+	except Exception, e:
+		print "crashdump failed, because of an error"
+		print str(e)
+		if hasattr(e, "message"):
+			print e.message
+		traceback.print_exc(file=sys.stdout)
+	finally:
+		cleanup(1)
 
 def beginthreads():
 	
@@ -258,6 +287,9 @@ def backgroundProcessWorker(myQ, dbQ, checkInQueue, endFlag):
 def backgroundworker(myQ, endFlag = None):
 	import time
 	import bgtask
+	import sys
+	import traceback
+	import multiprocessing
 	item = 1
 	
 	def getTerminated():
@@ -286,11 +318,19 @@ def backgroundworker(myQ, endFlag = None):
 			try:
 				bgtask.funcs[func](data)
 			except KeyboardInterrupt:
+				print "processs %s caught KeyboardInterrupt and is closing"%multiprocessing.current_process()
 				return
-				"""
-				except Exception, e:
-					error = sys.exc_info()	
-				"""
+
+			except Exception, e:
+				try:
+					message = e.message
+				except AttributeError:
+					message = "no message"
+				
+				sys.stderr.write("Error in processs %s ignored. error type is %s and message is %s\n"%(multiprocessing.current_process(), e , message))
+				traceback.print_exc(file=sys.stdout)
+				sys.stderr.flush()
+				
 			finally:	
 				#print "processed a thred command!s"
 				myQ.task_done()
@@ -571,9 +611,13 @@ def main(debugBreak = False):
 				print gv.exceptions
 				crashdump()
 		except Exception as e:
-			
+			print "Other error of type %s"%type(e)
 			gv.exceptions.append( (e, traceback.format_tb( sys.exc_info()[2]) ) )
-			print "%s: %s."%(e,str(e))
+			try:
+				message = e.message
+			except:
+				message = ""
+			print "%s: %s."%(e,message)
 			if gv.debug:
 				gv.threadJoinFlag = True
 				print "Pausing to debug"
