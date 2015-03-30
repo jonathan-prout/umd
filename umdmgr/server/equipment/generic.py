@@ -46,18 +46,35 @@ class checkout(object):
 		self.rlock.release()
 		
 	def getStatus(self):
-		if self.status in [checkout.STAT_INIT, checkout.STAT_INQUEUE, checkout.STAT_READY]:
-			return int(self.status)
-		elif self.status == checkout.STAT_SLEEP:
-			if time.time() > self.timestamp + self.parent.min_refresh_time():
-				self.status = checkout.STAT_READY
-			return int(self.status)
-		elif self.status == checkout.STAT_CHECKEDOUT:
+		if self.rlock.acquire(blocking=False): #If locked then receiver should be checked out
+			if self.status in [checkout.STAT_INIT, checkout.STAT_INQUEUE, checkout.STAT_READY]:
+				rval = int(self.status)
+				self.rlock.release()
+				return rval
+			elif self.status == checkout.STAT_SLEEP:
+				if time.time() > self.timestamp + self.parent.min_refresh_time():
+					self.status = checkout.STAT_READY
+				
+				rval = int(self.status)
+				self.rlock.release()
+				return rval
+			elif self.status == checkout.STAT_CHECKEDOUT:
+				if time.time() > self.timestamp + 60: #Checked out for 1 minute
+					self.status = checkout.STAT_STUCK
+				rval = int(self.status)
+				self.rlock.release()
+				return rval
+			else:
+				self.rlock.release()
+				raise NotImplementedError("status %d"%self.status) #should never happen
+		else:
 			if time.time() > self.timestamp + 60: #Checked out for 1 minute
 				self.status = checkout.STAT_STUCK
-			return int(self.status)
-		else:
-			raise NotImplementedError("status %d"%self.status) #should never happen
+				rval = int(checkout.STAT_STUCK)
+				return rval
+			else:
+				return int(checkout.STAT_CHECKEDOUT)
+			
 	def checkout(self ):
 		self.rlock.acquire()
 		self.status = checkout.STAT_CHECKEDOUT
@@ -71,8 +88,9 @@ class checkout(object):
 		except RuntimeError:
 			pass #Error raised from releasing a non aquired lock error. Don't care.
 	def enqueue(self):
-		self.status = checkout.STAT_INQUEUE
-		self.timestamp = time.time()	
+		with self.rlock():
+			self.status = checkout.STAT_INQUEUE
+			self.timestamp = time.time()	
 
 class serializableObj(object):
 	def serialize(self ):
