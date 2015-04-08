@@ -88,7 +88,7 @@ class checkout(object):
 		except RuntimeError:
 			pass #Error raised from releasing a non aquired lock error. Don't care.
 	def enqueue(self):
-		with self.rlock():
+		with self.rlock:
 			self.status = checkout.STAT_INQUEUE
 			self.timestamp = time.time()	
 
