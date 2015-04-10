@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+    <title>UMD Manager Edit Multiviewer</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+<script>
+   function getUrlVars() {
+    var vars = {};
+    var parts = window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function(m,key,value) {
+        vars[key] = value;
+    });
+    return vars;
+}
+
+function getScript(url, callback) {
+   var script = document.createElement('script');
+   script.type = 'text/javascript';
+   script.src = url;
+
+   script.onreadystatechange = callback;
+   script.onload = callback;
+
+   document.getElementsByTagName('head')[0].appendChild(script);
+}
+</script>
+</head>
+
+<body>
+<ul class="nav nav-tabs" role="tablist">
+        <li class="active"><a href="#">Multiviewer</a></li>
+        <li><a href="#">IRD</a></li>
+        
+      </ul>
+    </div>    
+<div id="id01"></div>  
+<div class="container">
+      <h2>Multiviewer</h2>
+      <p>Select Multiviewer</p>                  
+      <ul class="nav nav-pills" role="tablist" id="MvDrop">
+        
+              
+      </ul>
+    </div>
+<div class="container">
+  <div class="col-sm-10">
+    
+    <div class="row" style="background-color:lavender;">
+    <div class="col-sm-2">Edit</div>
+      <div class="col-sm-2">Input</div>
+      <div class="col-sm-2">Method</div>
+      <div class="col-sm-2">Equipment/Matrix</div>
+      <div class="col-sm-2">Top Label</div>
+      <div class="col-sm-2">Bottom Label</div>
+    </div>
+  </div>
+</div>
+
+<div class="container" id="mvTable"></div>
+
+
+
+
+<script>
+    var getParams = getUrlVars();
+    if ("mv" in getParams) {
+        var mv = getParams["mv"];
+    }else{
+        var mv = "None"
+    }
+document.getElementById("id01").innerHTML = "<h1>" +mv + "</h1>";
+
+function onMvButton(index) {
+    mv = index
+    document.getElementById("id01").innerHTML = "<h1>" +mv + "</h1>";
+    populateListbox(multiviewers )
+populateTable(mv_input)
+}
+
+getScript('static_parameters.php', function(){
+ populateListbox(multiviewers )
+populateTable(mv_input)
+});
+
+//document.getElementById("id01").innerHTML = mv;
+//var mvxml = new XMLHttpRequest();
+//mvxml.onreadystatechange = function() {
+//    if (mvxml.readyState == 4 && mvxml.status == 200) {
+//        var myArr = JSON.parse(mvxml.responseText);
+//        populateListbox(myArr);
+//    }
+//}
+//mvxml.open("GET", "static_parameters.php?mode=json&doc=multiviewer", true);
+//mvxml.send();
+
+//var mvcontent = new XMLHttpRequest();
+//mvcontent.onreadystatechange = function() {
+//    if (mvcontent.readyState == 4 && mvcontent.status == 200) {
+//        var myArr = JSON.parse(mvcontent.responseText);
+//        populateTable(myArr);
+//    }
+//}
+//mvcontent.open("GET", "static_parameters.php?mode=json&doc=mv_input", true);
+//mvcontent.send();
+
+function populateListbox(arr) {
+    var out = "";
+    var i;
+    for(i = 0; i < arr.length; i++) {
+        out += '<li';
+        if(mv == arr[i].id)
+        {
+           out += ' class="active" ';
+        }
+        out += ' onclick="onMvButton(' + arr[i].id + ')"><a href="#?mv=' + arr[i].id + '">' + arr[i].Name + '</a></li>'; 
+        
+    }
+    document.getElementById("MvDrop").innerHTML = out;
+}
+function makeKeyVal(array, key, val)
+{
+    var lookup = {};
+    for (var i = 0, len = array.length; i < len; i++) {
+        lookup[array[i][key]] = array[i][val];
+    
+    }
+    return lookup;
+}
+function populateTable(arr) {
+    var out = '<div class="row"><div class="col-sm-10">';
+    var i;
+    var strategies = makeKeyVal(inputStrategies, "PRIMARY", "description");
+    var equipment = makeKeyVal(irds, "id", "labelnamestatic");
+    var even = 1;
+    
+    for(i = 0; i < arr.length; i++) {
+        if (arr[i].multiviewer == mv) {
+            
+    
+    
+
+            out += '<div class="row" id="'+ "mv" +arr[i].PRIMARY;
+            if (even == 0) {
+                out += '" style="background-color:lavenderblush;';
+                even = 1;
+            }else{
+            even = 0;
+            }
+            
+            out += '">';
+            out += '<div class="col-sm-2"><a href="#" class="btn btn-default"  onclick="editLine('+ arr[i].PRIMARY+')" role="button">edit</a></div>';
+            out += '<div class="col-sm-2">'+ arr[i].input+'</div>';
+            out += '<div class="col-sm-2">'+ strategies[arr[i].strategy]+'</div>';
+            if (strategies[arr[i].strategy] === "by equipment") {
+               out += '<div class="col-sm-2">'+ equipment[arr[i].equipment]+'</div>';
+            }else{
+                out += '<div class="col-sm-2">'+ arr[i].inputmtxname+'</div>';
+            }
+            if (strategies[arr[i].strategy] === "by label") {
+            out += '<div class="col-sm-2">'+ arr[i].customlabel1+'</div>';
+            out += '<div class="col-sm-2">'+ arr[i].customlabel2+'</div>';
+            
+            }
+            out += '</div>';
+        }
+        
+        
+        
+    }
+     out += '</div>';
+    out += '</div>';
+    document.getElementById("mvTable").innerHTML = out;
+}
+
+function build_select(arr, key,val, selected, name, id){
+    out = '<div class="form-group"><label for="sel1">' + name +'</label>';
+    out +='<select class="form-control" id="'+id+'">';
+    var i;
+    out += '<option value="Null">No Selection</option>';
+    for(i = 0; i < arr.length; i++) {
+        if (arr[i][key] === selected) {
+            out += '<option selected value="'+ arr[i][key] +'">'+ arr[i][val] +'</option>';
+        }else{
+            out += '<option value="'+ arr[i][key] +'">'+ arr[i][val] +'</option>';
+            }
+        
+        
+    }
+    out += '  </select></div>';
+    return out;
+}
+function cancelEdit(){
+    populateTable(mv_input);
+}
+function editLine(line){
+    var out = "";
+    var i;
+    var arr = mv_input
+    for(i = 0; i < arr.length; i++) {
+        if ( arr[i].PRIMARY ==  line) {
+            out += '<div class="col-sm-2"><a href="#" class="btn btn-default"  onclick="cancelEdit()" role="button">Cancel</a> </div>';
+            out += '<div class="col-sm-10">Input '+ arr[i].input+'<form class="form-inline" role="form"><div class="form-group">';
+            out += '<input type="hidden" id="mvIn", value = "'+line+'></div>';
+            out += build_select(inputStrategies, "PRIMARY", "description",arr[i].strategy, "Input Strategy", "inputStategy" );
+            out += build_select(irds, "id", "labelnamestatic",arr[i].equipment, "Equipment", "equipment" );
+            out += build_select(mtx_out, "name", "name",arr[i].inputmtxname, "Matrix Output", "mtx_out" );
+            out += '<div class="form-group"><label for="customlabel1">Top Label</label><input type="text" class="form-control" id="customlabel1" value="'+arr[i].customlabel1+'"></div>';
+            out += '<div class="form-group"><label for="customlabel2">Bottom Label</label><input type="text" class="form-control" id="customlabel2" value="'+arr[i].customlabel2+'"></div>';
+            out += '<button type="submit" class="btn btn-default">Submit</button></form></div>';
+           
+           
+            document.getElementById("mv" + arr[i].PRIMARY).innerHTML = out;
+            
+        }
+    }
+    
+}
+
+
+
+      
+        
+
+</script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+<script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+</body>
+</html>

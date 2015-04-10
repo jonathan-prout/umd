@@ -4,39 +4,106 @@
  require_once('umd.common.php');
  require_once ('sql.php');
  dbstart();
+if(isset($_GET['mode']))
+{
+$mode = $_GET['mode'];
 
+}else{
+ $mode = "";
 
-$sql = 'SELECT `id`,`Name` FROM `Multiviewer` WHERE 1';  
-$multiviewers = mysql_query($sql);
+}
 
+if(isset($_GET['doc']))
+{
+$doc = $_GET['doc'];
+}else{
+ $doc = "";
+}
 
-$sql = 'SELECT `PRIMARY`, `multiviewer`, `input` , `labeladdr1` , `labeladdr2` , `strategy` , `equipment` , `inputmtxid` , `inputmtxname` , `customlabel1`, `customlabel2` FROM `mv_input` WHERE 1';  
-$mv_input = mysql_query($sql);
-$sql = 'SELECT `id`,`labelnamestatic` FROM `equipment` WHERE `isDemod`=1';
+if ($mode == "json")
+{
+ if ($doc == "multiviewer")
+ {
+  $sql = 'SELECT `id`,`Name` FROM `Multiviewer` WHERE 1';  
+  $multiviewers = mysql_query($sql);
+  echo json_encode(array_from_sql($multiviewers));
+  
+ }elseif  ($doc == "mv_input")
+ {
+  $sql = 'SELECT `PRIMARY`, `multiviewer`, `input` , `labeladdr1` , `labeladdr2` , `strategy` , `equipment` , `inputmtxid` , `inputmtxname` , `customlabel1`, `customlabel2` FROM `mv_input` WHERE 1';  
+  $mv_input = mysql_query($sql);
+  echo json_encode(array_from_sql($mv_input));
+  
+  }elseif  ($doc == "demods")
+ {
+ $sql = 'SELECT `id`,`labelnamestatic` FROM `equipment` WHERE `isDemod`=1';
+ $demods = mysql_query($sql);
+ echo json_encode(array_from_sql($demods));
+ 
+ }elseif  ($doc == "irds")
+ {
+ $sql = 'SELECT `id`,`labelnamestatic` FROM `equipment` WHERE 1';
+ $irds = mysql_query($sql);
+ echo json_encode(array_from_sql($irds));
+ 
+ }elseif  ($doc == "inpuutStrategies")
+ {
+ $sql = 'SELECT * FROM `inputStrategies`';
+ $inpuutStrategies = mysql_query($sql);
+ echo json_encode(array_from_sql($inpuutStrategies));
+ 
+ }elseif  ($doc == "matrix_in")
+ {
+ $ressource = mysql_select_db("matrix");
+ $sql = 'SELECT * FROM `input`';
+ $mtx_in = mysql_query($sql);
+ $ressource = mysql_select_db("umd");
+ echo json_encode(array_from_sql($mtx_in));
+ 
+ }elseif  ($doc == "matrix_out")
+ {
+ $ressource = mysql_select_db("matrix");
+ $sql = 'SELECT * FROM `output`';
+ $mtx_out = mysql_query($sql);
+ $ressource = mysql_select_db("umd");
+ echo json_encode(array_from_sql($mtx_out));
+ } else
+ {
+  echo "no doc parameter supplied";
+ }
+}else
+{
+ $sql = 'SELECT `id`,`Name` FROM `Multiviewer` WHERE 1';  
+ $multiviewers = mysql_query($sql);
+ $sql = 'SELECT `PRIMARY`, `multiviewer`, `input` , `labeladdr1` , `labeladdr2` , `strategy` , `equipment` , `inputmtxid` , `inputmtxname` , `customlabel1`, `customlabel2` FROM `mv_input` WHERE 1';  
+ $mv_input = mysql_query($sql);
+ $sql = 'SELECT `id`,`labelnamestatic` FROM `equipment` WHERE `isDemod`=1';
 $demods = mysql_query($sql);
 $sql = 'SELECT `id`,`labelnamestatic` FROM `equipment` WHERE 1';
 $irds = mysql_query($sql);
 $sql = 'SELECT * FROM `inputStrategies`';
 $inpuutStrategies = mysql_query($sql);
-
-
-
 $ressource = mysql_select_db("matrix");
 $sql = 'SELECT * FROM `input`';
 $mtx_in = mysql_query($sql);
+$ressource = mysql_select_db("umd");
+$ressource = mysql_select_db("matrix");
 $sql = 'SELECT * FROM `output`';
 $mtx_out = mysql_query($sql);
 $ressource = mysql_select_db("umd");
-//echo "something";
-//echo mysql_fetch_array($multiviewers);
-echo 'var multiviewers = '.json_encode(array_from_sql($multiviewers));
-echo 'var mv_input = '.json_encode(array_from_sql($mv_input));
-echo 'var demods = '.json_encode(array_from_sql($demods));
-echo 'var irds = '.json_encode(array_from_sql($irds));
-echo 'var inpuutStrategies = '.json_encode(array_from_sql($inpuutStrategies));
-echo 'var mtx_in = '.json_encode(array_from_sql($mtx_in));
-echo 'var mtx_out = '.json_encode(array_from_sql($mtx_out));
 
+
+$search = array("\n", "\r", "\u", "\t", "\f", "\b", "/", '\\');
+$replace = array("", "", "", "", "", "", "", "");
+
+echo 'var multiviewers = JSON.parse('."'".str_replace($search, $replace, json_encode(array_from_sql($multiviewers)))."');\r\n";
+echo 'var mv_input = JSON.parse('."'".str_replace($search, $replace,json_encode(array_from_sql($mv_input)))."');\r\n";
+echo 'var demods = JSON.parse('."'".str_replace($search, $replace,json_encode(array_from_sql($demods)))."');\r\n";
+echo 'var irds = JSON.parse('."'".str_replace($search, $replace,json_encode(array_from_sql($irds)))."');\r\n";
+echo 'var inputStrategies = JSON.parse('."'".str_replace($search, $replace,json_encode(array_from_sql($inpuutStrategies)))."');\r\n";
+echo 'var mtx_in = JSON.parse('."'".str_replace($search, $replace,json_encode(array_from_sql($mtx_in)))."');\r\n";
+echo 'var mtx_out = JSON.parse('."'".str_replace($search, $replace,json_encode(array_from_sql($mtx_out)))."');\r\n";
+}
 
 function array_from_sql($sql_res)
 {
