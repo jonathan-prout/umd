@@ -79,30 +79,45 @@ if ($mode == "json")
  $mv_input = mysql_query($sql);
  $sql = 'SELECT `id`,`labelnamestatic` FROM `equipment` WHERE `isDemod`=1';
 $demods = mysql_query($sql);
-$sql = 'SELECT `id`,`labelnamestatic` FROM `equipment` WHERE 1';
+//$sql = 'SELECT `id`,`labelnamestatic` FROM `equipment` WHERE 1';
+$sql = 'SELECT * FROM `equipment` WHERE 1';
 $irds = mysql_query($sql);
+$sql = 'SELECT DISTINCT `sat` FROM `channel_def` WHERE 1';
+$satlist = mysql_query($sql);
 $sql = 'SELECT * FROM `inputStrategies`';
 $inpuutStrategies = mysql_query($sql);
 $ressource = mysql_select_db("matrix");
-$sql = 'SELECT * FROM `input`';
-$mtx_in = mysql_query($sql);
+//$sql = 'SELECT * FROM `input`';
+//$mtx_in = mysql_query($sql);
+$mtx_in_sdi = mysql_query('SELECT * FROM `input` WHERE `matrixid` =(SELECT `id` FROM `matrixes` where `capability` LIKE "%SDI%") AND `name` NOT LIKE "#%"');
+$mtx_in_asi = mysql_query('SELECT * FROM `input` WHERE `matrixid` =(SELECT `id` FROM `matrixes` where `capability` LIKE "%ASI%") AND `name`  LIKE "#%"');
+$mtx_in_lband = mysql_query('SELECT * FROM `input` WHERE `matrixid` =(SELECT `id` FROM `matrixes` where `capability` LIKE "%LBAND%")');
 $ressource = mysql_select_db("umd");
 $ressource = mysql_select_db("matrix");
-$sql = 'SELECT * FROM `output`';
-$mtx_out = mysql_query($sql);
+
+$mtx_out_sdi = mysql_query('SELECT * FROM `output` WHERE `matrixid` =(SELECT `id` FROM `matrixes` where `capability` LIKE "%SDI%") AND `name` NOT LIKE "#%"');
+$mtx_out_asi = mysql_query('SELECT * FROM `output` WHERE `matrixid` =(SELECT `id` FROM `matrixes` where `capability` LIKE "%ASI%") AND `name`  LIKE "#%"');
+$mtx_out_lband = mysql_query('SELECT * FROM `output` WHERE `matrixid` =(SELECT `id` FROM `matrixes` where `capability` LIKE "%LBAND%")');
+$mtx_names = mysql_query('SELECT `matrixes`.`id` , `matrixes`.`mtxName` FROM `matrixes`');
 $ressource = mysql_select_db("umd");
 
 
-$search = array("\n", "\r", "\u", "\t", "\f", "\b", "/", '\\');
-$replace = array("", "", "", "", "", "", "", "");
+$search = array("\n", "\r", "\u", "\\t", "\t", "\f", "\b", "/", '\\');
+$replace = array("", "", "", "", "","", "", "", "");
 
 echo 'var multiviewers = JSON.parse('."'".str_replace($search, $replace, json_encode(array_from_sql($multiviewers)))."');\r\n";
 echo 'var mv_input = JSON.parse('."'".str_replace($search, $replace,json_encode(array_from_sql($mv_input)))."');\r\n";
 echo 'var demods = JSON.parse('."'".str_replace($search, $replace,json_encode(array_from_sql($demods)))."');\r\n";
 echo 'var irds = JSON.parse('."'".str_replace($search, $replace,json_encode(array_from_sql($irds)))."');\r\n";
 echo 'var inputStrategies = JSON.parse('."'".str_replace($search, $replace,json_encode(array_from_sql($inpuutStrategies)))."');\r\n";
-echo 'var mtx_in = JSON.parse('."'".str_replace($search, $replace,json_encode(array_from_sql($mtx_in)))."');\r\n";
-echo 'var mtx_out = JSON.parse('."'".str_replace($search, $replace,json_encode(array_from_sql($mtx_out)))."');\r\n";
+echo 'var mtx_in_sdi = JSON.parse('."'".str_replace($search, $replace,json_encode(array_from_sql($mtx_in_sdi)))."');\r\n";
+echo 'var mtx_in_asi = JSON.parse('."'".str_replace($search, $replace,json_encode(array_from_sql($mtx_in_asi)))."');\r\n";
+echo 'var mtx_in_lband = JSON.parse('."'".str_replace($search, $replace,json_encode(array_from_sql($mtx_in_lband)))."');\r\n";
+echo 'var mtx_out_sdi = JSON.parse('."'".str_replace($search, $replace,json_encode(array_from_sql($mtx_out_sdi)))."');\r\n";
+echo 'var mtx_out_asi = JSON.parse('."'".str_replace($search, $replace,json_encode(array_from_sql($mtx_out_asi)))."');\r\n";
+echo 'var mtx_out_lband = JSON.parse('."'".str_replace($search, $replace,json_encode(array_from_sql($mtx_out_lband)))."');\r\n";
+echo 'var mtx_names = JSON.parse('."'".str_replace($search, $replace,json_encode(array_from_sql($mtx_names)))."');\r\n";
+echo 'var satlist = JSON.parse('."'".str_replace($search, $replace,json_encode(array_from_sql($satlist)))."');\r\n";
 }
 
 function array_from_sql($sql_res)
