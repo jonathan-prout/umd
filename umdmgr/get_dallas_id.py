@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 """ For extracting the DALLAS ID from a receiver
-    Does not work witn RX8200
+    
 """
 
 from HTMLParser import HTMLParser
@@ -57,7 +57,8 @@ def getEquipmentListSQL():
     for line in res:
         d = {}
         d["ip"], d["model_id"], d["labelnamestatic"] = line
-        if d["model_id"] in ["RX1290", "TT1260", "Rx8200"]:
+        if d["model_id"] in ["RX1290", "TT1260", "Rx8200", "Rx8200-2RF", "Rx8200-4RF"]:
+            d["model_id"] = d["model_id"].replace("-2RF","").replace("-4RF","")
             equipmentList.append(d)
     return equipmentList
 
@@ -190,7 +191,7 @@ class rx8200(ird):
                         return 0
         
 def getIRD(machine):
-        if machine["model_id"] == "Rx8200":
+        if "Rx8200" in machine["model_id"]:
                 return rx8200(machine)
         else:
                 return ird(machine)
