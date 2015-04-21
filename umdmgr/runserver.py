@@ -47,6 +47,7 @@ if __name__ == "__main__":
 		print "Starting in verbose mode"
 		
 	gv.sql = mysql.mysql()
+	gv.sql.gv = gv
 	gv.sql.autocommit = True
 	#gv.sql.semaphore = threading.BoundedSemaphore(value=10)
 	gv.sql.mutex = multiprocessing.RLock()

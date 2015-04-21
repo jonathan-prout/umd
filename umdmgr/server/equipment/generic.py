@@ -434,12 +434,14 @@ class IRD(equipment):
 	def getSat(self):
 			if not self.sat_dict.has_key(self.getinSatSetupInputSelect()):
 	
-	
-				req = "SELECT SAT1,SAT2,SAT3,SAT4 FROM equipment WHERE id = %i" % self.getId()
-				res = gv.sql.qselect(req)
-				res = res[0] #1 line
-				for x in range(len(res)):
-					self.sat_dict[x + 1] = res[x]
+				try:
+					req = "SELECT SAT1,SAT2,SAT3,SAT4 FROM equipment WHERE id = %i" % self.getId()
+					res = gv.sql.qselect(req)
+					res = res[0] #1 line
+					for x in range(len(res)):
+						self.sat_dict[x + 1] = res[x]
+				except:
+					pass
 			try:
 				return self.sat_dict[self.getinSatSetupInputSelect()]
 			except KeyError:
