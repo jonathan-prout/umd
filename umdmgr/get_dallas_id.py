@@ -50,8 +50,9 @@ def getEquipmentListCSV(filename):
         return rowlist
 
 def getEquipmentListSQL():
-    import mysql, gv
-    res = gv.sql.qselect("select ip, model_id, labelnamestatic from equipment")
+    from helpers import mysql
+    sql = mysql.mysql()
+    res = sql.qselect("select ip, model_id, labelnamestatic from equipment")
     equipmentList = []
     for line in res:
         d = {}
@@ -204,7 +205,7 @@ def writecsv(filename, equipmentList):
                 wr.writerow(row)
 def main(filename, equipmentList):
 
-    import progressbar as pb
+    from helpers import progressbar as pb
     
     for i in range(len(equipmentList)):
         pb.progressbar(i, len(equipmentList), headding="Progress", cls="True")
