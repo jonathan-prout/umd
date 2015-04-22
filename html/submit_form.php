@@ -22,6 +22,7 @@ if($echo_out){
  require_once('umd.common.php');
  require_once ('sql.php');
  dbstart();
+if (isset($_POST['formName'])) {
 if ($_POST["formName"] == "updateMVInput"){
   if ($_POST["inputStrategy"] == "Null"){  
     echo "Input Strategy must be set";
@@ -150,12 +151,95 @@ if ($_POST["formName"] == "updateMVInput"){
           }else{
           echo "ERROR: Database problem with '".$sql."'";
            }
- }
+ } elseif($_POST["formName"] == "addMV"){
+    $err = FALSE;
+    $errCause = "I'm not going to tell you";
+    
+    if (isset($_POST['name'])) {
+        $name = strip_tags($_POST['name']);
+    }else{
+        $err = True;
+        $errCause = "You didn't give the Multiviewer a name";
+    }
+    if (isset($_POST['ip'])) {
+        $ip = strip_tags($_POST['ip']);
+        $result = mysql_query("SELECT * FROM `Multiviewer` WHERE `IP` LIKE '".$ip."'");
+        $numrows=mysql_numrows($result);
+        if($numrows > 0){
+                    $err = True;
+                    $errCause = "IP Address is not unique";
+        }
+    }else{
+        $err = True;
+        $errCause = "You didn't give the Multiviewer an address";
+    }
+    if ($_POST['protocolSelect'] != "null") {
+        $protocol = strip_tags($_POST['protocolSelect']);
+    }else{
+        $err = True;
+        $errCause = "You didn't give the Multiviewer a protocol";
+    }
+    if (intval($_POST['numInputs']) != 0) {
+        $numInputs = intval(strip_tags($_POST['numInputs']));
+    }else{
+        $err = True;
+        $errCause = "You didn't give the Multiviewer any inputs. Supplied value ".intval($_POST['numInputs']);
+    }
+    if ($err == False){
+        $sql = 'INSERT INTO `UMD`.`Multiviewer` (`id` ,`Name` ,`IP` ,`Protocol` ,`status`) ';
+        $sql = $sql.' VALUES (NULL , "'.$name.'", "'.$ip.'", "'.$protocol.'", "New");';
+        //echo $sql;
+        $result = mysql_query($sql);
+        if(mysql_error())
+        {
+            die(mysql_error());
+            }
+        $newMV = mysql_insert_id();
+        for ($i = 1; $i <= $numInputs; $i++) {
+            $sql = 'INSERT INTO `UMD`.`mv_input` (`PRIMARY` ,`multiviewer` ,`input` ,`labeladdr1` ,`labeladdr2` ,`strategy` ,`equipment` ,`inputmtxid` ,`inputmtxname` ,`customlabel1` ,`customlabel2`)';
+            $sql = $sql.' VALUES (NULL , "'.$newMV.'", "'.$i.'", NULL , NULL , "4", NULL , NULL , NULL , "'.$name.' Input '.$i.'", NULL);';
+            $result = mysql_query($sql);
+            if(mysql_error())
+        {
+            die(mysql_error());
+            }
+        } 
+        echo '<span class="alert alert-success">';
+        echo '<a href="#" class="close" data-dismiss="alert">&times;</a>';
+        echo '<strong>Multiviewer added OK.</strong><br>';
+        echo '</span>';
+    }else{
+        echo '<span class="alert alert-error">';
+
+        echo '<a href="#" class="close" data-dismiss="alert">&times;</a>';
+
+        echo '<strong>Error!</strong> A problem has been occurred while submitting your data. Because '.$errCause.'<br>';
+
+        echo '</span>';
+
+
+    }
+    
+
+
+ 
+}
  else
  {
-    echo "form name ".$POST["formName"]. " not implimented";
+    echo "form name ".$_POST["formName"]. " not implimented";
  }
- 
+}
+ else
+ {
+    echo "form name  not supplied";
+       foreach ($_POST as $key => $value) {
+
+        echo $key;
+        echo "-";
+        echo $value;
+        echo "\n";
+    }
+ } 
  
  dbend();
 
