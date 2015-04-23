@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 """ For extracting the DALLAS ID from a receiver
-    Does not work witn RX8200
+    
 """
 
 from HTMLParser import HTMLParser
@@ -50,13 +50,15 @@ def getEquipmentListCSV(filename):
         return rowlist
 
 def getEquipmentListSQL():
-    import mysql, gv
-    res = gv.sql.qselect("select ip, model_id, labelnamestatic from equipment")
+    from helpers import mysql
+    sql = mysql.mysql()
+    res = sql.qselect("select ip, model_id, labelnamestatic from equipment")
     equipmentList = []
     for line in res:
         d = {}
         d["ip"], d["model_id"], d["labelnamestatic"] = line
-        if d["model_id"] in ["RX1290", "TT1260", "Rx8200"]:
+        if d["model_id"] in ["RX1290", "TT1260", "Rx8200", "Rx8200-2RF", "Rx8200-4RF"]:
+            d["model_id"] = d["model_id"].replace("-2RF","").replace("-4RF","")
             equipmentList.append(d)
     return equipmentList
 
@@ -189,7 +191,7 @@ class rx8200(ird):
                         return 0
         
 def getIRD(machine):
-        if machine["model_id"] == "Rx8200":
+        if "Rx8200" in machine["model_id"]:
                 return rx8200(machine)
         else:
                 return ird(machine)
@@ -204,7 +206,7 @@ def writecsv(filename, equipmentList):
                 wr.writerow(row)
 def main(filename, equipmentList):
 
-    import progressbar as pb
+    from helpers import progressbar as pb
     
     for i in range(len(equipmentList)):
         pb.progressbar(i, len(equipmentList), headding="Progress", cls="True")
