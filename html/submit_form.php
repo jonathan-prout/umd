@@ -108,6 +108,7 @@ if ($_POST["formName"] == "updateMVInput"){
     //{"id":"252","model_id":"NS2000_SNMP","ip":"10.75.15.115","name":"DEM 20 HGKG",
     //"labelnamestatic":"DEM 20 HGKG","MulticastIp":null,"InMTXName":null,"OutMTXName":null,
     //"SAT1":"AS","SAT2":"","SAT3":"","SAT4":"","doesNotUseGateway":"0","lo_offset":"0","Demod":"0","Isdemod":"1"}
+    
     $sql = "UPDATE `UMD`.`equipment` SET ";
     $search = array("\n", "\r", "\u", "\\t", "\t", "\f", "\b", "/", '\\',  ";", "null");
     $replace = array("", "", "", "", "","", "", "", "", "", "");
@@ -124,7 +125,28 @@ if ($_POST["formName"] == "updateMVInput"){
        
     }
     
-    
+    $ressource = mysql_select_db("matrix");
+        
+    $InMTXName = mysql_query('SELECT `name` FROM `output` WHERE `PRIMARY` ="'.$_POST["InMTXName"].'";');
+    $OutMTXName = mysql_query('SELECT `name` FROM `input` WHERE `PRIMARY` ="'.$_POST["OutMTXName"].'";');
+    //echo('SELECT `name` FROM `output` WHERE `PRIMARY` ="'.$_POST["mtx_out"].'";');
+    $ressource = mysql_select_db("umd");
+    $numrows=mysql_numrows($InMTXName);
+        //echo mysql_result($mtx_out,0,"name");
+        if($numrows == 0){
+            
+            $sql = $sql." `InMTXName` = NULL,";
+        }else{
+            $sql = $sql." `InMTXName` = '".mysql_result($InMTXName,0,"name")."',";
+        }
+    $numrows=mysql_numrows($OutMTXName);
+        //echo mysql_result($mtx_out,0,"name");
+        if($numrows == 0){
+            
+            $sql = $sql." `OutMTXName` = NULL,";
+        }else{
+            $sql = $sql." `OutMTXName` = '".mysql_result($OutMTXName,0,"name")."',";
+        }
     $keys = array("name", "ip", "labelnamestatic", "SAT1", "SAT2", "SAT3", "SAT4");
     foreach($keys as $key){
        $args[] =" `$key` = '".str_replace($search, $replace,$_POST[$key])."'"; 
@@ -192,7 +214,7 @@ if ($_POST["formName"] == "updateMVInput"){
         $result = mysql_query($sql);
         if(mysql_error())
         {
-            die(mysql_error());
+            die(mysql_ederror());
             }
         $newMV = mysql_insert_id();
         for ($i = 1; $i <= $numInputs; $i++) {
@@ -204,18 +226,18 @@ if ($_POST["formName"] == "updateMVInput"){
             die(mysql_error());
             }
         } 
-        echo '<span class="alert alert-success">';
+        echo '<br><br><span class="alert alert-success">';
         echo '<a href="#" class="close" data-dismiss="alert">&times;</a>';
         echo '<strong>Multiviewer added OK.</strong><br>';
-        echo '</span>';
+        echo '</span><br><br>';
     }else{
-        echo '<span class="alert alert-error">';
+        echo '<br><br><span class="alert alert-error">';
 
         echo '<a href="#" class="close" data-dismiss="alert">&times;</a>';
 
         echo '<strong>Error!</strong> A problem has been occurred while submitting your data. Because '.$errCause.'<br>';
 
-        echo '</span>';
+        echo '</span><br><br>';
 
 
     }
@@ -223,7 +245,132 @@ if ($_POST["formName"] == "updateMVInput"){
 
 
  
-}
+}elseif($_POST["formName"] == "newIRD")
+ {
+    //formName=updateIRD
+    //equipmentID=219
+    //name=HGKG+11
+    //ip=10.75.15.98
+    //labelnamestatic=11+HGKG
+    //MulticastIp=null
+    //InMTXName=4
+    //OutMTXName=2
+    //SAT1=AS
+    //SAT2=Null
+    //SAT3=Null
+    //SAT4=Null
+    //doesNotUseGateway=on
+    //Demod=251
+    //Isdemod=on
+    //{"id":"252","model_id":"NS2000_SNMP","ip":"10.75.15.115","name":"DEM 20 HGKG",
+    //"labelnamestatic":"DEM 20 HGKG","MulticastIp":null,"InMTXName":null,"OutMTXName":null,
+    //"SAT1":"AS","SAT2":"","SAT3":"","SAT4":"","doesNotUseGateway":"0","lo_offset":"0","Demod":"0","Isdemod":"1"}
+    
+    //    INSERT INTO `UMD`.`equipment` (
+    //`id` ,
+    //`model_id` ,
+    //`ip` ,
+    //`name` ,
+    //`labelnamestatic` ,
+    //`MulticastIp` ,
+    //`InMTXName` ,
+    //`OutMTXName` ,
+    //`SAT1` ,
+    //`SAT2` ,
+    //`SAT3` ,
+    //`SAT4` ,
+    //`doesNotUseGateway` ,
+    //`lo_offset` ,
+    //`Demod` ,
+    //`Isdemod`
+    //)
+    //VALUES (
+    //NULL , '1', '', '', '', NULL , NULL , NULL , '', '', '', '', '0', '0', '0', '0'
+    //);
+    $sql = "INSERT INTO `UMD`.`equipment` ( `id`, ";
+    $search = array("\n", "\r", "\u", "\\t", "\t", "\f", "\b", "/", '\\',  ";", "null");
+    $replace = array("", "", "", "", "","", "", "", "", "", "");
+    $keys = array("Demod", "MulticastIp");
+    $args = array();
+    foreach($keys as $key){
+        if($_POST[$key] == "null")
+        {
+            $args[] ="NULL";
+        }else
+        {
+            $args[] ="'".str_replace($search, $replace,$_POST[$key])."'";
+        }
+       
+    }
+    
+    
+    $keys2 = array("name", "ip", "labelnamestatic", "SAT1", "SAT2", "SAT3", "SAT4", "model_id");
+    foreach($keys2 as $key){
+       $args[] ="'".str_replace($search, $replace,$_POST[$key])."'"; 
+    }
+    $checkboxes = array("doesNotUseGateway", "Isdemod");
+    foreach($checkboxes as $cb){
+        //echo "Foo";
+        $v = (!empty($_POST[$cb]));
+        echo $v;
+        if ($v){
+           $args[] ="1";
+            
+        }else {
+           
+            $args[] ="0"; 
+        
+        }
+    }
+    $ressource = mysql_select_db("matrix");
+        
+    $InMTXName = mysql_query('SELECT `name` FROM `output` WHERE `PRIMARY` ="'.$_POST["InMTXName"].'";');
+    $OutMTXName = mysql_query('SELECT `name` FROM `input` WHERE `PRIMARY` ="'.$_POST["OutMTXName"].'";');
+    //echo('SELECT `name` FROM `output` WHERE `PRIMARY` ="'.$_POST["mtx_out"].'";');
+    $ressource = mysql_select_db("umd");
+    $numrows=mysql_numrows($InMTXName);
+        //echo mysql_result($mtx_out,0,"name");
+        if($numrows == 0){
+            
+            $args[] ="NULL";
+        }else{
+            $args[] = "'".mysql_result($InMTXName,0,"name")."'";
+        }
+    $numrows=mysql_numrows($OutMTXName);
+        //echo mysql_result($mtx_out,0,"name");
+        if($numrows == 0){
+            
+            $args[] ="NULL";
+        }else{
+            $args[] = "'".mysql_result($OutMTXName,0,"name")."'";
+        }
+        
+    
+    $sql = $sql.join(", ", $keys).",".join(", ", $keys2).",".join(", ", $checkboxes).",  InMTXName, OutMTXName) VALUES ( NULL, ".join(",", $args).");";
+    //echo $sql;
+    $result = mysql_query($sql);
+          if($result == TRUE){
+           echo '<br><br><span class="alert alert-success">';
+        echo '<a href="#" class="close" data-dismiss="alert">&times;</a>';
+        echo '<strong>Equipment added OK.</strong><br>';
+        echo '</span><br><br>';
+    }else{
+        if(mysql_error())
+        {
+            $errCause =mysql_error();
+            
+        } else {
+            $errCause = "Unknown Error";
+        }
+        echo '<br><br>span class="alert alert-error">';
+
+        echo '<a href="#" class="close" data-dismiss="alert">&times;</a>';
+
+        echo '<strong>Error!</strong> A problem has been occurred while submitting your data. Because '.$errCause.'<br>';
+
+        echo '</span><br><br>';
+    }
+ }
  else
  {
     echo "form name ".$_POST["formName"]. " not implimented";

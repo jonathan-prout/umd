@@ -35,7 +35,7 @@ $(document).ready(function () {
             url: "submit_form.php", //process to mail
             data: $('#addMVForm').serialize(),
             success: function(msg){
-                $("#thanks").html(msg) //hide button and show thank you
+                $("#thanks").append(msg) //hide button and show thank you
                 $("#form-addmv").modal('hide'); //hide popup
                 getScript('static_parameters.php', function(){
                     populateListbox(multiviewers )
