@@ -64,8 +64,8 @@ def getEquipmentListSQL():
 
 class ird(object):
         snurl = "tcf?cgi=show&%24record=@Slot%5E0&%24path0=/Device%20Info/Modules&%24path=/Device%20Info/Modules"
-        dalurl = "tcf?cgi=show&$path=/Conditional%20Access"
-        dalstr = "m_caDir5UniqueId"
+        dalurl = ["tcf?cgi=show&$path=/Conditional%20Access","tcf?cgi=show&$path=/Customization"]
+        dalstr = ["m_caDir5UniqueId","Serial Number"]
         sn = 0
         canSNMP = True
         def __init__(self, machine):
@@ -88,10 +88,14 @@ class ird(object):
                 if self.canSNMP:
                         return self.getIDSNMP()
                 else:
-                        try:
-                                return self.getIDWEB()
-                        except:
-                                return 0
+                        for i in range(2):
+                                try:
+                                        n = self.getIDWEB(i)
+                                        if n >1000:
+                                                return n
+                                except:
+                                        continue
+                        return 0
                                 
         def getIDSNMP(self):
             from helpers import snmp
@@ -105,9 +109,10 @@ class ird(object):
             else:
                 dal = ""
             return dal
-        def getIDWEB(self):
+        
+        def getIDWEB(self, i=0):
                 import httpcaller
-                url ="http://%s/"%self.machine["ip"] +self.dalurl
+                url ="http://%s/"%self.machine["ip"] +self.dalurl[i]
                 try:
                         h, body = httpcaller.geturl(url)
                 except:
@@ -116,7 +121,7 @@ class ird(object):
                     if h["status"] == "200":
                         snline = ""
                         for line in body.split("\n"):
-                            if self.dalstr in line: # find the line with the SN
+                            if self.dalstr[i] in line: # find the line with the SN
                                 snline = line
                                 for part in snline.split(","): #split it
                                     part = part.replace("'","") # clean it
@@ -127,6 +132,7 @@ class ird(object):
                                         i = 0
                                     if i > 1000: # sn appears as large number
                                         return str(i)
+                                
                                 
                         
                 return ""
