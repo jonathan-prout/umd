@@ -5,6 +5,7 @@
 """
 
 from HTMLParser import HTMLParser
+from helpers import httpcaller
 
 # create a subclass and override the handler methods
 class readWebTitle(HTMLParser):
@@ -64,8 +65,8 @@ def getEquipmentListSQL():
 
 class ird(object):
         snurl = "tcf?cgi=show&%24record=@Slot%5E0&%24path0=/Device%20Info/Modules&%24path=/Device%20Info/Modules"
-        dalurl = ["tcf?cgi=show&$path=/Conditional%20Access","tcf?cgi=show&$path=/Customization"]
-        dalstr = ["m_caDir5UniqueId","Serial Number"]
+        dalurl = ["tcf?cgi=show&$path=/Conditional%20Access"]
+        dalstr = ["m_caDir5UniqueId"]
         sn = 0
         canSNMP = True
         def __init__(self, machine):
@@ -88,7 +89,7 @@ class ird(object):
                 if self.canSNMP:
                         return self.getIDSNMP()
                 else:
-                        for i in range(2):
+                        for i in range(len(self.dalurl)):
                                 try:
                                         n = self.getIDWEB(i)
                                         if n >1000:
@@ -111,7 +112,7 @@ class ird(object):
             return dal
         
         def getIDWEB(self, i=0):
-                import httpcaller
+                
                 url ="http://%s/"%self.machine["ip"] +self.dalurl[i]
                 try:
                         h, body = httpcaller.geturl(url)
@@ -186,15 +187,10 @@ class ird(object):
                        return t.titleText
                 return ""
 class rx8200(ird):
-        dalurl ="tcf?cgi=show&$path=/Customization"
+        dalurl = ["tcf?cgi=show&$path=/Customization" ,"tcf?cgi=show&$path=/Customization"]
         snurl = "tcf?cgi=show&%24record=@Slot%5E0&%24path0=/Device%20Info/Modules&%24path=/Device%20Info/Modules"
-        dalstr = "serial number"
-        def getID(self):
-                
-                try:
-                        return self.getIDWEB()
-                except:
-                        return 0
+        dalstr = ["serial number", "Serial Number"]
+        canSNMP = False
         
 def getIRD(machine):
         if "Rx8200" in machine["model_id"]:
@@ -207,7 +203,7 @@ def writecsv(filename, equipmentList):
     import csv
     fn = ["ip","labelnamestatic", "sn", "model_id", "dallas"]
     with open(filename, "wb") as fobj:
-        wr = csv.DictWriter(fobj, fieldnames = fn, dialect = "excel") #newline char mzst be LF		
+        wr = csv.DictWriter(fobj, fieldnames = fn, dialect = "excel", delimiter = ";") #newline char mzst be LF	  delimiter=";"	
         for row in equipmentList:
                 wr.writerow(row)
 def main(filename, equipmentList):
