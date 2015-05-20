@@ -263,7 +263,7 @@ function populateTable(arr) {
             }
             
             out += '">';
-            out += '<div class="col-sm-2"><a href="#" class="btn btn-default"  onclick="editLine('+ arr[i].PRIMARY+')" role="button">edit</a></div>';
+            out += '<div class="col-sm-2"><a href="#!" class="btn btn-default"  onclick="editLine('+ arr[i].PRIMARY+')" role="button">edit</a></div>';
             out += '<div class="col-sm-2">'+ arr[i].input+'</div>';
             out += '<div class="col-sm-2">'+ strategies[arr[i].strategy]+'</div>';
             if (strategies[arr[i].strategy] === "by equipment") {
@@ -327,16 +327,18 @@ function editLine(line){
            
            
             document.getElementById("mv" + arr[i].PRIMARY).innerHTML = out;
-            
+            var h = "mv" + arr[i].PRIMARY;
         }
     }
-    
+    jump(h);
+    return false;
 }
 
-
-
-      
-        
+function jump(h){
+    var top = document.getElementById(h).offsetTop; //Getting Y of target element
+    window.scrollTo(0, top);                        //Go there.
+}
+  
 
 </script>
 
