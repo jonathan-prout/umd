@@ -65,7 +65,7 @@ class DR5000(IRD):
 		return self.lookup_replace('polarisation', d)
 	
 	def getCAType(self):
-		if not self.getCAStatus:
+		if not self.getCAStatus():
 			return "CLEAR"
 		try:
 			index = self.snmp_res_dict["Table_Service_ID"].index(self.getServiceId())
