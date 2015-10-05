@@ -7,7 +7,8 @@ CATypes = { "CLEAR":"CLEAR",
 		   "Off":"CLEAR",
 		   "On":"BISS",
 		   "BISS":"BISS",
-		   "CA":"CA"
+		   "CA":"CA",
+		   "Service Missing":"Service Missing"
 }
 def get():
 	res = gv.sql.qselect("SELECT  `hex`, `value` FROM `encryption_types` WHERE 1")
