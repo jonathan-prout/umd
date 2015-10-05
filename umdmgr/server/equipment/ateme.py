@@ -72,7 +72,7 @@ class DR5000(IRD):
 		except ValueError:
 			return "Unknown"
 		try:
-			return a.snmp_res_dict["TABLE_CA_TYPE"][index]
+			return self.snmp_res_dict["TABLE_CA_TYPE"][index]
 		except (IndexError, KeyError):
 			return "Unknown"
 
