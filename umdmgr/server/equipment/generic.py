@@ -341,8 +341,10 @@ class IRD(equipment):
 			except KeyError:
 				pass
 			if k in masks:
-				del dic[k]
-			
+				try:
+					del dic[k]
+				except KeyError:
+					pass		
 				
 		#if self.getinSatSetupInputSelect() = 1:
 		#    print "%s is on imput %s"%(self.name, self.getinSatSetupInputSelect())

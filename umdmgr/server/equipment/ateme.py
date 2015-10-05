@@ -64,11 +64,23 @@ class DR5000(IRD):
 		d = {"1":"Y","2":"X"}
 		return self.lookup_replace('polarisation', d)
 	
+	def getCAType(self):
+		if not self.getCAStatus():
+			return "CLEAR"
+		try:
+			index = self.snmp_res_dict["Table_Service_ID"].index(self.getServiceId())
+		except ValueError:
+			return "Unknown"
+		try:
+			return self.snmp_res_dict["TABLE_CA_TYPE"][index]
+		except (IndexError, KeyError):
+			return "Unknown"
+
 	def getCAStatus(self):
 		""" True or False """
 		"""Syntax	 TruthValue 1 true 2 false"""
 		return  self.lookupstr("dr5000StatusDecodeCurrentProgramScrambled") in ["1",1]
-
+	
 	def getBissStatus(self):
 		
 		"""biss1(2),
@@ -232,19 +244,9 @@ class DR5000(IRD):
 	def refresh(self):
 		""" Refresh method of Dr5000 """
 		
-		try:
-			refresh_params = [self.getinput_selection(),
-								["","Locked"][self.getlockState() == "Lock"],
-								["","Locked"][int(self.getinputTsBitrate()) >1]
-							]
-		except KeyError:
-			refresh_params = ["full"]
-		except ValueError:
-			refresh_params = ["full"]
-		self.set_refreshType(" ".join(refresh_params).lower())
 		
 		try:
-			self.snmp_res_dict  = snmp.get(self.getoids(), self.ip)
+			self.snmp_res_dict.update(snmp.get(self.getoids(), self.ip))
 		except:
 			self.set_offline()
 		if len(self.snmp_res_dict.keys()) < len(self.getoids().keys()):
@@ -261,10 +263,22 @@ class DR5000(IRD):
 			self.refreshCounter +=1
 		except AttributeError:
 			self.refreshCounter = 0
-			
+		refresh_params = []	
 		if not self.getRefreshType("lock"): #Did we just lock? full refresh next time.
 			if any([self.getlockState() == "Lock",int(self.getinputTsBitrate()) >1]):
-				self.set_refreshType("full")
+				refresh_params.append("full")
+		
+		try:
+			refresh_params += [self.getinput_selection(),
+								["","Locked"][self.getlockState() == "Lock"],
+								["","Locked"][int(self.getinputTsBitrate()) >1]
+							]
+		except KeyError:
+			refresh_params = ["full"]
+		except ValueError:
+			refresh_params = ["full"]
+		self.set_refreshType(" ".join(refresh_params).lower())
+		self.refreshCounter +=1
 	
 	def updatesql(self):
 		sql = [ "UPDATE status SET status = '%s'  "% self.getStatus()              ]
@@ -290,7 +304,7 @@ class DR5000(IRD):
 		if self.getRefreshType("lock"):           
 			sql += ["servicename = '%s' "% self.getServiceName()                   ]
 			sql += ["aspectratio ='%s' "% self.getAspectRatio()                    ]
-			sql += ["castatus='%s' "% self.getBissStatus()                         ]
+			sql += ["castatus='%s' "% self.getCAType()                         ]
 			sql += ["videoresolution='%s' "% self.getVResol()                      ]
 			sql += ["framerate='%s' "% self.getFrameRate()                         ]
 			sql += ["videostate='%s'"% self.getVState()                            ]
