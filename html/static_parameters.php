@@ -20,6 +20,9 @@ $doc = $_GET['doc'];
  $doc = "";
 }
 
+$search = array("\n", "\r", "\u", "\\t", "\t", "\f", "\b", "/", '\\');
+$replace = array("", "", "", "", "","", "", "", "");
+
 if ($mode == "json")
 {
  if ($doc == "multiviewer")
@@ -58,7 +61,15 @@ if ($mode == "json")
  $sql = 'SELECT * FROM `input`';
  $mtx_in = mysql_query($sql);
  $ressource = mysql_select_db("umd");
- echo json_encode(array_from_sql($mtx_in));
+  echo 'var mtx_in = JSON.parse('."'".str_replace($search, $replace,json_encode(array_from_sql($mtx_in)))."');\r\n";
+  
+ }elseif  ($doc == "matrix_names")
+ {
+ $ressource = mysql_select_db("matrix");
+ $sql = 'SELECT `matrixes`.`id` , `matrixes`.`mtxName` FROM `matrixes`';
+ $mtx_out = mysql_query($sql);
+ $ressource = mysql_select_db("umd");
+ echo 'var matrix_names = JSON.parse('."'".str_replace($search, $replace,json_encode(array_from_sql($mtx_out)))."');\r\n";
  
  }elseif  ($doc == "matrix_out")
  {
@@ -66,7 +77,7 @@ if ($mode == "json")
  $sql = 'SELECT * FROM `output`';
  $mtx_out = mysql_query($sql);
  $ressource = mysql_select_db("umd");
- echo json_encode(array_from_sql($mtx_out));
+ echo 'var mtx_out = JSON.parse('."'".str_replace($search, $replace,json_encode(array_from_sql($mtx_out)))."');\r\n";
  } else
  {
   echo "no doc parameter supplied";
@@ -102,8 +113,7 @@ $mtx_names = mysql_query('SELECT `matrixes`.`id` , `matrixes`.`mtxName` FROM `ma
 $ressource = mysql_select_db("umd");
 
 
-$search = array("\n", "\r", "\u", "\\t", "\t", "\f", "\b", "/", '\\');
-$replace = array("", "", "", "", "","", "", "", "");
+
 
 echo 'var multiviewers = JSON.parse('."'".str_replace($search, $replace, json_encode(array_from_sql($multiviewers)))."');\r\n";
 echo 'var mv_input = JSON.parse('."'".str_replace($search, $replace,json_encode(array_from_sql($mv_input)))."');\r\n";
