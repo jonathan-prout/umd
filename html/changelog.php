@@ -38,12 +38,12 @@ if(isset($_GET['mtx']))
     if(isset($_GET['in']))
     {
         $in = intval($_GET['in']);
-        $sql ='SELECT * FROM `changelog` WHERE `matrixid` ='.$mtx.' AND  `input` ='.$in.';';
+        $sql ='SELECT * FROM `changelog` WHERE `matrixid` ='.$mtx.' AND  `input` ='.$in.' ORDER BY `time` DESC;';
 		$arr = array_from_sql(mysql_query($sql));
     }else if(isset($_GET['out']))
     {
         $out = intval($_GET['out']);
-        $sql ='SELECT * FROM `changelog` WHERE `matrixid` ='.$mtx.' AND  `output` ='.$out.';';
+        $sql ='SELECT * FROM `changelog` WHERE `matrixid` ='.$mtx.' AND  `output` ='.$out.' ORDER BY `time` DESC;';
 		$arr = array_from_sql(mysql_query($sql));
     
     }else{
