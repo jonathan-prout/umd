@@ -34,8 +34,8 @@ class kaleido(telnet_multiviewer):
 			from client import gv
 			assert(gv.programTerminationFlag == False)
 			self.tel = telnetlib.Telnet(self.host, self.port)
-			self.tel.write("\n")
-			self.tel.read_until(">", self.timeout)
+			self.tel.write("Hello\n")
+			self.tel.read_until("<nack/>", self.timeout)
 			self.set_online()
 			self.writeStatus("UMD manager connected", queued=False)
 		except:

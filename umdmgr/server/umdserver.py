@@ -236,8 +236,8 @@ class dispatcher(myThread):
 								else:
 									task = "refresh"
 									queue = gv.ThreadCommandQueue
-						queue.put((task, gv.equipmentDict[equipmentID].serialize()))
-						instance.checkout.enqueue()
+							queue.put((task, gv.equipmentDict[equipmentID].serialize()))
+							instance.checkout.enqueue()
 					except Queue.Full:
 						time.sleep(0.1)
 						continue
