@@ -31,10 +31,10 @@ class NS2000(IRD):
 			ver = resdict["ver"].strip().split(" ")[0]
 			ver = ver.replace('"', '')
 			i = 0
-			v = 0.0
+			v = []
 			for rev in ver.split("."):
 				try:
-					v += int(rev)
+					v.append( int(rev))
 					
 				except:
 					continue
