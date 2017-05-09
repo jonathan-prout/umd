@@ -394,6 +394,11 @@ class RX8200(IRD):
 				return subtypes[int( resdict['inputCardType'] )]
 			except KeyError:
 				return "Rx8200"
+			except ValueError:
+				if gv.loud:
+					print resdict
+				self.offline = True
+				return "OFFLINE"
 		else:
 			if gv.loud:
 				print resdict
