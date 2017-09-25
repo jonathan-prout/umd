@@ -47,7 +47,7 @@ class checkout(object):
 		
 	def getStatus(self):
 		if self.rlock.acquire(blocking=False): #If locked then receiver should be checked out
-			if self.status in [checkout.STAT_INIT, checkout.STAT_INQUEUE, checkout.STAT_READY]:
+			if self.status in [checkout.STAT_INIT, checkout.STAT_INQUEUE, checkout.STAT_READY, checkout.STAT_STUCK]:
 				rval = int(self.status)
 				self.rlock.release()
 				return rval
