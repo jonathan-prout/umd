@@ -11,7 +11,7 @@ import threading
 class virtualMatrix( mysql, matrix):
 	def __init__(self, name):
 		self.lock = threading.RLock() #Just to eliminate a race between$
-		super(virtualMatrix, self).__init__(name, "10.73.196.238", "umd", "umd", "matrix")
+		#super(virtualMatrix, self).__init__(name, "10.73.196.238", "umd", "umd", "matrix")
 		super(virtualMatrix, self).__init__(name, "localhost", "umd", "umd", "matrix")
 		""" Start by passing name as string. Mysql handler as class instance """
 		"""

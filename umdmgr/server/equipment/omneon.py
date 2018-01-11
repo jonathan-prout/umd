@@ -11,9 +11,11 @@ class IPGridport(OmneonHelper, generic.serializableObj):
 		self.name = name
 		self.modelType = "IP GRIDPORT"
 		self.addressesbyname = {}
+		self.activeStreams = []
 		self.get_equipment_ids()
 		self.offline = False
 		self.checkout = checkout(self)
+			
 			
 	def get_equipment_ids(self):
 	
@@ -27,8 +29,8 @@ class IPGridport(OmneonHelper, generic.serializableObj):
 			
 	def refresh(self):
 		self.get_equipment_ids() #Dynamically update to db changes
-		self.streamDict = self.getrecorders(returnlist="dict") #Refresh list of streams
-		if set( self.addressesbyname.keys() ) != set( self.streamDict.keys() ) : #Only get recorders if really needed
+		self.activeStreams = self.getrecorders(returnlist="namesonly") #Refresh list of streams
+		if set( self.activeStreams ) != set( self.addressesbyname.keys() ) : #Only get recorders if really needed
 			owners, ports, multicastaddresses = self.getports()
 			self.addressesbyname = dict(zip(owners, multicastaddresses))
 		self.set_online()
@@ -38,7 +40,7 @@ class IPGridport(OmneonHelper, generic.serializableObj):
 		l = []
 		for key, val in self.multicast_id_dict.items():
 			activeDict[val] = 0
-		for key in self.streamDict.keys():
+		for key in self.activeStreams:
 			try:
 				mca = self.addressesbyname[key]
 				_id = self.multicast_id_dict[mca]
