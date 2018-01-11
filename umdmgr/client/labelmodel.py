@@ -201,7 +201,10 @@ class irdResult(object):
 						
 	
 	def getDemod(self):
-		demod = cast(int, self.getKey("e.Demod"))
+		try:
+			demod = cast(int, self.getKey("e.Demod"))
+		except:
+			demod = 0 #NULL on db
 		if self.getInput() == "SAT":
 			return 0
 		elif demod != 0:

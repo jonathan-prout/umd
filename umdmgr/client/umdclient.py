@@ -92,7 +92,9 @@ def main(loop, test = None):
 	matrixCapabilites = ["SDI", "ASI", "LBAND", "IP"]
 	for k in matrixCapabilites:
 		gv.matrixCapabilities[k] = []
-	matrixNames = ["UMDASC1","lband"]
+	gv.sql.qselect("use matrix")
+	matrixNames = gv.sql.qselect("select mtxName from matrixes")[0]
+	gv.sql.qselect("use UMD")
 	for m in matrixNames:
 		mtx = virtualmatrix.virtualMatrix(m)
 		gv.matrixes.append(mtx)

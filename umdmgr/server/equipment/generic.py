@@ -1,8 +1,120 @@
 from server import gv
-
+from server import bgtask
 from helpers import snmp
+from helpers import static_parameters
 snmp.gv = gv #in theory we don't want to import explictly the server's version of gv
-class equipment(object):
+import threading
+import copy
+import time
+
+
+	
+
+class checkout(object):
+	STAT_INIT = 0
+	STAT_SLEEP = 1
+	STAT_READY = 2
+	STAT_INQUEUE =3
+	STAT_CHECKEDOUT = 4
+	STAT_STUCK = 5
+	def __getattribute__(self, x):
+		if x in ["status", "jitter"]:
+			with self.lock:
+				return object.__getattribute__(self, x)
+		else:
+			return object.__getattribute__(self, x)
+	def __setattribute__(self, x):
+		if x in ["status", "jitter"]:
+			with self.lock:
+				return object.__setattribute__(self, x)
+		else:
+			return object.__setattribute__(self, x)	
+	def __init__(self, parent):
+		self.parent = parent
+		self.rlock = threading.RLock()
+		self.lock = threading.Lock()
+		self.status = checkout.STAT_INIT
+		self.timestamp = time.time()
+		self.jitter = 0
+	def __enter__(self):
+		self.rlock.acquire()
+		self.status = checkout.STAT_CHECKEDOUT
+		self.timestamp = time.time()
+	def __exit__(self ):
+		self.status = checkout.STAT_SLEEP
+		self.timestamp = time.time()	
+		self.rlock.release()
+		
+	def getStatus(self):
+		if self.rlock.acquire(blocking=False): #If locked then receiver should be checked out
+			if self.status in [checkout.STAT_INIT, checkout.STAT_INQUEUE, checkout.STAT_READY, checkout.STAT_STUCK]:
+				rval = int(self.status)
+				self.rlock.release()
+				return rval
+			elif self.status == checkout.STAT_SLEEP:
+				if time.time() > self.timestamp + self.parent.min_refresh_time():
+					self.status = checkout.STAT_READY
+				
+				rval = int(self.status)
+				self.rlock.release()
+				return rval
+			elif self.status == checkout.STAT_CHECKEDOUT:
+				if time.time() > self.timestamp + 60: #Checked out for 1 minute
+					self.status = checkout.STAT_STUCK
+				rval = int(self.status)
+				self.rlock.release()
+				return rval
+			else:
+				self.rlock.release()
+				raise NotImplementedError("status %d"%self.status) #should never happen
+		else:
+			if time.time() > self.timestamp + 60: #Checked out for 1 minute
+				self.status = checkout.STAT_STUCK
+				rval = int(checkout.STAT_STUCK)
+				return rval
+			else:
+				return int(checkout.STAT_CHECKEDOUT)
+			
+	def checkout(self ):
+		self.rlock.acquire()
+		self.status = checkout.STAT_CHECKEDOUT
+		self.timestamp = time.time()
+	def checkin(self):
+		self.status = checkout.STAT_SLEEP
+		self.jitter = time.time() - self.timestamp
+		self.timestamp = time.time()
+		try:	
+			self.rlock.release()
+		except RuntimeError:
+			pass #Error raised from releasing a non aquired lock error. Don't care.
+	def enqueue(self):
+		with self.rlock:
+			self.status = checkout.STAT_INQUEUE
+			self.timestamp = time.time()	
+
+class serializableObj(object):
+	def serialize(self ):
+		"""serialize data without using pickle. Returns dict"""
+		
+		serial_data = {}
+		seralisabledata = ["ip", "equipmentId", "name", "snmp_res_dict", "oid_get", "masked_oids", "oid_getBulk" "multicast_id_dict", "streamDict", "addressesbyname","online",  "modelType", "refreshType", "refreshCounter"]
+		for key in seralisabledata:
+			if hasattr(self, key):
+				serial_data[key] = copy.copy(getattr(self, key))
+		return serial_data
+		
+	def deserialize(self, data):
+		""" deserialise the data from above
+		expected errors are KeyError (no modelType), Type Error (wrong model Type)"""
+		if not data["modelType"] == self.modelType:
+			raise TypeError("Tried to serialise data from %s into %s"%(data["modelType"],self.modelType))
+		seralisabledata = ["ip", "equipmentId", "name", "snmp_res_dict", "oid_get", "masked_oids", "oid_getBulk" "multicast_id_dict", "streamDict", "addressesbyname","online",  "modelType", "refreshType", "refreshCounter"]
+		for key in seralisabledata:
+			if data.has_key(key):
+				if hasattr(self, key):
+					setattr(self, key, data[key])
+
+class equipment(serializableObj):
 	modelType = "Not Set"
 	def getoid(self):
 		""" Obtains SNMP Paramaters for ModelType according to database"""
@@ -25,13 +137,13 @@ class equipment(object):
 			self.oid_get[snmp_command[i][0]] =snmp_command[i][1]
 		"""
 		try:
-			snmp_command = gv.sql.qselect(comsel)
+			snmp_command = gv.cachedSNMP(comsel)
 			for i in range(len(snmp_command)):
 				self.oid_get[snmp_command[i][0]] =snmp_command[i][1]    
 		except:
 			raise "DB Error: 'Get SNMP COMMANDS'"
 		try:
-			snmp_command = gv.sql.qselect(comsel_bulk)
+			snmp_command = gv.cachedSNMP(comsel_bulk)
 			for i in range(len(snmp_command)):
 				self.oid_getBulk[snmp_command[i][0]] =snmp_command[i][1]
 					
@@ -39,12 +151,15 @@ class equipment(object):
 			raise "DB Error: 'Get SNMP BULK COMMANDS'"
 		#self.oid_get2 = self.oid_get #there is a bug that overwrites self.oid_get. I can't find it
 		#gv.sql.close()
+	
+
 		
 	def refresh(self):
 		""" Refresh method of class """
 		""" removed import snmp here """
 		try:
 			self.snmp_res_dict  = snmp.get(self.getoids(), self.ip)
+			
 		except:
 			self.set_offline()
 		if len(self.snmp_res_dict.keys()) < len(self.getoids().keys()):
@@ -175,7 +290,8 @@ class equipment(object):
 			return "Unknown"
 	def set_offline(self):
 		self.offline = True
-
+	def set_online(self):
+		self.offline = False
 	def get_offline(self):
 		try:
 			return self.offline
@@ -183,7 +299,8 @@ class equipment(object):
 			return True
 	def min_refresh_time(self):
 		return gv.min_refresh_time
-			
+	
+	
 class IRD(equipment):
 	def __init__(self):
 		self.oid_get = {}
@@ -192,7 +309,7 @@ class IRD(equipment):
 		self.sat_dict = {}
 		self.offline = False
 		self.masked_oids = {}
-		
+		self.checkout = checkout(self)
 		
 	def oid_mask(self):
 		try:
@@ -202,7 +319,7 @@ class IRD(equipment):
 		for key in self.oid_get.keys():
 			if not self.snmp_res_dict.has_key(key):
 				if gv.loud:
-					print "Unit returned no such name for %s so masking"%key
+					print "%s at %s returned no such name for %s so masking"%(self.modelType, self.ip, key)
 				masks.append(key)
 		self.masked_oids[self.getinSatSetupInputSelect()] = masks
 		
@@ -217,17 +334,31 @@ class IRD(equipment):
 		for k, v in dic.items():
 			v = v.replace('enterprises.','.1.3.6.1.4.1.')
 			v = v.replace('X', str(self.getinSatSetupInputSelect()))
+			dic[k] = v
+			try:
+				if not self.getRefreshType(static_parameters.snmp_refresh_types[k]):
+					del dic[k]
+			except KeyError:
+				pass
 			if k in masks:
-				del dic[k]
-			else:
-				dic[k] = v
+				try:
+					del dic[k]
+				except KeyError:
+					pass		
+				
 		#if self.getinSatSetupInputSelect() = 1:
 		#    print "%s is on imput %s"%(self.name, self.getinSatSetupInputSelect())
 		return dic
 	
 	def bulkoids(self):
-		return self.oid_getBulk
-	
+		dic  = self.oid_getBulk.copy()
+		for k in dic.keys():
+			try:
+				if not self.getRefreshType(static_parameters.snmp_refresh_types[k]):
+					del dic[k]
+			except KeyError:
+				pass
+		return dic	
 	def getServiceName(self):
 		try:
 			serviceName = self.snmp_res_dict["service name"]
@@ -305,12 +436,14 @@ class IRD(equipment):
 	def getSat(self):
 			if not self.sat_dict.has_key(self.getinSatSetupInputSelect()):
 	
-	
-				req = "SELECT SAT1,SAT2,SAT3,SAT4 FROM equipment WHERE id = %i" % self.getId()
-				res = gv.sql.qselect(req)
-				res = res[0] #1 line
-				for x in range(len(res)):
-					self.sat_dict[x + 1] = res[x]
+				try:
+					req = "SELECT SAT1,SAT2,SAT3,SAT4 FROM equipment WHERE id = %i" % self.getId()
+					res = gv.sql.qselect(req)
+					res = res[0] #1 line
+					for x in range(len(res)):
+						self.sat_dict[x + 1] = res[x]
+				except:
+					pass
 			try:
 				return self.sat_dict[self.getinSatSetupInputSelect()]
 			except KeyError:
@@ -342,7 +475,7 @@ class IRD(equipment):
 			satfreq = str(self.getinSatSetupSatelliteFreq())
 		channel_request = "SELECT c.channel, c.modulationtype FROM channel_def c WHERE ((c.sat =\"" + self.getSat() + "\") AND (c.pol =\"" + self.getPol() + "\") AND (c.frequency LIKE \"" + satfreq.split(".")[0] + "%\") AND (c.symbolrate  LIKE \"" + self.getinSatSetupSymbolRate().split(".")[0] + "%\"))"
 		#print channel_request
-		result = gv.sql.qselect(channel_request)
+		result = gv.cachedSNMP(channel_request)
 		if(len(result) != 0 ):
 		   channel = str(result[0][0]) 
 		   modulation = str(result[0][1])
@@ -468,7 +601,28 @@ class IRD(equipment):
 				result = gv.sql.qselect(order)
 			except: pass
 			
-		
+	def getRefreshType(self, criteria):
+		if not hasattr(self, "refreshType"):
+			self.refreshType = "full"
+		if not hasattr(self, "refreshCounter"):
+			self.refreshCounter = 0
+		if self.refreshCounter == 10:
+			self.refreshCounter = 0
+		if self.refreshCounter == 0:
+			self.refreshType = "full"	
+		if self.refreshType == "full":
+			return True
+		if criteria == "all":
+			return True
+		if criteria in self.refreshType:
+			return True
+		return False
+	def set_refreshType(self, newType):
+		if newType.replace(" ", "") != "":
+			self.refreshType = newType
+		else:
+			self.refreshType = "full"
+	
 class GenericIRD(IRD):
 	def __init__(self, equipmentId, ip, name):
 		self.equipmentId = equipmentId

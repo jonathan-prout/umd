@@ -11,6 +11,7 @@ import threading
 class virtualMatrix( mysql, matrix):
 	def __init__(self, name):
 		self.lock = threading.RLock() #Just to eliminate a race between$
+		#super(virtualMatrix, self).__init__(name, "10.73.196.238", "umd", "umd", "matrix")
 		super(virtualMatrix, self).__init__(name, "localhost", "umd", "umd", "matrix")
 		""" Start by passing name as string. Mysql handler as class instance """
 		"""
@@ -79,7 +80,7 @@ class virtualMatrix( mysql, matrix):
 			
 	def sourceNameFromDestName(self, destName):
 		with self.lock:
-			srcNr = None
+			srcNr = -1
 			srcName = ""
 			for level in self.output.keys():
 				for op,name in self.output[level].iteritems():
@@ -88,12 +89,12 @@ class virtualMatrix( mysql, matrix):
 						if self.xpointStatus.has_key(level):
 							if self.xpointStatus[level].has_key(op):
 								srcNr = self.xpointStatus[level][op]
-						if not srcNr:
+						if  srcNr == -1 :
 							for lvl, d in self.xpointStatus.iteritems():
 								if d.has_key(op):
 									srcNr = d[op]
 									break
-						if srcNr:
+						if srcNr > -1:
 							if self.input[level].has_key(srcNr):
 								return self.input[level][srcNr]
 							else:

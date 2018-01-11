@@ -17,7 +17,7 @@ class NS2000(IRD):
 		""" determines sub type of equipment
 		"""
 		""" removed import snmp here"""
-		nov_soft_ver = {'ver': ".1.3.6.1.4.1.37576.2.3.1.5.1.2.1"} #This is not the best but then that is not on older versions of NS mib
+		nov_soft_ver = {'ver': ".1.3.6.1.4.1.37576.2.3.1.5.1.5.1"} #nsCommonSystemSwVersionAppNsmd
 
 		try:
 			resdict  = snmp.get(nov_soft_ver, self.ip) 
@@ -27,15 +27,20 @@ class NS2000(IRD):
 			self.offline = True
 			resdict = {'ver':"0.0"}
 		if resdict.has_key("ver"): #well it ought to
+			#NS2000.5.7.0.1949 07-Dec-2016 19:44
 			ver = resdict["ver"].strip().split(" ")[0]
 			ver = ver.replace('"', '')
-			try:
-				ver = float(ver)
-			except:
-				ver = 0.0
-				
-			if gv.loud: print("Novelsat NS2000 version %s"%ver)
-			if ver < 2.3:
+			i = 0
+			v = []
+			for rev in ver.split("."):
+				try:
+					v.append( int(rev))
+					
+				except:
+					continue
+			v = float("%d.%s"%(v[0], "".join("%d"%i for i in v[1:])))
+			if gv.loud: print("Novelsat NS2000 version %s"%v)
+			if v < 2.3:
 				return "NS2000_WEB"
 			else:
 				return "NS2000_SNMP"

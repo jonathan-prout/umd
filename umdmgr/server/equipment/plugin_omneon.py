@@ -1,6 +1,6 @@
 class OmneonHelper(object):
-
-	def getrecorders(self, returnlist="dict"):
+	port = 80
+	def getrecorders(self, returnlist="namesonly"):
 		# Returns a list of the configured recording channels (streamstores)
 		streamnames = []
 		streamaddresses = []
@@ -10,7 +10,19 @@ class OmneonHelper(object):
 		from helpers import xmlhelper
 		from helpers import httpcaller
 		import os.path
-
+		import jsons
+		document = 'api/2/list/recorder/'
+		response, stringfromserver = httpcaller.get(self.ip, self.port, document)
+		msg =json.loads(stringfromserver)
+		
+		if msg["result"] == "OK":
+			for ipgp in msg["data"].values():
+				for stream, value in ipgp.items():
+					if value != "STOPPED":
+						streamnames.append(stream)
+		streamnames = list(set(streamnames))
+		
+		"""
 		document = 'ipgp.nodes.rec.xml'
 		response, stringfromserver = httpcaller.get(self.ip, '9980', document)
 		xmldoc = xmlhelper.stringtoxml(stringfromserver)
@@ -52,14 +64,13 @@ class OmneonHelper(object):
 					if x not in streamnames:
 						streamnames.append(x)
 						streamaddresses.append(ipgridportiplist[item])
+		"""
 		if returnlist == "namesonly":
 			return streamnames
-		elif returnlist == "byip":
-			return ipgridportiplist, streams
-		else:
-			return dict(zip(streamnames, streamaddresses))
+		
 
-			
+		
+		
 	def getstreamstores(self, use="play", returnlist="dict"):
 		# Returns a list of the configured recording channels (streamstores)
 		streamnames = []
@@ -122,52 +133,25 @@ class OmneonHelper(object):
 			
 	def getports(self):
 		""" Returns 3 lists. Names of streams, ports used and multicast addresses """
-		streams_dict = self.getstreamstores(use="rec")
-		#players_dict = getstreamsinks(use="playersonly")
-		# http://10.72.0.4:9998/streamsources/W3-B3A
-		# http://10.72.0.9:9998/streamsinks/GW-2
-		# because I want to neatly index everything..
-		
+			
 		from helpers import xmlhelper
 		from helpers import httpcaller
 		streams = streams_dict.keys()
-		#players = 	players_dict.keys()
-		totallength = len(streams)
+		import json
+		
+		document = 'api/2/list/multicast/'
+		response, stringfromserver = httpcaller.get(self.ip, self.port, document)
+		msg =json.loads(stringfromserver)
+		
+		
+		
+		
 		counter = 1
 		ports = []
 		multicastaddresses = []
 		owners = []
-		for stream in streams:
-			#progressbar(counter, totallength, headding="Retreiving Ports and Multicast Addresses")
-			url = "streamsources/" + stream
-			response, stringfromserver = httpcaller.get(streams_dict[stream], '9998', url)
-			
-			if response['status'] != '200': 
-				#die( zip(response, "----------", "Bad response from server when getting streamstores from ", ipgridportiplist[item]))
-				self.offline = True
-				return [ [], [], []  ]
-				
-			xmlfromserver = xmlhelper.stringtoxml(stringfromserver)
-			port = xmlhelper.getAttributesFromTags('SourceAddress', 'IpPort', xmlfromserver)	
-			multicastaddress = xmlhelper.getAttributesFromTags('SourceAddress', 'IpAddress', xmlfromserver)	
-			ports.append(port[0])
-			multicastaddresses.append(multicastaddress[0])
-			owners.append(stream)
-			counter += 1
-		"""
-		for player in players:
-			#progressbar(counter, totallength, headding="Retreiving ports and Multicast addresses")
-			url = "streamsinks/" + player
-			response, stringfromserver = httpcaller.get(players_dict[player], '9998', url)
-			
-			if response['status'] != '200': 
-				die( zip(response, "----------", "Bad response from server when getting streamstores from ", ipgridportiplist[item]))
-			xmlfromserver = xmlhelper.stringtoxml(stringfromserver)
-			port = xmlhelper.getAttributesFromTags('SinkAddress', 'IpPort', xmlfromserver)	
-			multicastaddress = xmlhelper.getAttributesFromTags('SinkAddress', 'IpAddress', xmlfromserver)	
-			ports.append(port[0])
-			multicastaddresses.append(multicastaddress[0])
-			owners.append(player)
-			counter += 1
-		"""
+		if msg["result"] == "OK":
+			owners = [d["name"] for d in msg["data"]]
+			ports = [d["port"] for d in msg["data"]]
+			multicastaddresses = [d["address"] for d in msg["data"]]
 		return owners, ports, multicastaddresses	

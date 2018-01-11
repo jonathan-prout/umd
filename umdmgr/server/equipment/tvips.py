@@ -1,15 +1,53 @@
+import copy
 import plugin_tvips
 from server import gv
+from generic import checkout, equipment
 
-class TVG420(plugin_tvips.TVG420):
+class TVG420(plugin_tvips.TVG420, equipment):
 	def __init__(self, equipmentId, ip, name):
 		self.equipmentId = equipmentId
 		self.ip = ip
 		self.name = name
 		self.modelType = "TVG420"
-		super( TVG420, self ).__init__(self.ip, "admin", "salvador")
+		self.username = "admin"
+		self.password = "password"
+		self.ports = []
 		self.get_equipment_ids()
+		self.checkout = checkout(self)
+		self.online = True
 		
+	def serialize(self ):
+		"""serialize data without using pickle. Returns dict"""
+		
+		serial_data = {}
+		seralisabledata = ["ip", "equipmentId", "name", "online",  "modelType", "refreshType", "refreshCounter", "enablelist", "labellist","dirlist", "destlist", "ids", "ip_tx_rate","ip_rx_rate", "multicast_id_dict"]
+		for key in seralisabledata:
+			if hasattr(self,key):
+				serial_data[key] = copy.copy(getattr(self, key))
+		for i in range(len(self.ports)):
+			serial_data["port-%d"%i] = self.ports[i].getData()
+					
+		return serial_data
+		
+	def deserialize(self, data):
+		""" deserialise the data from above
+		expected errors are KeyError (no modelType), Type Error (wrong model Type)"""
+		if not data["modelType"] == self.modelType:
+			raise TypeError("Tried to serialise data from %s into %s"%(data["modelType"],self.modelType))
+		seralisabledata = ["ip", "equipmentId", "name", "online",  "modelType", "refreshType", "refreshCounter", "enablelist", "labellist","dirlist", "destlist", "ids", "ip_tx_rate","ip_rx_rate", "multicast_id_dict"]
+		ports = {}
+		for key in seralisabledata:
+				if data.has_key(key):
+					setattr(self, key, data[key])
+		for key in data.keys():
+			if "port-" in key:
+				try:
+					ports[int(key.replace("port-",""))] = data[key] 
+				except:
+					continue
+		self.ports = []
+		for key in sorted(ports):
+			self.ports.append(plugin_tvips.asiport(ports[key]))
 		
 	def get_offline(self):
 		try:
@@ -20,13 +58,17 @@ class TVG420(plugin_tvips.TVG420):
 		self.online = False
 		
 	def refresh(self):
+		
+		if not self.ports:
+			self.get_port_config()
+			
 		self.get_enable_only()
 	
 	def get_equipment_ids(self):
 		self.multicast_id_dict = {}
 		comsel = "SELECT `equipment`.`id`, `equipment`.`MulticastIp` FROM equipment"
 
-		sql_res = gv.sql.qselect(comsel)
+		sql_res = gv.cachedSNMP(comsel)
 		for item in sql_res:
 			self.multicast_id_dict[item[1]] = int(item[0])
 		

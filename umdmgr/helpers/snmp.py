@@ -1,3 +1,82 @@
+import sys
+import traceback
+import threading
+from pysnmp.proto import rfc1902
+
+import helpers.subprocesspatch as subprocess
+
+from pysnmp.entity.rfc3413.oneliner import cmdgen
+
+
+
+class NetSNMPTimedOut(Exception):
+	def __init__(self, msg):
+		self.msg = msg
+
+	def __str__(self):
+		return "NetSNMPTimedOut with %s" % self.msg
+
+class NetSNMPUnknownOID(Exception):
+	failedOid = None
+	def __init__(self, msg):
+		self.msg = msg
+
+	def __str__(self):
+		return "NetSNMPUnknownOID with %s" % self.msg
+
+class NetSNMPTooBig(Exception):
+	failedOid = None
+	def __init__(self, msg):
+		self.msg = msg
+
+	def __str__(self):
+		return "NetSNMPTooBig with %s" % self.msg
+
+def handle_netSNMP_error(serr):
+	if "Timeout:" in serr:
+			raise NetSNMPTimedOut(serr)
+	elif 'Reason: (noSuchName) There is no such variable name in this MIB.' in serr:
+		failedOid = None
+		try:
+			"""Failed object: iso.3.6.1.4.1.37576.2.3.1.5.1.2.1"""
+			line = serr.split("\n")[2]
+			line = line.replace("Failed object: ","")
+			line = line.replace("iso","")
+			failedOid = line.strip()
+			
+		except:
+			pass
+		e = NetSNMPUnknownOID(serr)
+		e.failedOid = failedOid
+		raise e
+	elif 'Reason: (tooBig) Response message would have been too large.' in serr:
+		failedOid = None
+		try:
+			"""Failed object: iso.3.6.1.4.1.37576.2.3.1.5.1.2.1"""
+			line = serr.split("\n")[2]
+			line = line.replace("Failed object: ","")
+			line = line.replace("iso","")
+			failedOid = line.strip()
+			
+		except:
+			pass
+		e = NetSNMPTooBig(serr)
+		e.failedOid = failedOid
+		raise e
+	
+
+def get_pysnmp_instance():
+	t = threading.currentThread()
+	try:
+		return t.pysnmp_instance
+	except AttributeError:
+		t.pysnmp_instance = cmdgen.CommandGenerator()
+		return t.pysnmp_instance
+
+
+
+
+
 def oidFromDict(n , invdict):
 	if not invdict.has_key(n):
 		if invdict.has_key("." + n):
@@ -11,25 +90,32 @@ def oidFromDict(n , invdict):
 
 def get(commandDict, ip):
 	#import gv
-	
+	return get_subprocess(commandDict, ip)
+	"""
 	try:
 		return get_subprocess(commandDict, ip)
+	
+	except NetSNMPTimedOut:
+		return {}
 	except Exception as e:
+	"""
+	"""
 		if any( ( isinstance(e, AssertionError), isinstance(e, AttributeError) ) ):
-		    if gv.loud:
-			    print "NETSNP Errored so using PYSNMP on %s"% ip
-		    return get_pysnmp(commandDict, ip)
+			if gv.loudSNMP:
+				print "NETSNP Errored so using PYSNMP on %s"% ip
+			return get_pysnmp(commandDict, ip)
 		else:
 			print "snmp.get: %s Error on %s"% (type(e),ip)
-			gv.exceptions.append(e)
+			gv.exceptions.append((e, traceback.format_tb( sys.exc_info()[2]) ))
 			raise e
-		
-			
+		"""
+	"""
+		raise e
+	"""
 
 
 def get_pysnmp(commandDict, ip):
-	from pysnmp.entity.rfc3413.oneliner import cmdgen
-	from pysnmp.proto import rfc1902 
+
 	#import gv
 	if commandDict == {}:
 		return {}
@@ -41,16 +127,16 @@ def get_pysnmp(commandDict, ip):
 		v = v.replace(' ', '' ) #no spaces
 		commands.append(v)
 		invdict[v] = k
-	errorIndication, errorStatus, errorIndex, varBinds = cmdgen.CommandGenerator().getCmd(
+	errorIndication, errorStatus, errorIndex, varBinds = get_pysnmp_instance().getCmd(
 	cmdgen.CommunityData('my-agent', 'public', 0), cmdgen.UdpTransportTarget((ip, 161)), *commands )
 	if errorStatus:
-		if gv.loud:
+		if gv.loudSNMP:
 			print "SNMP ERROR for %s" %  ip
 			print "errorIndication: %s" % errorIndication
 			print "errorStatus: %s" % errorStatus
 			print "errorIndex: %s" % errorIndex,
 		x = errorIndex -1
-		if gv.loud:
+		if gv.loudSNMP:
 			print " %s: %s" % (x+1,varBinds[x])
 		try:
 			n = oidFromDict(str(varBinds[x][0] ), invdict )
@@ -61,7 +147,7 @@ def get_pysnmp(commandDict, ip):
 			print invdict
 		#try:
 		if commandDict.has_key(invdict[n]):
-			if gv.loud:
+			if gv.loudSNMP:
 				print "Removing %s and trying again"% invdict[n]
 			del commandDict[invdict[n]]
 			return get(commandDict, ip) # Call itself
@@ -83,6 +169,10 @@ def get_pysnmp(commandDict, ip):
 			except KeyError:
 				print invdict
 				print str(item[0]), str(item[1])
+	del errorIndication
+	del errorStatus
+	del errorIndex
+	del varBinds
 	return returndict
 
 def process_netsnmp_line(outputLine):
@@ -111,7 +201,7 @@ def process_netsnmp_line(outputLine):
 
 def get_subprocess(commandDict, ip):
 	""" Uses subporcess.popen to getch snmp rather than PYSNMP """
-	import subprocess
+	
 	#import gv
 	if commandDict == {}:
 		return {}
@@ -124,23 +214,43 @@ def get_subprocess(commandDict, ip):
 		commands.append(v)
 		invdict[v] = k
 	
-	sub = subprocess.Popen(["/usr/bin/snmpget", "-v1", "-cpublic", ip] + commands, stdout=subprocess.PIPE)
+	supressErrors = []
+	returncode = 0
+	
+	try:
+		sub = subprocess.Popen(["/usr/bin/snmpget", "-v1", "-cpublic", ip] + commands, stdout=subprocess.PIPE, stderr=subprocess.PIPE, close_fds=True)
+		#sout = subprocess.check_output(["/usr/bin/snmpget", "-v1", "-cpublic", ip] + commands, stderr=subprocess.STDOUT)
+		
+	except subprocess.CalledProcessError, e:
+		returncode = 1
+
 	returncode = sub.wait() #Block here waiting for subprocess to return. Next thrad should execute from here
-	sout = sub.stdout.readlines()
+	sout = sub.stdout.read()
 	try:
 		serr = sub.stderr.read()
 	except:
 		serr = ""
-	if returncode != 0:
-		if gv.loud:
-			print returncode
-			print sout
-			print serr
 	del(sub)
+	if returncode != 0:
+		try:
+			handle_netSNMP_error(serr)
+		except NetSNMPUnknownOID, e:
+			if e.failedOid:
+				for k in commandDict.keys():
+					if commandDict[k] == e.failedOid:
+						if gv.loudSNMP:
+							print "Removing %s for %s and trying again"%(k, ip)
+							del commandDict[k]
+							return get(commandDict, ip) # Call itself
+
+	
 	assert(returncode == 0) #Error if NET SNMP has an error. Fall back to PYSNMP which is slower but with better error handling
-	for outputLine in sout:	
-		oid, valtype, value = process_netsnmp_line(outputLine)
-		n = oidFromDict(oid , invdict)
+	for outputLine in sout.split('\n'):
+		try:	
+			oid, valtype, value = process_netsnmp_line(outputLine)
+			n = oidFromDict(oid , invdict)
+		except ValueError:
+			continue
 		try:
 			#returndict[invdict[ n ] ] = str(value) #To be checked
 			returndict[invdict[ n ] ] = value
@@ -157,26 +267,47 @@ def walk(commandDict, ip):
 	try:
 		return walk_subprocess(commandDict, ip)
 	except Exception as e:
+		"""
 		if isinstance(e, AssertionError):
-			if gv.loud:
+			if gv.loudSNMP:
 				print "NETSNP WALK Errored so using PYSNMP on %s"% ip
 				return walk_pysnmp(commandDict, ip)
 		else:
 			print "snmp.walk: %s Error on %s"% (type(e),ip)
+		"""
+		raise e
+
 def getbulk(commandDict, ip, numItems):
 	
 	try:
 		return getbulk_subprocess(commandDict, ip, numItems)
+	except NetSNMPTooBig:
+		return walk(commandDict, ip)
+	except NetSNMPTimedOut:
+		return {}
+	except NetSNMPUnknownOID, e:
+		if e.failedOid:
+			for k in commandDict.keys():
+				if commandDict[k] == e.failedOid:
+					if gv.loudSNMP:
+						print "Removing %s for %s and trying again"%(k, ip)
+						del commandDict[k]
+						return getbulk(commandDict, ip, numItems ) # Call itself
+		
 	except Exception as e:
+		"""
 		if isinstance(e, AssertionError):
-			if gv.loud:
+			if gv.loudSNMP:
 				print "NETSNP GETBULK Errored so using PYSNMP on %s"% ip
 				return walk_pysnmp(commandDict, ip)
 		else:
 			print "snmp.getbulk: %s Error on %s"% (type(e),ip)
+		"""
+		raise e
+
 def getbulk_subprocess(commandDict, ip, numItems):
 	""" Uses subporcess.popen to getch snmp rather than PYSNMP """
-	import subprocess
+	
 	#import gv
 	if commandDict == {}:
 		return {}
@@ -189,33 +320,41 @@ def getbulk_subprocess(commandDict, ip, numItems):
 		commands.append(v)
 		invdict[v] = k
 	for command in commands:
-		sub = subprocess.Popen(["/usr/bin/snmpbulkget", "-v2c","-Of", "-cpublic", "-Cr%d"%numItems, ip, command], stdout=subprocess.PIPE)
+		sub = subprocess.Popen(["/usr/bin/snmpbulkget", "-v2c","-Of", "-cpublic", "-Cr%d"%numItems, ip, command], stdout=subprocess.PIPE,  stderr=subprocess.PIPE, close_fds=True)
 		#/usr/bin/snmpbulkget -cpublic -v2c -Of -Cr3 192.168.1.111 .1.3.6.1.4.1.27338.5.5.1.5.1.1.9
 
 		returncode = sub.wait() #Block here waiting for subprocess to return. Next thrad should execute from here
-		sout = sub.stdout.readlines()
+		sout = sub.stdout.read()
 		try:
 			serr = sub.stderr.read()
 		except:
 			serr = ""
+		
 		if returncode != 0:
-			if gv.loud:
+			if gv.loudSNMP:
 				print returncode
 				print sout
 				print serr
 		del(sub)
+		
+		if serr:
+			handle_netSNMP_error(serr)
+			
 		assert(returncode == 0) #Error if NET SNMP has an error. Fall back to PYSNMP which is slower but with better error handling
 		results = []
-		for outputLine in sout:	
-			oid, valtype, value = process_netsnmp_line(outputLine)
-			results.append(value)
+		for outputLine in sout.split("\n"):
+			try:	
+				oid, valtype, value = process_netsnmp_line(outputLine)
+				results.append(value)
+			except ValueError:
+				continue
 		n = oidFromDict(command , invdict)
 		returndict[invdict[n]] = results
 	return returndict
 		
 def walk_subprocess(commandDict, ip):
 	""" Uses subporcess.popen to getch snmp rather than PYSNMP """
-	import subprocess
+	
 	#import gv
 	if commandDict == {}:
 		return {}
@@ -230,28 +369,32 @@ def walk_subprocess(commandDict, ip):
 	for command in commands:
 		sub = subprocess.Popen(["/usr/bin/snmpwalk", "-v1", "-cpublic", ip, command], stdout=subprocess.PIPE)
 		returncode = sub.wait() #Block here waiting for subprocess to return. Next thrad should execute from here
-		sout = sub.stdout.readlines()
+		sout = sub.stdout.read()
 		try:
 			serr = sub.stderr.read()
 		except:
 			serr = ""
 		if returncode != 0:
-			if gv.loud:
+			if gv.loudSNMP:
 				print returncode
 				print sout
 				print serr
 		del(sub)
 		assert(returncode == 0) #Error if NET SNMP has an error. Fall back to PYSNMP which is slower but with better error handling
 		results = []
-		for outputLine in sout:	
-			oid, valtype, value = process_netsnmp_line(outputLine)
-			results.append(value)
+		for outputLine in sout.split("\n"):
+			try:	
+				oid, valtype, value = process_netsnmp_line(outputLine)
+				results.append(value)
+			except ValueError:
+				continue
 		n = oidFromDict(command , invdict)
-		returndict[invdict[n]] = results
+		if results:
+			returndict[invdict[n]] = results
 	return returndict
 	
 def walk_pysnmp(commandDict, ip):
-	from pysnmp.entity.rfc3413.oneliner import cmdgen
+	
 	commands = []
 	invdict = {}
 	returndict = {}
@@ -260,7 +403,7 @@ def walk_pysnmp(commandDict, ip):
 		commands.append(v)
 		invdict[v] = k
 	for command in commands:
-		errorIndication, errorStatus, errorIndex, varBindsTable = cmdgen.CommandGenerator().nextCmd(
+		errorIndication, errorStatus, errorIndex, varBindsTable = get_pysnmp_instance().nextCmd(
 		cmdgen.CommunityData('my-agent', 'public', 0), cmdgen.UdpTransportTarget((ip, 161)),
 		command
 		)

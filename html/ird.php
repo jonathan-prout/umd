@@ -8,7 +8,7 @@
 
  //
  require_once('umd.common.php');
- require_once ('config.inc.php');
+ require_once ('sql.php');
  dbstart();
  $sat = $_GET['sat'];
  
