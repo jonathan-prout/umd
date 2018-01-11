@@ -1,5 +1,5 @@
 class OmneonHelper(object):
-	port = 80
+	port = "80"
 	def getrecorders(self, returnlist="namesonly"):
 		# Returns a list of the configured recording channels (streamstores)
 		streamnames = []
@@ -10,7 +10,7 @@ class OmneonHelper(object):
 		from helpers import xmlhelper
 		from helpers import httpcaller
 		import os.path
-		import jsons
+		import json
 		document = 'api/2/list/recorder/'
 		response, stringfromserver = httpcaller.get(self.ip, self.port, document)
 		msg =json.loads(stringfromserver)
@@ -136,10 +136,10 @@ class OmneonHelper(object):
 			
 		from helpers import xmlhelper
 		from helpers import httpcaller
-		streams = streams_dict.keys()
+		#streams = streams_dict.keys()
 		import json
-		
-		document = 'api/2/list/multicast/'
+		import iprange
+		document = 'api/2/list/multicast'
 		response, stringfromserver = httpcaller.get(self.ip, self.port, document)
 		msg =json.loads(stringfromserver)
 		
@@ -151,7 +151,9 @@ class OmneonHelper(object):
 		multicastaddresses = []
 		owners = []
 		if msg["result"] == "OK":
-			owners = [d["name"] for d in msg["data"]]
-			ports = [d["port"] for d in msg["data"]]
-			multicastaddresses = [d["address"] for d in msg["data"]]
+			for d in msg["data"]:
+				if iprange.ismulticast(d["address"]):
+					owners.append(d["name"])
+					ports.append(d["port"])
+					multicastaddresses.append(d["address"])
 		return owners, ports, multicastaddresses	
