@@ -63,7 +63,7 @@ class IPGridport(OmneonHelper, generic.serializableObj):
 		#import httpcaller
 		#response, stringfromserver = httpcaller.get(self.ip, '9980', "csvoutput?--login=auto")
 		try:
-			response, stringfromserver = httpcaller.get(self.ip, '9980', "csvoutput?--login=auto")
+                       response, stringfromserver = httpcaller.get(self.ip, self.port, "api/2/list/nodes/rec")
 		except:
 			
 			response = {'status':'500'}
@@ -80,7 +80,7 @@ class IPGridport(OmneonHelper, generic.serializableObj):
 		#import httpcaller
 		#response, stringfromserver = httpcaller.get(self.ip, '9980', "csvoutput?--login=auto")
 		try:
-			response, stringfromserver = httpcaller.get(self.ip, '9980', "csvoutput?--login=auto")
+                       response, stringfromserver = httpcaller.get(self.ip, self.port, "api/2/list/nodes/rec")
 		except:
 			
 			response = {'status':'500'}
@@ -91,4 +91,4 @@ class IPGridport(OmneonHelper, generic.serializableObj):
 			self.offline = False
 		return "IP Gridport"
 	def min_refresh_time(self):
-		return 60
+		return 5
