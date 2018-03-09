@@ -15,7 +15,7 @@ def die(stuff):
 
 def get( ip, port, addr, username="", password=""):
 	"""
-	ip as string, port as int addr string do_not_call_machine_test_on_timeout boolean
+	ip as string, port as int addr string 
 	returns response as dictionary, content as string
 	# use when uri separate from address
 	"""
@@ -23,15 +23,21 @@ def get( ip, port, addr, username="", password=""):
 	method = 'GET'
 	if password != "":
 		http.add_credentials(username, password)
-	url = 'http://' + ip + ':' + port + '/' + addr;
+	url = 'http://{}:{}/{}'.format(ip, port, addr);
+
 	headers = {'Accept': '*',
 				'Content-Type': 'application/vnd.ipgp+xml',
 				'User-Agent':	'IPGP Player'}
-
+	
+	
+	
+	response, content = http.request(url, method, headers=headers)
+	"""
 	try:
-		response, content = http.request(url, method, headers=headers)
+		
 	except:
 		die(["HTTP Error with " + ip])
+	"""
 	return response, content
 
 
