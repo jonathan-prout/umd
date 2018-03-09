@@ -14,6 +14,16 @@ def ipv4equal(ip1, ip2):
 		if ip1[i] != ip2[i]:
 			return False
 	return True
+def ipv4toint(net):
+	binNet = 0
+	On = 0
+	for o in net.split("."):
+		binNet += int(o) << octShift[On]
+		On += 1
+	return binNet
+
+def ismulticast(ipv4addrss):
+	return ipv4toint(ipv4addrss) & (0b11110000<<24)  == ipv4toint("224.0.0.0")
 
 class IPGridport(OmneonHelper, generic.serializableObj):
 	def __init__(self, equipmentId, ip, name):
@@ -44,7 +54,14 @@ class IPGridport(OmneonHelper, generic.serializableObj):
 		self.activeStreams = self.getrecorders(returnlist="namesonly") #Refresh list of streams
 		if set( self.activeStreams ) != set( self.addressesbyname.keys() ) : #Only get recorders if really needed
 			owners, ports, multicastaddresses = self.getports()
-			self.addressesbyname = dict(zip(owners, multicastaddresses))
+			#self.addressesbyname = dict(zip(owners, multicastaddresses))
+			self.addressesbyname = {}
+			for i in range(len(owners)):
+				try:
+					if ismulticast(multicastaddresses[i]):
+						self.addressesbyname[owners[i]] = multicastaddresses[i]
+				except IndexError:
+					break
 		self.set_online()
 		
 	def updatesql(self):
@@ -58,17 +75,18 @@ class IPGridport(OmneonHelper, generic.serializableObj):
 			except KeyError:
 				continue
 			_id = self.multicast_id_dict.get(mca, None)
-			if id is not None:
+			if _id is not None:
 				activeDict[_id] = 1
 			else:
-				for m in multicast_id_dict.keys():
+				for m in self.multicast_id_dict.keys():
 					if ipv4equal(key, m):
 						_id = self.multicast_id_dict[m]
 						activeDict[_id] = 1
 						break
 		for key, val in activeDict.items():
-			line = "update `status` set `OmneonRec` = %s where `id` = %s" %(val, key)
-			l.append(line)
+			if key is not None:
+				line = "update `status` set `OmneonRec` = %s where `id` = %s" %(val, key)
+				l.append(line)
 		return "; ".join(l) + "; update `status` set `updated`= CURRENT_TIMESTAMP where `id` = %s;"%self.equipmentId
 				
 	def getChannel(self):

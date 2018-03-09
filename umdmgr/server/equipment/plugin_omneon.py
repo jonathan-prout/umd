@@ -10,7 +10,7 @@ class OmneonHelper(object):
 		from helpers import xmlhelper
 		from helpers import httpcaller
 		import os.path
-		import jsons
+		import json
 		document = 'api/2/list/recorder/'
 		response, stringfromserver = httpcaller.get(self.ip, self.port, document)
 		msg =json.loads(stringfromserver)
@@ -136,10 +136,9 @@ class OmneonHelper(object):
 			
 		from helpers import xmlhelper
 		from helpers import httpcaller
-		streams = streams_dict.keys()
 		import json
 		
-		document = 'api/2/list/multicast/'
+		document = 'api/2/list/multicast'
 		response, stringfromserver = httpcaller.get(self.ip, self.port, document)
 		msg =json.loads(stringfromserver)
 		
