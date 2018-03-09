@@ -3,6 +3,18 @@ from server import gv
 from helpers import httpcaller
 from generic import checkout
 import generic
+def ipv4equal(ip1, ip2):
+	""" list of int for octets or string for ipv4 address
+	'192.168.0.1' or [192,168,0,1]"""
+	if isinstance(ip1, basestring):
+		ip1 = [int(octet) for octet in ip1.split(".")]
+	if isinstance(ip2, basestring):
+		ip2 = [int(octet) for octet in ip2.split(".")] 
+	for i in range(4):
+		if ip1[i] != ip2[i]:
+			return False
+	return True
+
 class IPGridport(OmneonHelper, generic.serializableObj):
 	def __init__(self, equipmentId, ip, name):
 		
@@ -43,10 +55,17 @@ class IPGridport(OmneonHelper, generic.serializableObj):
 		for key in self.activeStreams:
 			try:
 				mca = self.addressesbyname[key]
-				_id = self.multicast_id_dict[mca]
-				activeDict[_id] = 1
 			except KeyError:
-				pass
+				continue
+			_id = self.multicast_id_dict.get(mca, None)
+			if id is not None:
+				activeDict[_id] = 1
+			else:
+				for m in multicast_id_dict.keys():
+					if ipv4equal(key, m):
+						_id = self.multicast_id_dict[m]
+						activeDict[_id] = 1
+						break
 		for key, val in activeDict.items():
 			line = "update `status` set `OmneonRec` = %s where `id` = %s" %(val, key)
 			l.append(line)
