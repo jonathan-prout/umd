@@ -3,9 +3,16 @@ from server import gv
 from helpers import httpcaller
 from generic import checkout
 import generic
+
+
+octShift = [24,16,8,0]
 def ipv4equal(ip1, ip2):
 	""" list of int for octets or string for ipv4 address
 	'192.168.0.1' or [192,168,0,1]"""
+	if not ip1:
+		return False
+	if not ip2:
+		return False
 	if isinstance(ip1, basestring):
 		ip1 = [int(octet) for octet in ip1.split(".")]
 	if isinstance(ip2, basestring):
@@ -79,7 +86,7 @@ class IPGridport(OmneonHelper, generic.serializableObj):
 				activeDict[_id] = 1
 			else:
 				for m in self.multicast_id_dict.keys():
-					if ipv4equal(key, m):
+					if ipv4equal(mca, m):
 						_id = self.multicast_id_dict[m]
 						activeDict[_id] = 1
 						break
