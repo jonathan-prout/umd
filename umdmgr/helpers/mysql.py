@@ -94,7 +94,7 @@ class mysql(object):
 			with open("sqlerror.log", "a") as fobj:
 				fobj.write( "%s,%s,%s"%(time.strftime("%d-%m-%Y %H:%M:%S"), e.__repr__(),sql) )
 				print "%s SQL error %s, %s"%(time.strftime("%d-%m-%Y %H:%M:%S"), e.__repr__(),sql)
-		
+			self.close()
 		
 		
 		finally:
@@ -111,7 +111,7 @@ class mysql(object):
 		return rows
 		
 	def close(self):
-		#print "Closing database....."
+		print "Closing database....."
 		try:
 			self.db.close()
 		except AttributeError:
