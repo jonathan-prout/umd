@@ -12,7 +12,7 @@
  //                     9 => "192.168.3.59");    
  //
  require_once('umd.common.php');
- require_once ('config.inc.php');
+ require_once ('sql.php');
  dbstart();
  $kaleido = $_GET['id'];
  $kip = $kaleidoconv[$kaleido];

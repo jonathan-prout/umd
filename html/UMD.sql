@@ -1016,11 +1016,11 @@ CREATE TABLE IF NOT EXISTS `status` (
   `asi` varchar(10) NOT NULL,
   `sd_hd` varchar(16) NOT NULL,
   `channel` varchar(60) NOT NULL,
-  `bissstatus` char(3) NOT NULL default '',
+  `castatus` char(3) NOT NULL default '',
   `videoresolution` varchar(12) NOT NULL,
   `framerate` varchar(12) NOT NULL,
   `videostate` varchar(12) NOT NULL,
-  `asioutmode` varchar(60) NOT NULL,
+  `asioutencrypted` varchar(60) NOT NULL,
   `muxbitrate` varchar(32) NOT NULL,
   `muxscrambling` varchar(12) NOT NULL,
   `muxbissword` varchar(64) NOT NULL,
@@ -1043,7 +1043,7 @@ CREATE TABLE IF NOT EXISTS `status` (
 -- Dumping data for table `status`
 --
 
-INSERT INTO `status` (`id`, `status`, `servicename`, `aspectratio`, `ebno`, `pol`, `frequency`, `symbolrate`, `fec`, `rolloff`, `modulationtype`, `modtype2`, `asi`, `sd_hd`, `channel`, `bissstatus`, `videoresolution`, `framerate`, `videostate`, `asioutmode`, `muxbitrate`, `muxscrambling`, `muxbissword`, `muxencryptedword`, `videoprofilelevel`, `muxstate`, `videobitrate`, `videopid`, `videoaspectratio`, `videogoplen`, `videogopstruc`, `videobandwidth`, `videomaxbitrate`, `videodelay`, `temperature`) VALUES
+INSERT INTO `status` (`id`, `status`, `servicename`, `aspectratio`, `ebno`, `pol`, `frequency`, `symbolrate`, `fec`, `rolloff`, `modulationtype`, `modtype2`, `asi`, `sd_hd`, `channel`, `castatus`, `videoresolution`, `framerate`, `videostate`, `asioutencrypted`, `muxbitrate`, `muxscrambling`, `muxbissword`, `muxencryptedword`, `videoprofilelevel`, `muxstate`, `videobitrate`, `videopid`, `videoaspectratio`, `videogoplen`, `videogopstruc`, `videobandwidth`, `videomaxbitrate`, `videodelay`, `temperature`) VALUES
 (1, 'on', 'TRTRT2 W3', '4:3', '5.56dB', 'X', '10958.5', '4937.3', 'Auto', '0.20', '2', 'DVB-S2', 'SAT', '', '1A6 11', 'On', '576', '25 Hz', 'Running', 'Decrypted', '10750274', '', '', '', '', '', '', '', '', '', '', '', '', '', ''),
 (2, 'on', 'FRGC2', '16:9', '5.51dB', 'X', '10964.5', '4937.3', '', '', '5', 'DVB-S2', '', '', '1B6 11', 'Off', '576', '25 Hz', 'Running', 'Decrypted', '10750274', '', '', '', '', '', '', '', '', '', '', '', '', '', ''),
 (3, 'on', 'BEVRT1', '4:3', '6.64dB', 'X', '10970.5', '4937.3', 'Auto', '0.20', '2', 'DVB-S2', 'SAT', '', '1C6 11', 'Off', '576', '25 Hz', 'Running', 'Patrially Decrypted', '10750274', '', '', '', '', '', '', '', '', '', '', '', '', '', ''),

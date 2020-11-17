@@ -2,3 +2,7 @@
 server/pysnmp/
 *.old
 *.txt
+umdmgr/helpers/pysnmp/
+umdmgr/cache/*
+server-crashdump*
+*.pickle

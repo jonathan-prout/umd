@@ -8,7 +8,7 @@
 
  //
  require_once('umd.common.php');
- require_once ('config.inc.php');
+ require_once ('sql.php');
  dbstart();
 
  
@@ -168,10 +168,10 @@ if (ref != "") {land(loc,target);}
 	</tr>
 	
 		<tr>
-		<td>Number of offline equipment</td>
-		<?php if ($mgmt["equipment_offline"] < 10)
+		<td>Equipment starting</td>
+		<?php if ($mgmt["STAT_INIT"] < 10)
 			{$background = "lightgreen";}
-		elseif 	($mgmt["equipment_offline"] < 30)
+		elseif 	($mgmt["STAT_INIT"] < 30)
 		{$background = "yellow";}
 		
 		
@@ -179,10 +179,55 @@ if (ref != "") {land(loc,target);}
 			{$background = "red";}
 			
 		
-		echo '<td bgcolor="'. $background .'">'. $mgmt["equipment_offline"] .'</td>';
+		echo '<td bgcolor="'. $background .'">'. $mgmt["STAT_INIT"] .'</td>';
 		?>
 	       
-	</tr>       
+	</tr>
+		<tr>
+		<td>Equipment recently polled</td>
+		<?php if ($mgmt["STAT_SLEEP"] > 200)
+			{$background = "lightgreen";}
+		elseif 	($mgmt["STAT_SLEEP"] > 100)
+		{$background = "yellow";}
+		
+		
+		else
+			{$background = "red";}
+			
+		
+		echo '<td bgcolor="'. $background .'">'. $mgmt["STAT_SLEEP"] .'</td>';
+		?>
+	       
+	</tr>
+		<tr>
+		<td>Equipment ready to be polled</td>
+		<?php if ($mgmt["STAT_READY"] < 10)
+			{$background = "lightgreen";}
+		elseif 	($mgmt["STAT_READY"] < 100)
+		{$background = "yellow";}
+		
+		
+		else
+			{$background = "red";}
+			
+		
+		echo '<td bgcolor="'. $background .'">'. $mgmt["STAT_READY"] .'</td>';
+		?>
+	       
+	</tr>
+		<tr>
+		<td>Equipment in polling queue</td>
+		<?php 
+		$background = "lightgreen";
+		
+		
+		
+			
+		
+		echo '<td bgcolor="'. $background .'">'. $mgmt["STAT_INQUEUE"] .'</td>';
+		?>
+	       
+	</tr> 
 	</tr>
 		<tr>
 		
@@ -266,6 +311,53 @@ if (ref != "") {land(loc,target);}
  ?>
  </table>
    <br />
+     <table border="1" bordercolor="grey" style="background-color:lightgrey"  cellpadding="3" cellspacing="3">
+	<tr>
+		<td>Slow IRDs</td><td>Updated</td></tr>
+<?php 
+	
+	$sql = 'SELECT `equipment`.*,`status`.*
+FROM equipment, status
+WHERE (`status`.`updated` <= NOW() - INTERVAL 30 SECOND ) AND (`status`.`status` NOT like  "Offline") AND `equipment`.`id`= `status`.`id` ORDER BY `status`.`updated` ASC';
+		
+		//print $sql;
+		
+		
+            $result = mysql_query($sql);
+			$num=mysql_numrows($result);
+			//print $num;
+		
+	
+	$i=0;
+	while ($i < $num) {
+		$label=mysql_result($result,$i,"equipment.labelnamestatic");
+		$channel=mysql_result($result,$i,"status.channel");
+		$videoresolution=mysql_result($result,$i,"status.videoresolution");
+		$aspectratio=mysql_result($result,$i,"status.aspectratio");
+		$servicename=mysql_result($result,$i,"status.servicename");
+		$ip=mysql_result($result,$i,"equipment.ip");
+		$videostate=mysql_result($result,$i,"status.videostate");
+		$modulation=mysql_result($result,$i,"status.modulationtype");
+		$framerate=mysql_result($result,$i,"status.framerate");
+		$asioutencrypted=mysql_result($result,$i,"status.asioutencrypted");
+		$updated=mysql_result($result,$i,"status.updated");
+		if ($videostate == "Running")
+			$background = "lightgreen";
+		else
+			$background = "99FFFF";
+			
+		echo '<tr>';
+		echo '<td bgcolor="'. $background .'"><a href ="http://'. $ip . '/" target=_blank>'. $label .'</a></td><td>'.$updated.'</td>';
+		
+		echo '</tr>';
+	
+	
+	$i++;
+	}
+	
+	
+		
+ ?>
   <table border="1" bordercolor="grey" style="background-color:lightgrey"  cellpadding="3" cellspacing="3">
 	<tr>
 		<td>Oflline IRDs</td></tr>
@@ -294,7 +386,7 @@ WHERE (`status`.`status` like  "Offline") AND `equipment`.`id`= `status`.`id`';
 		$videostate=mysql_result($result,$i,"status.videostate");
 		$modulation=mysql_result($result,$i,"status.modulationtype");
 		$framerate=mysql_result($result,$i,"status.framerate");
-		$asioutmode=mysql_result($result,$i,"status.asioutmode");
+		$asioutencrypted=mysql_result($result,$i,"status.asioutencrypted");
 		if ($videostate == "Running")
 			$background = "lightgreen";
 		else

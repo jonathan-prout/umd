@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+	<head>
+<style>
+table, th, td {
+    border: 1px solid black;
+    border-collapse:collapse;
+}
+th, td {
+    padding: 5px;
+}
+</style>
+</head>
+<body>
+
+<form id="frm1" action="form_action.asp">
+Last name: <input type="text" name="lname" value="Duck" onkeyup="myFunction()"><br><br>
+<input type="submit" value="Submit" >
+</form> 
+
+<p>Click "Try it" to display the value of each element in the form.</p>
+
+<button onclick="myFunction()">Try it</button>
+
+<p id="demo"></p>
+
+<script>
+function myFunction() {
+    var x = document.getElementById("frm1");
+    var text = "";
+    var i;
+    for (i = 0; i < x.length ;i++) {
+        text += x.elements[i].value + "<br>";
+    }
+	
+		
+	text +="<table><tr><th>Source</th><th>Dest</th></tr>";
+	
+	for (var key in src_dest) {
+	  if (src_dest.hasOwnProperty(key)) {
+		var inName = inputMap[key];
+		if ((inName.search(x.elements[0].value) != -1)){
+		 text +="<tr><td>";
+		text += inName + "</td><td>";
+		for(i = 0; i < src_dest[key].length ;i++) {
+			//text +="<td>";
+			text += outputMap[src_dest[key][i]];
+			text +="<br />";
+			}
+		text +="</td><td>";
+	  }
+	  }
+	}
+	  
+	  //text +=att.getNamedItem("name").nodeValue;
+	  
+	  //text +=att.getNamedItem("ip").nodeValue;
+	  //text +="</td><td>";
+	  //text +=att.getNamedItem("InUse").nodeValue;
+	  //text +="</td></tr>";
+	  
+	text +="</table>";
+		document.getElementById("demo").innerHTML = text;
+}
+</script>

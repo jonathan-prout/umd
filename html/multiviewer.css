@@ -1,0 +1,42 @@
+
+table, th, td {
+    border: 1px solid black;
+    border-collapse:collapse;
+}
+p {
+    line-height: 100%;
+margin-top: 0em;
+  margin-bottom: 0em;
+}
+
+p.input {
+    background-color: grey;
+
+	color: black;
+}
+p.new {
+    background-color: pink;
+
+	color: black;
+}
+p.TOP {
+    background-color: yellow;
+
+	color: black;
+}
+p.BOTTOM {
+    background-color: orange;
+
+	color: black;
+}
+p.strategy {
+    background-color: #a8a2f2;
+
+	color: black;
+}
+p.C/N{
+    background-color: #FF88FF;
+
+        color: black;
+}
+
