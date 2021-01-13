@@ -1,7 +1,10 @@
 #!/usr/bin/env python
 
-import umdserver
-import equipment
+from __future__ import absolute_import
+#!/usr/bin/env python
+
+from . import umdserver
+from . import equipment
 #import pollWorker
-import bgtask
+from . import bgtask
 

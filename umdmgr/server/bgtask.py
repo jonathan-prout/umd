@@ -1,5 +1,7 @@
-import equipment
-import gv
+from __future__ import print_function
+from __future__ import absolute_import
+from . import equipment
+from . import gv
 import random
 
 def deserialize(data, keepData = True):
@@ -78,7 +80,7 @@ def determine_type(data):
 			t = "Rx8200-2RF"
 			currentEquipment = equipment.ericsson.RX8200_2RF(equipmentID, ip, name)
 		else:
-			print "WARNING: id %d at %s not subtyped"%(equipmentID, ip)
+			print("WARNING: id %d at %s not subtyped"%(equipmentID, ip))
 		#gv.addEquipment(currentEquipment)
 		
 		
@@ -103,7 +105,7 @@ def determine_type(data):
 	query = "UPDATE equipment SET model_id ='%s' WHERE id ='%i'"%(t, equipmentID)
 	
 	if gv.loud:
-		print "IRD " + str(equipmentID) + " is a " + t
+		print("IRD " + str(equipmentID) + " is a " + t)
 	sendToSQL(query)
 	u = 'Online'
 	if t == 'OFFLINE':

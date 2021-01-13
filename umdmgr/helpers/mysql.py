@@ -1,4 +1,5 @@
 #!/usr/bin/python
+from __future__ import print_function
 import os, re, sys,time,datetime
 import threading, MySQLdb
 
@@ -24,25 +25,25 @@ class mysql(object):
 	def connect(self):
 		self.reconnectsLeft -=1
 		if self.reconnectsLeft <10:
-			print "%s Waiting before reconnecting to database. Retries left %d"%(time.strftime("%d-%m-%Y %H:%M:%S"), self.reconnectsLeft)
+			print("%s Waiting before reconnecting to database. Retries left %d"%(time.strftime("%d-%m-%Y %H:%M:%S"), self.reconnectsLeft))
 			time.sleep(1)
 		if self.reconnectsLeft <0:
 			if hasattr(self, "gv"):
 				if hasattr(self.gv, programCrashed): # Applicable to server version
 					self.gv.sql.programCrashed = True
 			errorText = "Run out of database reconnects. Program should now close"		
-			print "%s %s"%(time.strftime("%d-%m-%Y %H:%M:%S"), errorText)
+			print("%s %s"%(time.strftime("%d-%m-%Y %H:%M:%S"), errorText))
 			raise RuntimeError(errorText)
 		try:
-			print "Opening Database Connection...."
+			print("Opening Database Connection....")
 			self.db = MySQLdb.Connection(self.dhost,self.duser,self.dpass,self.dname)
 			self.cursor = self.db.cursor()
 			self.connected = True
 
-		except Exception, e:
+		except Exception as e:
 			now = datetime.datetime.now()
-			print "Database error at ", now.strftime("%H:%M:%S")
-			print "Error %s" % (e.__repr__())
+			print("Database error at ", now.strftime("%H:%M:%S"))
+			print("Error %s" % (e.__repr__()))
 			try:
 				self.close()
 			except:
@@ -93,7 +94,7 @@ class mysql(object):
 		except Exception as e:
 			with open("sqlerror.log", "a") as fobj:
 				fobj.write( "%s,%s,%s"%(time.strftime("%d-%m-%Y %H:%M:%S"), e.__repr__(),sql) )
-				print "%s SQL error %s, %s"%(time.strftime("%d-%m-%Y %H:%M:%S"), e.__repr__(),sql)
+				print("%s SQL error %s, %s"%(time.strftime("%d-%m-%Y %H:%M:%S"), e.__repr__(),sql))
 			self.close()
 		
 		
@@ -111,7 +112,7 @@ class mysql(object):
 		return rows
 		
 	def close(self):
-		print "Closing database....."
+		print("Closing database.....")
 		try:
 			self.db.close()
 		except AttributeError:

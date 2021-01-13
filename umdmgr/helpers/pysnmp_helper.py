@@ -1,12 +1,14 @@
 #!/usr/bin/env python
 
+from __future__ import print_function
+from __future__ import absolute_import
 from collections import namedtuple as NT
 from datetime import datetime
 import string
 import re
 
-from pysnmp.entity.rfc3413.oneliner import cmdgen
-from pysnmp.smi import builder, view, error
+from .pysnmp.entity.rfc3413.oneliner import cmdgen
+from .pysnmp.smi import builder, view, error
 from numpy import int64, float64
 
 class v2c(object):
@@ -58,7 +60,7 @@ class v2c(object):
 
             return map(self.SNMPIndexed._make, tmp)
         else:
-            raise ValueError, "Must populate with SNMP.v2c.index() first"
+            raise ValueError("Must populate with SNMP.v2c.index() first")
 
     def walk(self, oid=None):
         if isinstance(self._format(oid), tuple):
@@ -84,7 +86,7 @@ class v2c(object):
             return self._parse_resolve(errorIndication, errorStatus, 
                 errorIndex, varBindTable)
         else:
-            raise ValueError, "Unknown oid format: %s" % oid
+            raise ValueError("Unknown oid format: %s" % oid)
 
     def get_index(self, oid=None, index=None):
         """In this case, index should be similar to the values you indexed from... i.e. if you index with ifName, get_index('ifHCInOctets', 'eth0')"""
@@ -113,9 +115,9 @@ class v2c(object):
                 return self.SNMPIndexed._make(tmp)
 
         elif not isinstance(index, str):
-            raise ValueError, "index must be a string value"
+            raise ValueError("index must be a string value")
         else:
-            raise ValueError, "Must populate with SNMP.v2c.index() first"
+            raise ValueError("Must populate with SNMP.v2c.index() first")
 
     def get(self, oid=None, index=None):
         if isinstance(self._format(oid), tuple):
@@ -141,7 +143,7 @@ class v2c(object):
             return self._parse_resolve(errorIndication, errorStatus, 
                 errorIndex, [varBindTable])[0]
         else:
-            raise ValueError, "Unknown oid format: %s" % oid
+            raise ValueError("Unknown oid format: %s" % oid)
 
     def bulkwalk(self, oid=None):
         """SNMP bulkwalk a device.  NOTE: This often is faster, but does not work as well as a simple SNMP walk"""
@@ -170,20 +172,20 @@ class v2c(object):
             return self._parse_resolve(errorIndication, errorStatus, 
                 errorIndex, varBindTable)
         else:
-            raise ValueError, "Unknown oid format: %s" % oid
+            raise ValueError("Unknown oid format: %s" % oid)
 
     def _parse_resolve(self, errorIndication=None, errorStatus=None, 
         errorIndex=None, varBindTable=None):
         """Parse MIB walks and resolve into MIB names"""
         retval = list()
         if errorIndication:
-            print errorIndication
+            print(errorIndication)
         else:
             if errorStatus:
-                print '%s at %s\n' % (
+                print('%s at %s\n' % (
                     errorStatus.prettyPrint(),
                     varBindTable[-1][int(errorIndex)-1]
-                    )
+                    ))
             else:
                 for varBindTableRow in varBindTable:
                     for oid, val in varBindTableRow:
@@ -216,17 +218,17 @@ class v2c(object):
     def _parse(self, errorIndication, errorStatus, errorIndex, 
         varBindTable):
         if errorIndication:
-           print errorIndication
+           print(errorIndication)
         else:
             if errorStatus:
-                print '%s at %s\n' % (
+                print('%s at %s\n' % (
                     errorStatus.prettyPrint(),
                     errorIndex and varBindTable[-1][int(errorIndex)-1] or '?'
-                    )
+                    ))
             else:
                 for varBindTableRow in varBindTable:
                     for name, val in varBindTableRow:
-                        print '%s = %s' % (name.prettyPrint(), val.prettyPrint())
+                        print('%s = %s' % (name.prettyPrint(), val.prettyPrint()))
 
     def _format(self, oid):
         """Format a numerical OID in the form of 1.3.4.1.2.1 into a tuple"""

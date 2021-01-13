@@ -1,5 +1,6 @@
 #!/usr/bin/python
 
+from __future__ import print_function
 import os, re, sys
 import string,threading,time, Queue
 import equipment_new
@@ -78,7 +79,7 @@ def determine_type(args):
 	query = "UPDATE equipment SET model_id ='%s' WHERE id ='%i'"%(t, equipmentID)
 	gv.sql.qselect(query)
 	if gv.loud:
-		print "IRD " + str(equipmentID) + " is a " + t
+		print("IRD " + str(equipmentID) + " is a " + t)
 	if autostart:
 		if gv.threadJoinFlag == False:
 			if Type != "OFFLINE":
@@ -146,7 +147,7 @@ def main():
     start()
     backgroundworker()
     #gv.ThreadCommandQueue.join()
-    print "Types determined. Took %s seconds. Begininng main loop. Press CTRL C to quit"% (time.time() - time1)
+    print("Types determined. Took %s seconds. Begininng main loop. Press CTRL C to quit"% (time.time() - time1))
     
     #for k in gv.equipmentDict.keys():
     #	gv.ThreadCommandQueue.put((refresh, k))
@@ -159,7 +160,7 @@ def main():
 
 	backgroundworker()
 	#gv.ThreadCommandQueue.join()
-	print "Took %s seconds. "% (time.time() - time1)
+	print("Took %s seconds. "% (time.time() - time1))
     
     """
     

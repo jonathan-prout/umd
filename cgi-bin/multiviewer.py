@@ -5,13 +5,14 @@
     1.0 JP JUL 2012
 
 """
+from __future__ import print_function
 import telnetlib, Queue, signal, time
 
 
 class boilerplate(object):
     """ Boilerplate stuff to inherit into sublcass that does stuff"""
     def shout(self, stuff):
-        print "%s" % stuff
+        print ("%s" % stuff)
         
     def set_offline(self, callingFunc = None):
         self.offline = True

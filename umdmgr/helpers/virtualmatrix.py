@@ -1,6 +1,8 @@
 #!/usr/bin/env python
-from matrix.generic import matrix
-from infosource.sql import mysql
+from __future__ import print_function
+from __future__ import absolute_import
+from .matrix.generic import matrix
+from .infosource.sql import mysql
 import threading
 """ Matrix Interface """
 
@@ -67,16 +69,16 @@ class virtualMatrix( mysql, matrix):
 		
 		
 	def onXPointChange(self, dest, src, level):
-		if not self.xpointStatus.has_key(level):
+		if level not in self.xpointStatus:
 				self.xpointStatus[level] = {}
 		self.xpointStatus[level][dest - self.countFrom1] = src - self.countFrom1
 		try:
-			print self.name +" %s -> %s"%(self.input[level][src + self.countFrom1],self.output[level][dest + self.countFrom1] )
+			print(self.name +" %s -> %s"%(self.input[level][src + self.countFrom1],self.output[level][dest + self.countFrom1] ))
 		except KeyError:
 			try:
-				print self.name +" %s -> %s"%(self.input[0][src + self.countFrom1],self.output[0][dest + self.countFrom1] )
+				print(self.name +" %s -> %s"%(self.input[0][src + self.countFrom1],self.output[0][dest + self.countFrom1] ))
 			except:
-				print self.name +" %s -> %s"%(dest + self.countFrom1 ,src + self.countFrom1)
+				print(self.name +" %s -> %s"%(dest + self.countFrom1 ,src + self.countFrom1))
 			
 	def sourceNameFromDestName(self, destName):
 		with self.lock:
@@ -86,20 +88,20 @@ class virtualMatrix( mysql, matrix):
 				for op,name in self.output[level].iteritems():
 					if name == destName:
 						#self.xpointStatus[level][dest][src]
-						if self.xpointStatus.has_key(level):
-							if self.xpointStatus[level].has_key(op):
+						if level in self.xpointStatus:
+							if op in self.xpointStatus[level]:
 								srcNr = self.xpointStatus[level][op]
 						if  srcNr == -1 :
 							for lvl, d in self.xpointStatus.iteritems():
-								if d.has_key(op):
+								if op in d:
 									srcNr = d[op]
 									break
 						if srcNr > -1:
-							if self.input[level].has_key(srcNr):
+							if srcNr in self.input[level]:
 								return self.input[level][srcNr]
 							else:
 								for lvl, d in self.output:
-									if d.has_key(srcNr):
+									if srcNr in d:
 										return  d[srcNr]
 		return srcName
 		

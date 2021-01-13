@@ -1,3 +1,4 @@
+from __future__ import print_function
 def clearscreen():
 	import os
 	# works on Windows or Linux, also Vista
@@ -16,31 +17,31 @@ def progressbarhelper(top, bottom):
 					progressbar += "="
 			else:
 					progressbar += " "
-	print "* [" + progressbar + "] *"
+	print("* [" + progressbar + "] *")
 	samples = "%d"%top  + " / " + "%d"%bottom + ", " + "%d"%(percentage * 2) + "%"
 	printline = line[0:2] + samples + line[len(samples)+2:]
-	print printline
+	print(printline)
 
 def progressbar(top, bottom, headding="Progress", cls="True"):
 		top = float(top)
 		bottom = float(bottom)
 		if cls == "True":
 			clearscreen()
-		print "*******************************************************"
+		print("*******************************************************")
 		line ="*                                                     *"
 		printline = line[0:2] + headding + line[len(headding)+2:]
-		print printline
+		print(printline)
 		progressbarhelper(top, bottom)
-		print "*******************************************************"
+		print("*******************************************************")
 		
 def progressbar2line(top1, bottom1, top2, bottom2, headding="Progress"):
 
 	clearscreen()
-	print "*******************************************************"
+	print("*******************************************************")
 
 	line ="*                                                     *"
 	printline = line[0:2] + headding + line[len(headding)+2:]
-	print printline
+	print(printline)
 
 	top = float(top1)
 	bottom = float(bottom1)
@@ -49,4 +50,4 @@ def progressbar2line(top1, bottom1, top2, bottom2, headding="Progress"):
 	bottom = float(bottom2)
 	bottom = float(bottom2)
 	progressbarhelper(top, bottom)
-	print "*******************************************************"
+	print("*******************************************************")

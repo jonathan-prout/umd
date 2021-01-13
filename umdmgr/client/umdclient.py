@@ -1,4 +1,6 @@
 #!/usr/bin/python
+from __future__ import print_function
+from __future__ import absolute_import
 import os, re, string,threading
 import sys,time,datetime
 
@@ -8,9 +10,9 @@ import time
 
 from helpers import mysql
 from helpers import virtualmatrix
-import multiviewer
-import gv
-import labelmodel
+from . import multiviewer
+from . import gv
+from . import labelmodel
 
 
 gv.display_server_status = "Starting"
@@ -34,9 +36,9 @@ def enum(*sequential, **named):
 		
 def logwrite(errortext):
 	if any((loud, errors_in_stdout)):
-			print "**** ERROR!! ******"
-			print "\n".join(errortext)
-			print "***********************"
+			print("**** ERROR!! ******")
+			print("\n".join(errortext))
+			print("***********************")
 	file = open(logfile,"a")
 	errortext.append(" ")
 	file.write("\n".join(errortext))
@@ -118,11 +120,11 @@ def main(loop, test = None):
 			if line[ d["IP"]] == test:
 					break
 		else:
-			print "'%s' not in the multiviewer table"%test
+			print("'%s' not in the multiviewer table"%test)
 			return
 		mul = multiviewer.generic.testmultiviewer(line[ d["IP"]])
 		gv.mvID[ line[ d["IP"]]] =  line[ d["id"]]
-		print  getAddresses(line[ d["IP"]])
+		print(getAddresses(line[ d["IP"]]))
 		mul.lookuptable = getAddresses(line[ d["IP"]])
 		"""
 		gv.mv[line[ d["IP"]]] = mul 
@@ -132,11 +134,11 @@ def main(loop, test = None):
 		bg.start()
 		threadcounter += 1
 		"""
-		print "Started test"
+		print("Started test")
 		while 1:
 			try:
 				for i in mul.lookuptable.keys():
-					for x in getStatusMesage(i, mul.host).__iter__(): print x
+					for x in getStatusMesage(i, mul.host).__iter__(): print(x)
 					mul.put(getStatusMesage(i, mul.host))
 				mul.refresh()
 				time.sleep(1)
@@ -157,7 +159,7 @@ def main(loop, test = None):
 			bg.start()
 			threadcounter += 1
 		
-	print "Now starting main loop press ctrl c to quit"
+	print("Now starting main loop press ctrl c to quit")
 	gv.display_server_status = "Running"
 	
 	
@@ -195,7 +197,7 @@ def main(loop, test = None):
 					except: pass
 				"""
 		except KeyboardInterrupt:
-			print "You pressed control c, so I am quitting"
+			print("You pressed control c, so I am quitting")
 			return
 	
 def getAddresses(ip):
@@ -293,7 +295,7 @@ def getStatusMesage(mvInput, mvHost):
 								else:
 									tlOK = False
 								e = None
-			except Exception, e:
+			except Exception as e:
 					tlOK = False
 			if all((int(res["strategy"]) == int(inputStrategies.equip), tlOK )):
 				sm = gv.equip[res["equipment"]].getStatusMessage()
@@ -326,7 +328,7 @@ def getStatusMesage(mvInput, mvHost):
 				else:
 					tlOK = False
 				e = None
-			except Exception, e:
+			except Exception as e:
 				tlOK = False
 			if all((int(res["strategy"]) == int(inputStrategies.equip), tlOK )):
 					sm.topLabel = gv.equip[int(res["equipment"])].isCalled()
@@ -354,22 +356,22 @@ def getStatusMesage(mvInput, mvHost):
 def getMultiviewer(mvType, host):
 	gv.sql.qselect('UPDATE `Multiviewer` SET `status` = "STARTING" WHERE `IP` = "%s";'%host)
 	if mvType in ["kaleido", "Kaleido"]:
-	    print "Starting Kaleido"
+	    print("Starting Kaleido")
 	    return multiviewer.miranda.kaleido(host)
 	elif mvType in ["k2", "K2"]:
-	    print "Starting K2"
+	    print("Starting K2")
 	    return multiviewer.miranda.K2(host)
 	elif mvType in ["KX", "KX"]:
-	    print "Starting KX"
+	    print("Starting KX")
 	    return multiviewer.miranda.KX(host)
 	elif mvType in ["KX16", "KX-16"]:
-	    print "Starting KX-16"
+	    print("Starting KX-16")
 	    return multiviewer.miranda.KX16(host)
 	elif mvType in ["KXQUAD", "KX-QUAD"]:
-	    print "Starting KX-QUAD"
+	    print("Starting KX-QUAD")
 	    return multiviewer.miranda.KXQUAD(host)
 	else: #Harris/Zandar
-	    print "Starting Harris" 
+	    print("Starting Harris") 
 	    return multiviewer.harris.zprotocol(host)
 
 
@@ -414,7 +416,7 @@ def mvrefresh(myInstance, name):
 				time.sleep(1) # wait between connection attempts
 				
 			if gv.loud:
-				print "Attempting to reconnect to %s"% name
+				print("Attempting to reconnect to %s"% name)
 				myInstance.connect()
 			
 
@@ -426,7 +428,7 @@ def mvrefresh(myInstance, name):
 				myInstance.put(getStatusMesage(i, myInstance.host))
 			myInstance.refresh()
 			time.sleep(1)
-	print "Stopping display for %s"% name
+	print("Stopping display for %s"% name)
 	gv.sql.qselect('UPDATE `Multiviewer` SET `status` = "OFFLINE" WHERE `IP` = "%s";'%myInstance.host)
 	#print "Leaving thread as termintation flag set"
 

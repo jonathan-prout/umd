@@ -1,5 +1,6 @@
 #!/usr/bin/python
 
+from __future__ import print_function
 import os, re, sys
 import string,threading,time, Queue
 import equipment_new
@@ -25,7 +26,7 @@ def retrivalList():
 def start():
 	
 	#Begin background worker threads
-	print "Starting %s threads..."% gv.bg_worker_threads
+	print("Starting %s threads..."% gv.bg_worker_threads)
 	for t in range(gv.bg_worker_threads):
 		bg = threading.Thread(None,target=backgroundworker, args=[])
 		bg.daemon = True
@@ -46,7 +47,7 @@ def determine_type(equipmentID):
         Type = gv.equipmentDict[equipmentID].determine_type()
     except:
 	Type = "OFFLINE"
-    print "IRD " + str(equipmentID) + " is a " + Type
+    print("IRD " + str(equipmentID) + " is a " + Type)
     ip = gv.equipmentDict[equipmentID].ip
     name = gv.equipmentDict[equipmentID].name
     query = "UPDATE equipment SET model_id ='%s' WHERE id ='%i'"%(Type, equipmentID)
@@ -128,7 +129,7 @@ def main():
     start()
     #backgroundworker()
     gv.ThreadCommandQueue.join()
-    print "Types determined. Took %s seconds. Begininng main loop. Press CTRL C to quit"% (time.time() - time1)
+    print("Types determined. Took %s seconds. Begininng main loop. Press CTRL C to quit"% (time.time() - time1))
     
     for k in gv.equipmentDict.keys():
 		gv.ThreadCommandQueue.put((refresh, k))
@@ -141,7 +142,7 @@ def main():
 
 	#backgroundworker()
 	gv.ThreadCommandQueue.join()
-	print "Took %s seconds. "% (time.time() - time1)
+	print("Took %s seconds. "% (time.time() - time1))
     
     """
     

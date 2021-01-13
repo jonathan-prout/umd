@@ -1,5 +1,6 @@
-import gv
-from multiviewer.generic import status_message
+from __future__ import absolute_import
+from . import gv
+from .multiviewer.generic import status_message
 from helpers import CA
 CA.gv = gv
 CA.get()
@@ -208,7 +209,7 @@ class irdResult(object):
 		if self.getInput() == "SAT":
 			return 0
 		elif demod != 0:
-				if not gv.equip.has_key(demod):
+				if demod not in gv.equip:
 					gv.equip[demod] = irdResult(demod)
 				
 				if gv.equip[demod].getOnline():
@@ -216,7 +217,7 @@ class irdResult(object):
 		
 		else:
 			src = gv.getEquipByName(self.getMatrixInput())
-			if gv.equip.has_key(src):
+			if src in gv.equip:
 				if not self.isCalled(src): 
 					if gv.equip[src].getInput() == "SAT":
 						return src
@@ -245,7 +246,7 @@ class irdResult(object):
 		return n
 	def getca(self):
 		cas = self.getKey("s.castatus")
-		if CA.CATypes.has_key(cas):
+		if cas in CA.CATypes:
 			cas_str = CA.CATypes[cas]
 			return cas_str
 		else:

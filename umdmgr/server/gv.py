@@ -1,3 +1,5 @@
+from __future__ import print_function
+from __future__ import absolute_import
 
 
 # Standard Imports
@@ -10,7 +12,7 @@ from multiprocessing import JoinableQueue as Queue
 import multiprocessing
 #Project imports 
 from helpers import mysql
-import equipment.generic
+from . import equipment.generic
 sql = None
 
 min_refresh_time = 10 #Force 10 seconds between refreshes. Gets overidden by min refresh time parameter on matrix
@@ -37,7 +39,7 @@ class equipmentStorage(object):
 		self.equipmentDict[key] = val
 	
 	def has_key(self, key):
-		return self.equipmentDict.has_key(key)
+		return key in self.equipmentDict
 	
 	
 	def __repr__(self):
@@ -45,7 +47,7 @@ class equipmentStorage(object):
 		return '%s(%s)' % (type(self).__name__, dictrepr)
 	
 	def update(self, *args, **kwargs):
-		print 'update', args, kwargs
+		print('update', args, kwargs)
 		for k, v in dict(*args, **kwargs).iteritems():
 			self[k] = v
 
@@ -54,7 +56,7 @@ sqlUpdateDict = {}
 eqLock = threading.RLock()
 def addEquipment(eqInstance):
 	with eqLock:
-		if equipmentDict.has_key(eqInstance.getId()):
+		if eqInstance.getId() in equipmentDict:
 			old = equipmentDict.pop(eqInstance.getId())
 			del old
 		equipmentDict[eqInstance.getId()] = eqInstance
@@ -109,15 +111,15 @@ def log(stuff):
 	out = "%s: Instance %s: %s \n"%(time.strftime("%Y-%m-d %H:%M:%S"), parity, stuff)
 	
 	if loud:
-		print "%s"%out
+		print("%s"%out)
 	else:
 		loglock.acquire()
 		try:
 			f = open(logfile, "a")
 			f.write(out)
 		except:
-			print "Could not log stuff!"
-			print out
+			print("Could not log stuff!")
+			print(out)
 		finally:
 			f.close()
 			loglock.release()
@@ -145,6 +147,6 @@ def get_inactive():
 
 snmp_res = {}
 def cachedSNMP(command):
-	if not snmp_res.has_key(command):
+	if command not in snmp_res:
 		snmp_res[command] = sql.qselect(command)
 	return snmp_res[command]
