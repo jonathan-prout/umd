@@ -1,15 +1,16 @@
 #!/usr/bin/env python
 
 #standard imports
+from __future__ import print_function
 import getopt	
 import sys
 import threading
 import multiprocessing
 
 def usage():
-	print "v, verbose logs everything"
+	print("v, verbose logs everything")
 	#print "l, loop, loops every 10s"
-	print "e, errors, print errors"
+	print("e, errors, print errors")
 		
 if __name__ == "__main__":
 	#project imports
@@ -18,9 +19,9 @@ if __name__ == "__main__":
 	from helpers import mysql
 	try:                                
 		opts, args = getopt.getopt(sys.argv[1:], "vlesnd", ["verbose", "loop", "errors", "suppress","snail","debug"]) 
-	except getopt.GetoptError, err:
-		print str(err)	
-		print "error in arguments"
+	except getopt.GetoptError as err:
+		print(str(err))	
+		print("error in arguments")
 		usage()                          
 		sys.exit(2) 
 	#verbose = False
@@ -39,12 +40,12 @@ if __name__ == "__main__":
 		elif opt in ("-d", "--debug"):
 			gv.debug = True
 		else:
-			print "option '%s' not recognised"%opt
+			print("option '%s' not recognised"%opt)
 			#assert False, 'option not recognised'
 			usage() 
 			sys.exit(1)
 	if gv.loud:
-		print "Starting in verbose mode"
+		print("Starting in verbose mode")
 		
 	gv.sql = mysql.mysql()
 	gv.sql.gv = gv

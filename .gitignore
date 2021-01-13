@@ -6,3 +6,5 @@ umdmgr/helpers/pysnmp/
 umdmgr/cache/*
 server-crashdump*
 *.pickle
+*.bak
+venv

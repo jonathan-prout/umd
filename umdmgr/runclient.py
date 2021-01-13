@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+from __future__ import print_function
 import getopt
 import sys
 import datetime
@@ -7,9 +8,9 @@ import threading
 
 
 def usage():
-	print "v, verbose logs everything"
-	print "l, loop, loops every 10s"
-	print "e, errors, print errors"
+	print("v, verbose logs everything")
+	print("l, loop, loops every 10s")
+	print("e, errors, print errors")
 	
 if __name__ == '__main__':
 	from client import umdclient
@@ -23,9 +24,9 @@ if __name__ == '__main__':
 	gv.display_server_status = "Starting"
 	try:                                
 		opts, args = getopt.getopt(sys.argv[1:], "vlet:", ["verbose", "loop", "errors", "test"]) 
-	except getopt.GetoptError, errr:
+	except getopt.GetoptError as errr:
 			
-		print "error in arguments"
+		print("error in arguments")
 		usage()                          
 		sys.exit(2) 
 	#verbose = False
@@ -43,22 +44,22 @@ if __name__ == '__main__':
 		elif opt in ("-e", "--errors"):
 			errors_in_stdout = True
 		else:
-			print opt
+			print(opt)
 			assert False, 'option not recognised' 
 
 	if gv.loud:
-		print "Starting in verbose mode"
+		print("Starting in verbose mode")
 
 
 
 			
 	now = datetime.datetime.now()
 	if gv.loud:
-		print "starting " + now.strftime("%d-%m-%Y %H:%M:%S")
+		print("starting " + now.strftime("%d-%m-%Y %H:%M:%S"))
 	umdclient.main(loop, test)
 	now = datetime.datetime.now()
 	if gv.loud:
-		print "Done " + now.strftime("%d-%m-%Y %H:%M:%S")
+		print("Done " + now.strftime("%d-%m-%Y %H:%M:%S"))
 		
 	
 	umdclient.shutdown(0)
