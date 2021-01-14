@@ -1,3 +1,4 @@
+from __future__ import print_function
 import time
 import socket
 from threading import Lock
@@ -33,10 +34,10 @@ class matrix(object):
 	#def __init__(self, configpath):
 	""" Configuration will be held in a conf file or url. It is up to the class to interpret this. """
 	def shout(self, stuff):
-		print "%s" % stuff
+		print("%s" % stuff)
 	def setStatus(self,s):
 		if self.debug:
-			print s
+			print(s)
 		self._status = s
 	def getStatus(self):
 		return self._status
@@ -65,7 +66,7 @@ class matrix(object):
 						
 
 	def errorHandler(self, error):
-		print 'Error handler called with the following error: %s'% error.__repr__()
+		print('Error handler called with the following error: %s'% error.__repr__())
 		
 	def size(self,level):
 		""" Return a tuple of two integers, destinations, sources for given level"""
@@ -167,7 +168,7 @@ class telnetMatrix(matrix):
 					assert(self.keepAliveResponse in res)
 					self.proc_buffer(res)
 					self.last_cmd_sent = time.time()
-				except EOFError, AssertionError:
+				except EOFError as AssertionError:
 					self.set_offline("keepalive")
 			
 	def read_buffer(self, buf=""):
@@ -198,7 +199,7 @@ class telnetMatrix(matrix):
 				try:
 					if txt == "": break
 					if len(txt) < 1: break
-				except ValueError, TypeError:
+				except ValueError as TypeError:
 					break
 				else:
 					buf +=txt
@@ -210,7 +211,8 @@ class telnetMatrix(matrix):
 			if self.debug: print ("->:%s"%s)
 			try:
 				self.tel.write(s)
-			except EOFError, socket.error:
+			except EOFError as xxx_todo_changeme:
+				socket.error = xxx_todo_changeme
 				self.set_offline("write")
 			
 	def read_until(self, s, timeout):
@@ -221,21 +223,24 @@ class telnetMatrix(matrix):
 				res =  self.tel.read_until(s, timeout)
 				if self.debug: print ("<-:%s"%res)
 				return res
-			except EOFError, socket.error:
+			except EOFError as xxx_todo_changeme1:
+				socket.error = xxx_todo_changeme1
 				self.set_offline("read_until")
 	def write_before_read(self, writeString, readString, timeout):
 		with self.telnetLock:
 			if self.debug: print ("->:%s"%writeString)
 			try:
 				self.tel.write(writeString)
-			except EOFError, socket.error:
+			except EOFError as xxx_todo_changeme2:
+				socket.error = xxx_todo_changeme2
 				self.set_offline("write")
 			try:
 				
 				res =  self.tel.read_until(readString, timeout)
 				if self.debug: print ("<-:%s"%res)
 				return res
-			except EOFError, socket.error:
+			except EOFError as xxx_todo_changeme3:
+				socket.error = xxx_todo_changeme3
 				self.set_offline("read_until")
 	def close(self):
 		try:

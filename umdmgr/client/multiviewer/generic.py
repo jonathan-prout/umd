@@ -3,18 +3,23 @@
     generic multiviewer base class
     git note: moved from multiviewer.py
     """
+from __future__ import print_function
 import telnetlib, Queue, signal, time
+import typing
+
 
 class status_message(object):
-    topLabel = None
-    bottomLabel = None
-    cnAlarm = False
-    recAlarm = False
-    mv_input = -1
-    strategy = "NoStrategy"
-    alarmMode = 1
-    textMode = 0
-    def __iter__(self):
+    def __init__(self):
+        self.topLabel = None
+        self.bottomLabel = None
+        self.cnAlarm = False
+        self.recAlarm = False
+        self.mv_input = -1
+        self.strategy = "NoStrategy"
+        self.alarmMode = 1
+        self.textMode = 0
+
+    def __iter__(self) -> typing.Iterator:
         """ we pack this class into a list and call the list's iterator """
         """ Each item is a tuple of videoInput, level, line, mode"""
         level = ["TOP",         "BOTTOM",           "C/N",              "REC"]
@@ -27,21 +32,8 @@ class status_message(object):
         return msgList.__iter__()
     
     def setBottomLabel(self, s):
-        
-        """
-        if isinstance(s, basestring):
-            self.bottomLabel = s
-        else:
-            raise TypeError("UMD Label should be a string")
-        """
         self.bottomLabel = str(s)
     def setTopLabel(self, s):
-        """
-        if isinstance(s, basestring):
-            self.topLabel = s
-        else:
-            raise TypeError("UMD Label should be a string")
-        """
         self.topLabel = str(s)
         
         
@@ -49,7 +41,7 @@ class multiviewer(object):
     """ Base class multiviewers MUST inherit """
     lookuptable = {}
     def shout(self, stuff):
-        print "%s" % stuff   
+        print("%s" % stuff)   
 
     def qtruncate(self):
         self.fullref = False
@@ -65,7 +57,7 @@ class multiviewer(object):
         self.offline = False
     
     def errorHandler(self, signum, frame):
-        print 'Error handler called with signal', signum
+        print(('Error handler called with signal', signum))
         
     def matchesPrevious(self, addr, level, line):
         """ Caches what the label is so it is not written next time """
@@ -80,7 +72,7 @@ class multiviewer(object):
                 pass
             else:
                 self.shout(str(e))
-        if not self.previousLabel.has_key(addr):
+        if addr not in self.previousLabel:
             self.previousLabel[addr] = {}
         self.previousLabel[addr][level] = line
         return False
@@ -98,6 +90,8 @@ class multiviewer(object):
         else:
             if not self.get_offline():
                 self.q.put(qitem)
+
+
 class telnet_multiviewer(multiviewer):
     """ Boilerplate stuff to inherit into sublcass that does stuff"""
 
@@ -130,7 +124,7 @@ class telnet_multiviewer(multiviewer):
     def close(self):
         try:
             self.tel.close()
-        except:
+        except Exception as e:
             pass
 
 
@@ -160,25 +154,25 @@ class testmultiviewer(multiviewer):
         vi = {}
         for v in self.lookuptable.values():
             v["new"] = "False"
-        print "refresh"
+        print("refresh")
         while not self.q.empty():
             if self.fullref:
                 break
             sm = self.q.get()
             if sm:
-                print self.host + ": %s (%s) status %s//%s"%(sm.mv_input, sm.strategy, sm.topLabel, sm.bottomLabel)
+                print(self.host + ": %s (%s) status %s//%s"%(sm.mv_input, sm.strategy, sm.topLabel, sm.bottomLabel))
                 for alarm in [sm.cnAlarm, sm.recAlarm]:
                     alarm = {True:"MAJOR", False:"DISABLE"}[alarm]
                     
                 for videoInput, level, line, mode in sm:
                     if not line: line = ""
                     if not self.get_offline():
-                        if not vi.has_key(videoInput):
+                        if videoInput not in vi:
                             vi[videoInput] = {}
                         vi[videoInput][level] = line
                     vi[videoInput]["strategy"] = sm.strategy
                     vi[videoInput]["new"] = "True"
-        print vi
+        print(vi)
         for k,v in vi.iteritems():
             self.lookuptable[k] = v
         if self.fullref:

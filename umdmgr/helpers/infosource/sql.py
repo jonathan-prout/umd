@@ -1,12 +1,14 @@
 """ Matrixes using MYSQL data
 """
+from __future__ import print_function
+from __future__ import absolute_import
 
 
 
 	
 
 
-import generic
+from . import generic
 import threading
 import MySQLdb
 
@@ -216,9 +218,9 @@ class mysql(generic.IInfoSourceMixIn):
 		import time
 		for level in levels:
 				try:
-						print "%s: %s: %s->%s"%(time.strftime("%Y %m %d %H:%M:%S"), self.name, self.sourceNames(level)[source], self.destNames(level)[dest])
+						print("%s: %s: %s->%s"%(time.strftime("%Y %m %d %H:%M:%S"), self.name, self.sourceNames(level)[source], self.destNames(level)[dest]))
 				except KeyError:
-						print "%s: %s: %s->%s"%(time.strftime("%Y %m %d %H:%M:%S"), self.name, source, dest)
+						print("%s: %s: %s->%s"%(time.strftime("%Y %m %d %H:%M:%S"), self.name, source, dest))
 				
 		with self.sqlLock:
 			for lvl in levels:
@@ -228,8 +230,8 @@ class mysql(generic.IInfoSourceMixIn):
 					primary = self.qselect(cmd)[0][0]
 				except IndexError:
 					primary = None
-				except Exception, e:
-					print "%s with sql %s"%(e, cmd)
+				except Exception as e:
+					print("%s with sql %s"%(e, cmd))
 					return
 				if primary:
 					cmd = "UPDATE `matrix`.`status` SET `input` = '{}',  `time` = CURRENT_TIMESTAMP WHERE `status`.`PRIMARY` ={};".format(source, primary)

@@ -2,9 +2,10 @@
 	Harris Zandar multiviewers
 	git note: moved from mukltiviewer.py
 	"""
+from __future__ import absolute_import
 	
 import telnetlib, Queue, signal, time
-from generic import telnet_multiviewer, status_message
+from .generic import telnet_multiviewer, status_message
 
 class zprotocol(telnet_multiviewer):
 	""" This class impliments Harris/Zandar Z protocol as a class

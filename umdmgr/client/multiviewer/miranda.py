@@ -2,9 +2,11 @@
 	Kaleido multiviewers
 	git note: moved from mukltiviewer.py
 	"""
+from __future__ import print_function
+from __future__ import absolute_import
 	
 import telnetlib, Queue, signal, time
-from generic import telnet_multiviewer, status_message
+from .generic import telnet_multiviewer, status_message
 
 
 		
@@ -63,7 +65,7 @@ class kaleido(telnet_multiviewer):
 			try:
 				addr = self.lookup(videoInput, level)
 			except:
-				print "videoIn, %s, level %s not found"%(videoInput, level)
+				print("videoIn, %s, level %s not found"%(videoInput, level))
 				return
 			a = ""
 			if mode == status_message.alarmMode:
