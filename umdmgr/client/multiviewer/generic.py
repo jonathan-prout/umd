@@ -7,6 +7,9 @@ from __future__ import print_function
 import telnetlib, Queue, signal, time
 import typing
 
+from umdmgr.client import gv, labelmodel
+from umdmgr.client.umdclient import getPollStatus
+
 
 class status_message(object):
     def __init__(self):
@@ -33,13 +36,18 @@ class status_message(object):
     
     def setBottomLabel(self, s):
         self.bottomLabel = str(s)
+
     def setTopLabel(self, s):
         self.topLabel = str(s)
         
         
 class multiviewer(object):
     """ Base class multiviewers MUST inherit """
-    lookuptable = {}
+
+    def __init__(self):
+        self.previousLabel = {}
+        self.lookuptable = {}
+
     def shout(self, stuff):
         print("%s" % stuff)   
 
@@ -81,8 +89,7 @@ class multiviewer(object):
         
     def put(self, qitem):
         """videoInput, level, line, mode"""
-        
-        #self.q = Queue.Queue()
+
         if self.q.full():
             pass
             #self.shout("%s at %s: UMD Queue full. Ignoring input"%(self.mv_type, self.host))
@@ -91,6 +98,95 @@ class multiviewer(object):
             if not self.get_offline():
                 self.q.put(qitem)
 
+    def getStatusMesage(self, mvInput, mvHost = self.host):
+        with gv.equipDBLock:
+
+            happyStatuses = ["RUNNING"]
+            pollstatus = getPollStatus().upper()
+            displayStatus = gv.display_server_status.upper()
+
+            sm = multiviewer.generic.status_message()
+
+            fields = ["strategy", "equipment", "inputmtxid", "inputmtxname", "customlabel1", "customlabel2"]
+            fn = []
+            cmap = {}
+            i = 0
+            for f in fields:
+                fn.append("`mv_input`.`%s`" % f)
+                cmap[f] = i
+                i += 1
+
+            cmd = "SELECT "
+            cmd += " , ".join(fn)
+            cmd += "FROM `mv_input`"
+            cmd += "WHERE ((`mv_input`.`multiviewer` =%d) AND (`mv_input`.`input` =%d))" % (gv.mvID[mvHost], mvInput)
+
+            res = dict(zip(fields, gv.sql.qselect(cmd)[0]))
+            # print cmd
+            # print res
+            if all((pollstatus in happyStatuses, displayStatus in happyStatuses)):
+                try:
+                    if gv.equip[int(res["equipment"])] is not None:
+                        tlOK = True
+                    else:
+                        tlOK = False
+                    e = None
+                except KeyError as e:
+                    tlOK = False
+                if all((int(res["strategy"]) == int(inputStrategies.equip), tlOK)):
+                    sm = gv.equip[res["equipment"]].getStatusMessage()
+                    assert sm is not None
+                    sm.strategy = "equip"
+                elif res["strategy"] == inputStrategies.matrix:
+                    mtxIn = gv.mtxLookup(res["inputmtxname"])
+                    if gv.getEquipByName(mtxIn):
+                        sm = gv.equip[gv.getEquipByName(mtxIn)].getStatusMessage()
+                        sm.strategy = "matrix + equip"
+                        assert sm is not None
+                    else:
+                        sm = labelmodel.matrixResult(mtxIn).getStatusMessage()
+                        assert sm is not None
+                        sm.strategy = "matrix no equip"
+                elif res["strategy"] == inputStrategies.indirect:
+                    sm = labelmodel.matrixResult(res["inputmtxname"]).getStatusMessage()
+                    assert sm is not None
+                    sm.strategy = "indirect"
+                elif res["strategy"] == inputStrategies.label:
+                    if res["customlabel1"]:
+                        sm.topLabel = res["customlabel1"]
+                    if res["customlabel2"]:
+                        sm.bottomLabel = res["customlabel2"]
+                    sm.strategy = "label"
+            else:
+                try:
+                    if gv.equip[int(res["equipment"])] is not None:
+                        tlOK = True
+                    else:
+                        tlOK = False
+                    e = None
+                except KeyError as e:
+                    tlOK = False
+                if all((int(res["strategy"]) == int(inputStrategies.equip), tlOK)):
+                    sm.topLabel = gv.equip[int(res["equipment"])].isCalled()
+                    sm.bottomLabel = " "
+                    sm.strategy = "equip"
+                elif res["strategy"] == inputStrategies.label:
+                    if res["customlabel1"]:
+                        sm.topLabel = res["customlabel1"]
+                    if res["customlabel2"]:
+                        sm.bottomLabel = res["customlabel2"]
+                    sm.strategy = "label"
+                else:
+                    sm.topLabel = res["inputmtxname"]
+                    # sm.bottomLabel = "%s, %s %s,%s"%(res["equipment"],len(gv.equip.keys()),e, int(res["strategy"]) )
+                    sm.bottomLabel = " "
+                    sm.strategy = "matrix"
+                if mvInput % 16 == 1:
+                    sm.bottomLabel = "Display: %s, Polling:%s" % (displayStatus, pollstatus)
+
+            sm.mv_input = mvInput
+
+        return sm
 
 class telnet_multiviewer(multiviewer):
     """ Boilerplate stuff to inherit into sublcass that does stuff"""
@@ -119,7 +215,6 @@ class telnet_multiviewer(multiviewer):
                             self.writeline(klist[key], "BOTTOM", status, "TEXT")
                         except:
                             pass
-                        
 
     def close(self):
         try:
@@ -129,16 +224,17 @@ class telnet_multiviewer(multiviewer):
 
 
 class testmultiviewer(multiviewer):
-    lookuptable = {}
+
     def __init__(self, host):
+        super(testmultiviewer, self).__init__()
         self.mv_type = "test"
-        
+        self.lookuptable = {}
         self.size = 96
         self.q = Queue.Queue(10000)
         self.host = host
-        
         self.fullref = False
         self.make_default_input_table()
+
         
     def make_default_input_table(self):
         self.lookuptable = {}
@@ -150,6 +246,7 @@ class testmultiviewer(multiviewer):
                 "REC": 600 + i
             }
             self.lookuptable[i] = d
+
     def refresh(self):
         vi = {}
         for v in self.lookuptable.values():
@@ -188,7 +285,7 @@ class testmultiviewer(multiviewer):
             for k,v in self.lookuptable[key].iteritems():
                 line += '<p class="%s">%s:%s</p>'%(k,k,v)
                 
-            line +="</td>"
+            line += "</td>"
             i += 1	
             if i == 4:
                 line += "</tr>"
@@ -199,7 +296,7 @@ class testmultiviewer(multiviewer):
                     </table>
                     </body>
                     </html>""")
-        with open("/var/www/umd/umdtest%s.html"%self.host, "w") as fobj:
+        with open("/var/www/umd/umdtest%s.html" % self.host, "w") as fobj:
             fobj.write("\n".join(fbuffer))
         
     def get_offline(self):

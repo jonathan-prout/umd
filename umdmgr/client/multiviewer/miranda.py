@@ -1,13 +1,12 @@
 """ UMD Manager 11
 	Kaleido multiviewers
 	git note: moved from mukltiviewer.py
-	"""
-from __future__ import print_function
-from __future__ import absolute_import
-	
-import telnetlib, Queue, signal, time
-from .generic import telnet_multiviewer, status_message
+"""
 
+import telnetlib
+
+from .. client import gv
+import xml.etree.ElementTree as etree
 
 		
 class kaleido(telnet_multiviewer):
@@ -16,6 +15,7 @@ class kaleido(telnet_multiviewer):
 	size = 96
 	timeout = 10
 	def __init__(self, host):
+		super(kaleido, self).__init__()
 		self.mv_type = "Kaleido"
 		self.port = 13000
 		self.size = 96
@@ -24,6 +24,7 @@ class kaleido(telnet_multiviewer):
 		self.connect()
 		self.fullref = False
 		self.make_default_input_table()
+		self.tel = None
 
 	def connect(self):    
 		
@@ -33,7 +34,7 @@ class kaleido(telnet_multiviewer):
 		signal.alarm(5)
 		"""
 		try:
-			from client import gv
+
 			assert(gv.programTerminationFlag == False)
 			self.tel = telnetlib.Telnet(self.host, self.port)
 			self.tel.write("Hello\n")
@@ -64,7 +65,7 @@ class kaleido(telnet_multiviewer):
 		
 			try:
 				addr = self.lookup(videoInput, level)
-			except:
+			except (KeyError, ValueError):
 				print("videoIn, %s, level %s not found"%(videoInput, level))
 				return
 			a = ""
@@ -100,7 +101,7 @@ class kaleido(telnet_multiviewer):
 				pass
 	def setAction(self, actionName):
 		
-		cmd = '<setKFireAction>set name="%s"</setKFireAction>\n'%actionName
+		cmd = '<setKFireAction>set name="%s"</setKFireAction>\n' % actionName
 		try:
 			self.tel.write(cmd)
 			a = self.tel.read_until("<ack/>", self.timeout)
@@ -116,7 +117,7 @@ class kaleido(telnet_multiviewer):
 			pass
 
 	def getActionList(self):
-		import xml.etree.ElementTree as E
+
 		a = ""
 		cmd = '<getKActionList/>\n'
 		try:
@@ -128,7 +129,7 @@ class kaleido(telnet_multiviewer):
 		except:
 			if "<nack/>" in a:
 				return []
-		xmlData = E.fromstring(a)
+		xmlData = etree.fromstring(a)
 		returnList = []
 		for el in xmlData.findall("action"):
 			returnList.append(el.text)
@@ -159,6 +160,7 @@ class kaleido(telnet_multiviewer):
 			self.tel.close()
 		except:
 			pass
+
 	def clearalarms(self):
 		""" KX has alarms on on startup, so clear them """
 		if self.get_offline():
@@ -190,6 +192,7 @@ class KX(kaleido):
 	lowAddressBug = False
 	fullref = False
 	clearAlarmsOnConnect = True
+
 	def __init__(self, host):
 		
 		self.q = Queue.Queue(1000)
