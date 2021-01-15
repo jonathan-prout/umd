@@ -11,7 +11,8 @@ def usage():
 	print("v, verbose logs everything")
 	print("l, loop, loops every 10s")
 	print("e, errors, print errors")
-	
+
+
 if __name__ == '__main__':
 	from client import umdclient
 	from helpers import mysql
@@ -24,12 +25,12 @@ if __name__ == '__main__':
 	gv.display_server_status = "Starting"
 	try:                                
 		opts, args = getopt.getopt(sys.argv[1:], "vlet:", ["verbose", "loop", "errors", "test"]) 
-	except getopt.GetoptError as errr:
+	except getopt.GetoptError as err:
 			
-		print("error in arguments")
+		print("error in arguments {}".format(err))
 		usage()                          
 		sys.exit(2) 
-	#verbose = False
+
 	loop = False
 	test = None
 	for opt, arg in  opts:
@@ -56,6 +57,7 @@ if __name__ == '__main__':
 	now = datetime.datetime.now()
 	if gv.loud:
 		print("starting " + now.strftime("%d-%m-%Y %H:%M:%S"))
+	""" Begins main loop"""
 	umdclient.main(loop, test)
 	now = datetime.datetime.now()
 	if gv.loud:

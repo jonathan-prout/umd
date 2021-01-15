@@ -7,15 +7,16 @@ CA.gv = gv
 CA.get()
 
 defaultCast = [(int, 0),
-               (float, 0.0),
-               (bool, False),
-               (str, "")
-
-               ]
+				(float, 0.0),
+				(bool, False),
+				(str, "")
+				]
 
 
 def cast(func, obj):
-	""" Safe type casting function, returns a default value if not available. Pass func or known objType """
+	"""
+	Safe type casting function, returns a default value if not available. Pass func or known objType
+	"""
 	try:
 		return func(obj)
 	except ValueError:
@@ -333,7 +334,6 @@ class irdResult(object):
 			# sendumd = sendumd + " / " + res[i][2] + " " +" BS:"+res[i][4]+" "+res[i][10]+"\"</setKDynamicText>\n"
 			# sendumd = sendumd + " / " + res[i][2] + " " +" BS:"+res[i][4]+" "+res[i][10]+"\"</setKDynamicText>\n"
 
-
 			else:  # IF No lock, we write "NO LOCK" at the bottom
 				if self.getDemod():
 					src = self.getKeyFromDemod("e.labelnamestatic")
@@ -350,13 +350,14 @@ class irdResult(object):
 		d = {True: "MAJOR", False: "DISABLE"}
 		cnBad = all((self.getCN() < 2, self.getCN() > 0))
 		sm.cnAlarm = cnBad
-		sm.recAlarm = not any((all((cast(bool, self.getKey("s.OmneonRec")), cast(bool, self.getKey("s.TvipsRec")))),
-		                       all((cast(bool, self.getKey("s.OmneonRec")),
-		                            cast(bool, self.getKey("e.doesNotUseGateway"))))
-		                       ))
+		sm.recAlarm = not any(
+			(
+				all((cast(bool, self.getKey("s.OmneonRec")), cast(bool, self.getKey("s.TvipsRec")))),
+				all((cast(bool, self.getKey("s.OmneonRec")), cast(bool, self.getKey("e.doesNotUseGateway"))))
+			)
+		)
 
 		sm.setTopLabel(self.getTopLabel())
 		assert (self.getBottomLabel() not in [None, ""])
 		sm.setBottomLabel(self.getBottomLabel())
-
 		return sm

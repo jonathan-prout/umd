@@ -39,8 +39,27 @@ class status_message(object):
 
     def setTopLabel(self, s):
         self.topLabel = str(s)
-        
-        
+
+
+def get_mv_input_from_database(mvHost, mvInput):
+    """ Return the muliviewer input from the database """
+    fields = ["strategy", "equipment", "inputmtxid", "inputmtxname", "customlabel1", "customlabel2"]
+    fn = []
+    cmap = {}
+    i = 0
+    for f in fields:
+        fn.append("`mv_input`.`%s`" % f)
+        cmap[f] = i
+        i += 1
+
+    cmd = "SELECT "
+    cmd += " , ".join(fn)
+    cmd += "FROM `mv_input`"
+    cmd += "WHERE ((`mv_input`.`multiviewer` =%d) AND (`mv_input`.`input` =%d))" % (gv.mvID[mvHost], mvInput)
+
+    return dict(zip(fields, gv.sql.qselect(cmd)[0]))
+
+
 class multiviewer(object):
     """ Base class multiviewers MUST inherit """
 
@@ -107,21 +126,7 @@ class multiviewer(object):
 
             sm = multiviewer.generic.status_message()
 
-            fields = ["strategy", "equipment", "inputmtxid", "inputmtxname", "customlabel1", "customlabel2"]
-            fn = []
-            cmap = {}
-            i = 0
-            for f in fields:
-                fn.append("`mv_input`.`%s`" % f)
-                cmap[f] = i
-                i += 1
-
-            cmd = "SELECT "
-            cmd += " , ".join(fn)
-            cmd += "FROM `mv_input`"
-            cmd += "WHERE ((`mv_input`.`multiviewer` =%d) AND (`mv_input`.`input` =%d))" % (gv.mvID[mvHost], mvInput)
-
-            res = dict(zip(fields, gv.sql.qselect(cmd)[0]))
+            res = get_mv_input_from_database(mvHost, mvInput)
             # print cmd
             # print res
             if all((pollstatus in happyStatuses, displayStatus in happyStatuses)):
@@ -187,6 +192,7 @@ class multiviewer(object):
             sm.mv_input = mvInput
 
         return sm
+
 
 class telnet_multiviewer(multiviewer):
     """ Boilerplate stuff to inherit into sublcass that does stuff"""

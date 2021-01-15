@@ -5,6 +5,7 @@
 
 import telnetlib
 
+from .generic import telnet_multiviewer
 from .. client import gv
 import xml.etree.ElementTree as etree
 

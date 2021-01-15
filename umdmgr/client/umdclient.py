@@ -9,7 +9,7 @@ import getopt
 import time
 
 from helpers import mysql
-from helpers import virtualmatrix
+from ..helpers import virtualmatrix
 from . import multiviewer
 from . import gv
 from . import labelmodel
@@ -31,7 +31,7 @@ def enum(*sequential, **named):
 	return type('Enum', (), enums)
 
 
-def logwrite(errortext):
+def logwrite(errortext): # TODO I don't like this so will refactor with python logging
 	if any((loud, errors_in_stdout)):
 		print("**** ERROR!! ******")
 		print("\n".join(errortext))
@@ -73,23 +73,34 @@ def getPollStatus():
 
 
 def main(loop, test=None):
-	# global gv.sql
+	""" Main thread's main function started after runsserver starts
+	"""
+
 	now = datetime.datetime.now()
 	umdServerRunning = False
 
 	global streamcodes
 	res = ""
 
+	# Store multiviewers here
 	gv.mv = {}
-	global threads
-	threads = []
 
+	# Store threads here
+	gv.threads = []
+
+	# Make a dict and put matrixes that do different things into the different dicts
 	matrixCapabilites = ["SDI", "ASI", "LBAND", "IP"]
 	for k in matrixCapabilites:
 		gv.matrixCapabilities[k] = []
+
+	# Use matrix db to get the matrix names
 	gv.sql.qselect("use matrix")
 	matrixNames = gv.sql.qselect("select mtxName from matrixes")[0]
+
+	# Go back to the UMD database
 	gv.sql.qselect("use UMD")
+
+	# Create a virtual matrix for each matrix and include it in each capabitlity
 	for m in matrixNames:
 		mtx = virtualmatrix.virtualMatrix(m)
 		gv.matrixes.append(mtx)
@@ -97,6 +108,7 @@ def main(loop, test=None):
 			if k in mtx.prefsDict["capabilitiy"]:
 				gv.matrixCapabilities[k].append(mtx)
 
+	# Start threads
 	threadcounter = 0
 	bg = dbThread(threadcounter, "database thread", threadcounter, None)
 	bg.daemon = True
@@ -106,32 +118,26 @@ def main(loop, test=None):
 	cmd = "SELECT `id`,`Name`,`IP`,`Protocol` FROM `Multiviewer` "
 	d = {"id": 0, "Name": 1, "IP": 2, "Protocol": 3}
 	res = gv.sql.qselect(cmd)
-	if test:
-		mul = multiviewer.generic.testmultiviewer(test)
 
+	# Test mode is to test the labeling system
+	if test:
 		for line in res:
 			if line[d["IP"]] == test:
 				break
 		else:
 			print("'%s' not in the multiviewer table" % test)
 			return
+
 		mul = multiviewer.generic.testmultiviewer(line[d["IP"]])
 		gv.mvID[line[d["IP"]]] = line[d["id"]]
 		print(getAddresses(line[d["IP"]]))
 		mul.lookuptable = getAddresses(line[d["IP"]])
-		"""
-		gv.mv[line[ d["IP"]]] = mul 
-		bg = mvThread(threadcounter, line[d["Name"]], threadcounter, gv.mv[line[ d["IP"]]]) #put multivier in thread
-		bg.daemon = True
-		gv.threads.append(bg)
-		bg.start()
-		threadcounter += 1
-		"""
 		print("Started test")
 		while 1:
 			try:
 				for i in mul.lookuptable.keys():
-					for x in mul.getStatusMesage(i, mul.host).__iter__(): print(x)
+					for x in mul.getStatusMesage(i, mul.host).__iter__():
+						print(x)
 					mul.put(mul.getStatusMesage(i, mul.host))
 				mul.refresh()
 				time.sleep(1)
@@ -143,11 +149,12 @@ def main(loop, test=None):
 
 		for line in res:
 			mul = getMultiviewer(line[d["Protocol"]], line[d["IP"]])  # returns mv instance
-			gv.mvID[line[d["IP"]]] = line[d["id"]]
-			mul.lookuptable = getAddresses(line[d["IP"]])  # multiviewer input table
-			gv.mv[line[d["IP"]]] = mul
+			gv.mvID[line[d["IP"]]] = line[d["id"]]  # Store the id in a dict
+			mul.lookuptable = getAddresses(line[d["IP"]])  # multiviewer IP dicr
+			gv.mv[line[d["IP"]]] = mul  # mulitviewer storage by IP
+			# put multivier in thread
 			bg = mvThread(threadcounter, line[d["Name"]], threadcounter,
-			              gv.mv[line[d["IP"]]])  # put multivier in thread
+							gv.mv[line[d["IP"]]])
 			bg.daemon = True
 			gv.threads.append(bg)
 			bg.start()
@@ -156,24 +163,10 @@ def main(loop, test=None):
 	print("Now starting main loop press ctrl c to quit")
 	gv.display_server_status = "Running"
 
+	# Main thread will sleep unil keyboard interrupt.
 	while 1:
-		# print "Iteration %s"% counter
 		try:
 			for x in range(60):
-				"""
-				cmd = 'SELECT `value` FROM `management` where `key` = "current_status";'
-				pollstatus = gv.sql.qselect(cmd)[0][0]
-				if pollstatus == "RUNNING":
-					umdServerRunning = True
-					getrxes()
-					writeCustom()
-				else:
-					if umdServerRunning == True:
-						gv.mv[m].fullref = True
-						umdServerRunning = False
-					
-					writeStatus("Display: %s, Polling: %s"%(gv.display_server_status, pollstatus))
-				"""
 				time.sleep(1)
 				if not loop:
 					return
@@ -181,16 +174,10 @@ def main(loop, test=None):
 			for m in gv.mv.keys():
 				gv.mv[m].fullref = True
 
-				"""
-				if gv.mv[m].get_offline():
-					try:
-						logwrite("%s is offline"%m)
-						gv.mv[m].connect()
-					except: pass
-				"""
 		except KeyboardInterrupt:
 			print("You pressed control c, so I am quitting")
 			return
+	# Runclient will call shutdown now
 
 
 def getAddresses(ip):
@@ -215,7 +202,6 @@ def getAddresses(ip):
 
 
 def getdb():
-	#	request = "SELECT s.servicename,s.aspectratio,s.ebno,s.pol,s.castatus, e.matrixname,e.labeladdr2,e.kaleidoaddr,e.labeladdr,e.labelnamestatic,s.framerate FROM equipment e, status s WHERE e.id = s.id"
 	with gv.equipDBLock:
 
 		request = "SELECT "
@@ -250,9 +236,6 @@ def writeStatus(status):
 inputStrategies = enum("Reserved", "equip", "matrix", "indirect", "label")
 
 
-
-
-
 def getMultiviewer(mvType, host):
 	gv.sql.qselect('UPDATE `Multiviewer` SET `status` = "STARTING" WHERE `IP` = "%s";' % host)
 	if mvType in ["kaleido", "Kaleido"]:
@@ -276,6 +259,7 @@ def getMultiviewer(mvType, host):
 
 
 class mvThread(threading.Thread):
+	""" Thread for holding the multiviewer """
 	def __init__(self, threadID, name, counter, instance):
 		threading.Thread.__init__(self)
 		self.threadID = threadID
@@ -284,9 +268,9 @@ class mvThread(threading.Thread):
 		self.instance = instance
 
 	def run(self):
-		# print "Starting " + self.name
+		""" Runs the mvrefresh function"""
 		mvrefresh(self.instance, self.name)
-		# print "Exiting " + self.name
+
 
 
 def dbrefresh():
@@ -301,25 +285,27 @@ class dbThread(mvThread):
 
 
 def mvrefresh(myInstance, name):
+	""" Function for multivewer updates """
 	while not gv.threadTerminationFlag:
-		# print "mvrefr"
+		# If it's offline, wait 60s before reconnection attempts
 		if myInstance.get_offline():
-
 			gv.sql.qselect('UPDATE `Multiviewer` SET `status` = "OFFLINE" WHERE `IP` = "%s";' % myInstance.host)
-
 			for seconds in range(60):
 				if gv.programTerminationFlag:
 					return
-				time.sleep(1)  # wait between connection attempts
-
+				time.sleep(1)
 			if gv.loud:
 				print("Attempting to reconnect to %s" % name)
 				myInstance.connect()
-
+		# If it's online
 		if not myInstance.get_offline():
 			gv.sql.qselect('UPDATE `Multiviewer` SET `status` = "OK" WHERE `IP` = "%s";' % myInstance.host)
+
+			# Generate a status message for each multiviwer input
 			for i in myInstance.lookuptable.keys():
 				myInstance.put(myInstance.getStatusMesage(i, myInstance.host))
+			# Now call the refresh function and loop
+			# Refresh reads through all the status messages and writes to the multiviewer
 			myInstance.refresh()
 			time.sleep(1)
 	print("Stopping display for %s" % name)
