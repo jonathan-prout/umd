@@ -50,14 +50,14 @@ class GvMv(tsl.TslMultiviewer):
 			if all((poll_status in happy_statuses, display_status in happy_statuses)):
 				try:
 					if gv.equip[int(res["equipment"])] is not None:
-						tlOK = True
+						equip_found = True
 					else:
-						tlOK = False
+						equip_found = False
 					e = None
 				except KeyError as e:
-					tlOK = False
+					equip_found = False
 
-				if all((int(res["strategy"]) == int(inputStrategies.equip), tlOK)):
+				if all((int(res["strategy"]) == int(inputStrategies.equip), equip_found)):
 					sm = gv.equip[res["equipment"]].getStatusMessage()
 					assert sm is not None
 					sm.strategy = "equip"
@@ -82,15 +82,9 @@ class GvMv(tsl.TslMultiviewer):
 						sm.bottomLabel = res["customlabel2"]
 					sm.strategy = "label"
 			else:
-				try:
-					if gv.equip[int(res["equipment"])] is not None:
-						tlOK = True
-					else:
-						tlOK = False
-					e = None
-				except KeyError as e:
-					tlOK = False
-				if all((int(res["strategy"]) == int(inputStrategies.equip), tlOK)):
+
+				equip_found = gv.equip.get(int(res["equipment"]), None) is not None
+				if all((int(res["strategy"]) == int(inputStrategies.equip), equip_found)):
 					sm.topLabel = gv.equip[int(res["equipment"])].isCalled()
 					sm.bottomLabel = " "
 					sm.strategy = "equip"
