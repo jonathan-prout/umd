@@ -1,7 +1,7 @@
 <?php
  error_reporting(E_ALL); 
  ini_set( 'display_errors','1');
- require_once('umd.common.php');
+
  require_once ('sql.php');
  dbstart();
 if(isset($_GET['mode']))
@@ -25,47 +25,47 @@ if ($mode == "json")
  if ($doc == "multiviewer")
  {
   $sql = 'SELECT `id`,`Name` FROM `Multiviewer` WHERE 1';  
-  $multiviewers = mysql_query($sql);
+  $multiviewers = query($sql);
   echo json_encode(array_from_sql($multiviewers));
   
  }elseif  ($doc == "mv_input")
  {
   $sql = 'SELECT `PRIMARY`, `multiviewer`, `input` , `labeladdr1` , `labeladdr2` , `strategy` , `equipment` , `inputmtxid` , `inputmtxname` , `customlabel1`, `customlabel2` FROM `mv_input` WHERE 1';  
-  $mv_input = mysql_query($sql);
+  $mv_input = query($sql);
   echo json_encode(array_from_sql($mv_input));
   
   }elseif  ($doc == "demods")
  {
  $sql = 'SELECT `id`,`labelnamestatic` FROM `equipment` WHERE `isDemod`=1';
- $demods = mysql_query($sql);
+ $demods = query($sql);
  echo json_encode(array_from_sql($demods));
  
  }elseif  ($doc == "irds")
  {
  $sql = 'SELECT `id`,`labelnamestatic` FROM `equipment` WHERE 1';
- $irds = mysql_query($sql);
+ $irds = query($sql);
  echo json_encode(array_from_sql($irds));
  
  }elseif  ($doc == "inpuutStrategies")
  {
  $sql = 'SELECT * FROM `inputStrategies`';
- $inpuutStrategies = mysql_query($sql);
+ $inpuutStrategies = query($sql);
  echo json_encode(array_from_sql($inpuutStrategies));
  
  }elseif  ($doc == "matrix_in")
  {
- $ressource = mysql_select_db("matrix");
+ $db = select_db("matrix");
  $sql = 'SELECT * FROM `input`';
- $mtx_in = mysql_query($sql);
- $ressource = mysql_select_db("umd");
+ $mtx_in = query($sql);
+ $db = select_db("UMD");
  echo json_encode(array_from_sql($mtx_in));
  
  }elseif  ($doc == "matrix_out")
  {
- $ressource = mysql_select_db("matrix");
+ $db = select_db("matrix");
  $sql = 'SELECT * FROM `output`';
- $mtx_out = mysql_query($sql);
- $ressource = mysql_select_db("umd");
+ $mtx_out = query($sql);
+ $db = select_db("UMD");
  echo json_encode(array_from_sql($mtx_out));
  } else
  {
@@ -74,32 +74,32 @@ if ($mode == "json")
 }else
 {
  $sql = 'SELECT `id`,`Name` FROM `Multiviewer` WHERE 1';  
- $multiviewers = mysql_query($sql);
+ $multiviewers = query($sql);
  $sql = 'SELECT `PRIMARY`, `multiviewer`, `input` , `labeladdr1` , `labeladdr2` , `strategy` , `equipment` , `inputmtxid` , `inputmtxname` , `customlabel1`, `customlabel2` FROM `mv_input` WHERE 1';  
- $mv_input = mysql_query($sql);
+ $mv_input = query($sql);
  $sql = 'SELECT `id`,`labelnamestatic` FROM `equipment` WHERE `isDemod`=1';
-$demods = mysql_query($sql);
+$demods = query($sql);
 //$sql = 'SELECT `id`,`labelnamestatic` FROM `equipment` WHERE 1';
 $sql = 'SELECT * FROM `equipment` WHERE 1';
-$irds = mysql_query($sql);
+$irds = query($sql);
 $sql = 'SELECT DISTINCT `sat` FROM `channel_def` WHERE 1';
-$satlist = mysql_query($sql);
+$satlist = query($sql);
 $sql = 'SELECT * FROM `inputStrategies`';
-$inpuutStrategies = mysql_query($sql);
-$ressource = mysql_select_db("matrix");
+$inpuutStrategies = query($sql);
+$db = select_db("matrix");
 //$sql = 'SELECT * FROM `input`';
-//$mtx_in = mysql_query($sql);
-$mtx_in_sdi = mysql_query('SELECT * FROM `input` WHERE `matrixid` =(SELECT `id` FROM `matrixes` where `capability` LIKE "%SDI%") AND `name` NOT LIKE "#%"');
-$mtx_in_asi = mysql_query('SELECT * FROM `input` WHERE `matrixid` =(SELECT `id` FROM `matrixes` where `capability` LIKE "%ASI%") AND `name`  LIKE "#%"');
-$mtx_in_lband = mysql_query('SELECT * FROM `input` WHERE `matrixid` =(SELECT `id` FROM `matrixes` where `capability` LIKE "%LBAND%")');
-$ressource = mysql_select_db("umd");
-$ressource = mysql_select_db("matrix");
+//$mtx_in = query($sql);
+$mtx_in_sdi = query('SELECT * FROM `input` WHERE `matrixid` IN (SELECT `id` FROM `matrixes` where `capability` LIKE "%SDI%") AND `name` NOT LIKE "#%"');
+$mtx_in_asi = query('SELECT * FROM `input` WHERE `matrixid` IN (SELECT `id` FROM `matrixes` where `capability` LIKE "%ASI%") AND `name`  LIKE "#%"');
+$mtx_in_lband = query('SELECT * FROM `input` WHERE `matrixid` IN (SELECT `id` FROM `matrixes` where `capability` LIKE "%LBAND%")');
+$db = select_db("UMD");
+$db = select_db("matrix");
 
-$mtx_out_sdi = mysql_query('SELECT * FROM `output` WHERE `matrixid` =(SELECT `id` FROM `matrixes` where `capability` LIKE "%SDI%") AND `name` NOT LIKE "#%"');
-$mtx_out_asi = mysql_query('SELECT * FROM `output` WHERE `matrixid` =(SELECT `id` FROM `matrixes` where `capability` LIKE "%ASI%") AND `name`  LIKE "#%"');
-$mtx_out_lband = mysql_query('SELECT * FROM `output` WHERE `matrixid` =(SELECT `id` FROM `matrixes` where `capability` LIKE "%LBAND%")');
-$mtx_names = mysql_query('SELECT `matrixes`.`id` , `matrixes`.`mtxName` FROM `matrixes`');
-$ressource = mysql_select_db("umd");
+$mtx_out_sdi = query('SELECT * FROM `output` WHERE `matrixid` IN (SELECT `id` FROM `matrixes` where `capability` LIKE "%SDI%") AND `name` NOT LIKE "#%"');
+$mtx_out_asi = query('SELECT * FROM `output` WHERE `matrixid` IN (SELECT `id` FROM `matrixes` where `capability` LIKE "%ASI%") AND `name`  LIKE "#%"');
+$mtx_out_lband = query('SELECT * FROM `output` WHERE `matrixid` IN (SELECT `id` FROM `matrixes` where `capability` LIKE "%LBAND%")');
+$mtx_names = query('SELECT `matrixes`.`id` , `matrixes`.`mtxName` FROM `matrixes`');
+$db = select_db("UMD");
 
 
 $search = array("\n", "\r", "\u", "\\t", "\t", "\f", "\b", "/", '\\');
@@ -120,21 +120,21 @@ echo 'var mtx_names = JSON.parse('."'".str_replace($search, $replace,json_encode
 echo 'var satlist = JSON.parse('."'".str_replace($search, $replace,json_encode(array_from_sql($satlist)))."');\r\n";
 }
 
-function array_from_sql($sql_res)
+function array_from_sql($sql_res): array
 {
 
  
- $numrows=mysql_numrows($sql_res);
+ $num_rows=mysqli_num_rows($sql_res);
   $res = array();
-   $res = array_pad($res, $numrows, 0);
- //echo $numrows;
- for($x=0; $x < $numrows; $x++ )
+   $res = array_pad($res, $num_rows, 0);
+ //echo $num_rows;
+ for($x=0; $x < $num_rows; $x++ )
 	{
 	 //echo $x;
 	 
-	 $row = mysql_fetch_assoc($sql_res);
+	 $row = mysqli_fetch_assoc($sql_res);
 	 //echo implode($row);
-	  //$row = mysql_fetch_array($result, MYSQL_NUM)
+	  //$row = mysqli_fetch_array($result, mysqli_NUM)
 	 $res[$x] =  $row;
 	//}
 	//$src_dest[row[0]][] = $row[1];
@@ -144,14 +144,14 @@ function array_from_sql($sql_res)
 }
 
 
-function ird_dropdown($curval)
+function ird_dropdown($curval): string
 {
  global $irds;
  $rval = "";
- $numrows=mysql_numrows($irds);
- for($x=0; $x < $numrows; $x++ ){
-	   $valID=mysql_result($irds,$x,"id");
-	   $description=mysql_result($irds,$x,"labelnamestatic");
+ $num_rows= mysqli_num_rows($irds);
+ for($x=0; $x < $num_rows; $x++ ){
+	   $valID=mysqli_result($irds,$x,"id");
+	   $description=mysqli_result($irds,$x,"labelnamestatic");
 	   if ($curval == $valID)
 		$rval = $rval.'<option value="'.$valID.'" selected>'.$description.'</option>';
 	   else
@@ -160,13 +160,13 @@ function ird_dropdown($curval)
 	 return $rval;
 }
 
-function mtx_in_dropdown($curval)
+function mtx_in_dropdown($curval): string
 {
  global $mtx_in;
  $rval = "";
- $numrows=mysql_numrows($mtx_in);
- for($x=0; $x < $numrows; $x++ ){
-	   $name=mysql_result($mtx_in,$x,"name");
+ $num_rows=mysqli_num_rows($mtx_in);
+ for($x=0; $x < $num_rows; $x++ ){
+	   $name=mysqli_result($mtx_in,$x,"name");
 	   if ($curval == $name)
 		$rval = $rval.'<option value="'.$name.'" selected>'.$name.'</option>';
 	   else
@@ -174,13 +174,13 @@ function mtx_in_dropdown($curval)
 	   }
 	 return $rval;
 }
-function mtx_out_dropdown($curval)
+function mtx_out_dropdown($curval): string
 {
  global $mtx_out;
  $rval = "";
- $numrows=mysql_numrows($mtx_out);
- for($x=0; $x < $numrows; $x++ ){
-	   $name=mysql_result($mtx_out,$x,"name");
+ $num_rows=mysqli_num_rows($mtx_out);
+ for($x=0; $x < $num_rows; $x++ ){
+	   $name=mysqli_result($mtx_out,$x,"name");
 	   if ($curval == $name)
 		$rval = $rval.'<option value="'.$name.'" selected>'.$name.'</option>';
 	   else
@@ -191,14 +191,14 @@ function mtx_out_dropdown($curval)
 	 
 }
 
-function input_strategy_dropdown($curval)
+function input_strategy_dropdown($curval): string
 {
  global $inpuutStrategies;
  $rval = "";
- $numrows=mysql_numrows($inpuutStrategies);
- for($x=0; $x < $numrows; $x++ ){
-	   $valID=mysql_result($inpuutStrategies,$x,"PRIMARY");
-	   $description=mysql_result($inpuutStrategies,$x,"description");
+ $num_rows=mysqli_num_rows($inpuutStrategies);
+ for($x=0; $x < $num_rows; $x++ ){
+	   $valID=mysqli_result($inpuutStrategies,$x,"PRIMARY");
+	   $description=mysqli_result($inpuutStrategies,$x,"description");
 	   if ($curval == $valID)
 		$rval = $rval.'<option value="'.$valID.'" selected>'.$description.'</option>';
 	   else
@@ -208,15 +208,19 @@ function input_strategy_dropdown($curval)
 }
 
 
-function get_mv_name($mvid)
+/**
+ * @param $mvid
+ * @return false|mixed|string|null
+ */
+function get_mv_name($mvid):string
 {
   global $multiviewers;
-  $rval = "";
-  $numrows=mysql_numrows($multiviewers);
+
+  $num_rows=mysqli_num_rows($multiviewers);
   
-  for($x=0; $x < $numrows; $x++ ){
-	 $id=mysql_result($multiviewers,$x,"id");
-	 $name=mysql_result($multiviewers,$x,"Name");
+  for($x=0; $x < $num_rows; $x++ ){
+	 $id=mysqli_result($multiviewers,$x,"id");
+	 $name=mysqli_result($multiviewers,$x,"Name");
 	 
 	 if ($id == $mvid)
 	  return $name;
@@ -224,9 +228,10 @@ function get_mv_name($mvid)
 	  continue;
   
   }
-  
+  return "";
 }
 dbend();
 
-?>
+
+
 
