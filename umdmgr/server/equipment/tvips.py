@@ -1,8 +1,9 @@
+from __future__ import absolute_import
 from builtins import range
 import copy
-import plugin_tvips
+from . import plugin_tvips
 from server import gv
-from generic import checkout, equipment
+from .generic import checkout, equipment
 
 class TVG420(plugin_tvips.TVG420, equipment):
 	def __init__(self, equipmentId, ip, name):
@@ -38,7 +39,7 @@ class TVG420(plugin_tvips.TVG420, equipment):
 		seralisabledata = ["ip", "equipmentId", "name", "online",  "modelType", "refreshType", "refreshCounter", "enablelist", "labellist","dirlist", "destlist", "ids", "ip_tx_rate","ip_rx_rate", "multicast_id_dict"]
 		ports = {}
 		for key in seralisabledata:
-				if data.has_key(key):
+				if key in data:
 					setattr(self, key, data[key])
 		for key in list(data.keys()):
 			if "port-" in key:

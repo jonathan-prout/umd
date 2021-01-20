@@ -85,7 +85,7 @@ class virtualMatrix( mysql, matrix):
 			srcNr = -1
 			srcName = ""
 			for level in list(self.output.keys()):
-				for op,name in self.output[level].items():
+				for op, name in self.output[level].items():
 					if name == destName:
 						#self.xpointStatus[level][dest][src]
 						if level in self.xpointStatus:

@@ -1,10 +1,11 @@
+from __future__ import absolute_import
 from builtins import range
 from past.builtins import basestring
-from plugin_omneon import OmneonHelper
+from .plugin_omneon import OmneonHelper
 from server import gv
 from helpers import httpcaller
-from generic import checkout
-import generic
+from .generic import checkout
+from . import generic
 
 
 octShift = [24,16,8,0]

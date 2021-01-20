@@ -9,6 +9,8 @@ import helpers
 from helpers import httpcaller, xmlhelper
 from xml.dom import minidom
 
+from .generic import HTTPError
+
 class tvips(object):
 	pass
 	""" For shared class parts"""
@@ -16,7 +18,7 @@ class tvips(object):
 class asiport(object):
 	def __init__(self, d = None):
 		if d:
-				for k,v in d.items():
+				for k,v in list(d.items()):
 					setattr(self, k,v)
 	def getData(self):
 		d = {}
@@ -46,7 +48,7 @@ class TVG420(tvips):
 		try:
 			response, stringfromserver = httpcaller.get(self.ip, '80', 'txp_get_tree?path=/ports&depth=4',  username= self.username, password=  self.password)
 			if response['status'] != '200':
-				raise "HTTP Error"
+				raise HTTPError
 				#	die( zip(response, "----------", "Bad response from server when getting information on ports from the TVIPS at ", self.ip))
 			self.online = True
 		except:

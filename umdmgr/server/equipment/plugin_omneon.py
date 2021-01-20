@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from future import standard_library
 standard_library.install_aliases()
 from builtins import zip
@@ -144,7 +145,7 @@ class OmneonHelper(object):
 		from helpers import httpcaller
 		#streams = streams_dict.keys()
 		import json
-		import iprange
+		from . import iprange
 		document = 'api/2/list/multicast'
 		response, stringfromserver = httpcaller.get(self.ip, self.port, document)
 		msg =json.loads(stringfromserver)

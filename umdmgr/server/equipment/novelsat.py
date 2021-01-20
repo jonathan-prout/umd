@@ -1,8 +1,10 @@
 from __future__ import division
+from __future__ import print_function
+from __future__ import absolute_import
 from builtins import str
 from builtins import range
 from past.utils import old_div
-from generic import IRD, GenericIRD
+from .generic import IRD, GenericIRD
 from server import gv
 from helpers import snmp
 snmp.gv = gv #in theory we don't want to import explictly the server's version of gv
@@ -30,7 +32,7 @@ class NS2000(IRD):
 		except:
 			self.offline = True
 			resdict = {'ver':"0.0"}
-		if resdict.has_key("ver"): #well it ought to
+		if "ver" in resdict: #well it ought to
 			#NS2000.5.7.0.1949 07-Dec-2016 19:44
 			ver = resdict["ver"].strip().split(" ")[0]
 			ver = ver.replace('"', '')
