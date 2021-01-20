@@ -2,6 +2,7 @@
 
 
 from __future__ import print_function
+from builtins import range
 import sys
 def main(host, startaddress, endaddress):
 	import umd

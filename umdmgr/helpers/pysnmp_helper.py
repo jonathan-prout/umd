@@ -2,6 +2,9 @@
 
 from __future__ import print_function
 from __future__ import absolute_import
+from builtins import map
+from builtins import str
+from builtins import object
 from collections import namedtuple as NT
 from datetime import datetime
 import string
@@ -58,7 +61,7 @@ class v2c(object):
                 tmp.append([ii.modName, datetime.now(), ii.symName, 
                     self._index[ii.index], ii.value])
 
-            return map(self.SNMPIndexed._make, tmp)
+            return list(map(self.SNMPIndexed._make, tmp))
         else:
             raise ValueError("Must populate with SNMP.v2c.index() first")
 
@@ -93,7 +96,7 @@ class v2c(object):
         if not (self._index is None) and isinstance(index, str):
             # Map the interface name provided in index to an ifName index...
             snmpvals = None
-            for idx, value in self._index.items():
+            for idx, value in list(self._index.items()):
                 if index == value:
                     # if there is an exact match between the text index and the
                     # snmp index value...
@@ -103,7 +106,7 @@ class v2c(object):
                 # TRY mapping the provided text index into an interface obj
                 _intfobj = self.device.find_match_intf(index)
                 if not (_intfobj is None):
-                    for key, val in self._intfobj.items():
+                    for key, val in list(self._intfobj.items()):
                         if (val==_intfobj):
                             snmpvals = self.get(oid=oid, index=key)
                             break
@@ -198,9 +201,9 @@ class v2c(object):
                         # Try to parse the index as an int first, 
                         # then as a string
                         try:
-                            index = int(string.join(map(lambda v: v.prettyPrint(), indices), '.'))
+                            index = int(string.join([v.prettyPrint() for v in indices], '.'))
                         except ValueError:
-                            index = str(string.join(map(lambda v: v.prettyPrint(), indices), '.'))
+                            index = str(string.join([v.prettyPrint() for v in indices], '.'))
 
                         # Re-format values as float or integer, if possible...
                         tmp = val.prettyPrint()

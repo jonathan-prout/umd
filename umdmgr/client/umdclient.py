@@ -27,7 +27,7 @@ errors_in_stdout = False
 
 
 def enum(*sequential, **named):
-	enums = dict(zip(sequential, range(len(sequential))), **named)
+	enums = dict(list(zip(sequential, list(range(len(sequential))))), **named)
 	return type('Enum', (), enums)
 
 
@@ -135,7 +135,7 @@ def main(loop, test=None):
 		print("Started test")
 		while 1:
 			try:
-				for i in mul.lookuptable.keys():
+				for i in list(mul.lookuptable.keys()):
 					for x in mul.getStatusMesage(i, mul.host).__iter__():
 						print(x)
 					mul.put(mul.getStatusMesage(i, mul.host))
@@ -171,7 +171,7 @@ def main(loop, test=None):
 				if not loop:
 					return
 
-			for m in gv.mv.keys():
+			for m in list(gv.mv.keys()):
 				gv.mv[m].fullref = True
 
 		except KeyboardInterrupt:

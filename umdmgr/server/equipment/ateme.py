@@ -1,3 +1,8 @@
+from __future__ import division
+from builtins import str
+from builtins import zip
+from builtins import range
+from past.utils import old_div
 from generic import IRD, GenericIRD
 from server import gv
 from helpers import snmp
@@ -22,7 +27,7 @@ class DR5000(IRD):
 			ServiceID = self.getServiceId()
 		except KeyError:
 			return  ""
-		for x in xrange(len(Table_Service_ID)):
+		for x in range(len(Table_Service_ID)):
 			try:
 				Table_Service_ID[x] = int(Table_Service_ID[x])
 			except ValueError:
@@ -36,7 +41,7 @@ class DR5000(IRD):
 					Table_Service_ID[x] = -1
 		try:
 			
-			d = dict(zip(Table_Service_ID, Table_Service_Name))
+			d = dict(list(zip(Table_Service_ID, Table_Service_Name)))
 			
 			serviceName = d[ServiceID]
 			return self.processServiceName(serviceName)
@@ -108,7 +113,7 @@ class DR5000(IRD):
 		except ValueError:
 			denominator = 1.0
 		try:
-			qty =  float(numerator / denominator)
+			qty =  float(old_div(numerator, denominator))
 		except ZeroDivisionError:
 			qty = 0
 		return ("%.2fHz"%qty).replace(".00","")
@@ -177,7 +182,7 @@ class DR5000(IRD):
 		except ValueError: 
 			SatelliteFreqFloat = 0
 						
-		SatelliteFreqFloat = (SatelliteFreqFloat / khz)
+		SatelliteFreqFloat = (old_div(SatelliteFreqFloat, khz))
 		finalSatelliteFreq = str(SatelliteFreqFloat)
 						##print finalsymrate
 						# This code is to compensate for inconsistencies in the D2S frequency table where
@@ -249,7 +254,7 @@ class DR5000(IRD):
 			self.snmp_res_dict.update(snmp.get(self.getoids(), self.ip))
 		except:
 			self.set_offline()
-		if len(self.snmp_res_dict.keys()) < len(self.getoids().keys()):
+		if len(list(self.snmp_res_dict.keys())) < len(list(self.getoids().keys())):
 			self.oid_mask()
 
 		if len(self.snmp_res_dict) == 0:

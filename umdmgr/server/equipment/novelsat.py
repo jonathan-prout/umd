@@ -1,3 +1,7 @@
+from __future__ import division
+from builtins import str
+from builtins import range
+from past.utils import old_div
 from generic import IRD, GenericIRD
 from server import gv
 from helpers import snmp
@@ -126,7 +130,7 @@ class NS2000_WEB(NS2000):
 			if len(res) < 33:
 				self.set_offline()
 			
-			for key in status_keys[i].keys():
+			for key in list(status_keys[i].keys()):
 				try:
 					self.snmp_res_dict[key] = res[status_keys[i][key]]
 				except IndexError:
@@ -212,7 +216,7 @@ class NS2000_SNMP(NS2000):
 		except ValueError: 
 			SatelliteFreqFloat = 0
 						
-		SatelliteFreqFloat = (SatelliteFreqFloat / 100000)
+		SatelliteFreqFloat = (old_div(SatelliteFreqFloat, 100000))
 		finalSatelliteFreq = str(SatelliteFreqFloat)
 						##print finalsymrate
 						# This code is to compensate for inconsistencies in the D2S frequency table where

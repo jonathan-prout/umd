@@ -4,7 +4,9 @@
 	"""
 from __future__ import absolute_import
 	
-import telnetlib, Queue, signal, time
+from future import standard_library
+standard_library.install_aliases()
+import telnetlib, queue, signal, time
 from .generic import telnet_multiviewer, status_message
 
 class zprotocol(telnet_multiviewer):
@@ -16,7 +18,7 @@ class zprotocol(telnet_multiviewer):
 		self.mv_type = "Harris/Zandar"
 		self.port = 4003
 		self.host = host
-		self.q = Queue.Queue(10000)
+		self.q = queue.Queue(10000)
 		self.connect()
 		self.fullref = False
 		self.last_cmd_sent = time.time()

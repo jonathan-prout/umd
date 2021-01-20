@@ -1,3 +1,8 @@
+from __future__ import division
+from builtins import str
+from builtins import range
+from past.utils import old_div
+from builtins import object
 from server import gv
 from server import bgtask
 from helpers import snmp
@@ -121,11 +126,11 @@ class equipment(serializableObj):
 		
 		""" First time this is called these will not exist so we need to intitialize them but not make them blank if we ever call this more than once """
 		try:
-			unused = self.oid_get.keys()
+			unused = list(self.oid_get.keys())
 		except AttributeError:
 			self.oid_get = {}
 		try:
-			unused = self.oid_getBulk.keys()
+			unused = list(self.oid_getBulk.keys())
 		except AttributeError:
 			self.oid_getBulk = {}
 		
@@ -162,7 +167,7 @@ class equipment(serializableObj):
 			
 		except:
 			self.set_offline()
-		if len(self.snmp_res_dict.keys()) < len(self.getoids().keys()):
+		if len(list(self.snmp_res_dict.keys())) < len(list(self.getoids().keys())):
 			self.oid_mask()
 
 		if len(self.snmp_res_dict) == 0:
@@ -316,7 +321,7 @@ class IRD(equipment):
 			masks = self.masked_oids[self.getinSatSetupInputSelect()]
 		except KeyError:
 			masks = []
-		for key in self.oid_get.keys():
+		for key in list(self.oid_get.keys()):
 			if not self.snmp_res_dict.has_key(key):
 				if gv.loud:
 					print "%s at %s returned no such name for %s so masking"%(self.modelType, self.ip, key)
@@ -331,7 +336,7 @@ class IRD(equipment):
 		except KeyError:
 			masks = []
 			
-		for k, v in dic.items():
+		for k, v in list(dic.items()):
 			v = v.replace('enterprises.','.1.3.6.1.4.1.')
 			v = v.replace('X', str(self.getinSatSetupInputSelect()))
 			dic[k] = v
@@ -352,7 +357,7 @@ class IRD(equipment):
 	
 	def bulkoids(self):
 		dic  = self.oid_getBulk.copy()
-		for k in dic.keys():
+		for k in list(dic.keys()):
 			try:
 				if not self.getRefreshType(static_parameters.snmp_refresh_types[k]):
 					del dic[k]
@@ -527,7 +532,7 @@ class IRD(equipment):
 				symbolRateFloat = float(self.lookupstr(key))
 			except ValueError:
 				symbolRateFloat = 0
-			symbolRateFloat = (symbolRateFloat / 1000)
+			symbolRateFloat = (old_div(symbolRateFloat, 1000))
 			finalsymrate = str(symbolRateFloat)
 			##print finalsymrate
 			if(finalsymrate[(len(finalsymrate)-2):] == ".0"):
@@ -542,7 +547,7 @@ class IRD(equipment):
 			except ValueError: 
 				SatelliteFreqFloat = 0
 							
-			SatelliteFreqFloat = (SatelliteFreqFloat / 1000)
+			SatelliteFreqFloat = (old_div(SatelliteFreqFloat, 1000))
 			finalSatelliteFreq = str(SatelliteFreqFloat)
 							##print finalsymrate
 							# This code is to compensate for inconsistencies in the D2S frequency table where

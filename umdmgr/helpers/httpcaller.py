@@ -2,7 +2,10 @@
 
 from __future__ import print_function
 from __future__ import absolute_import
-import urllib
+from future import standard_library
+standard_library.install_aliases()
+from builtins import str
+import urllib.request, urllib.parse, urllib.error
 from . import httplib2
 import sys
 #from taskscript import debug, die

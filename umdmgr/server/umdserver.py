@@ -2,9 +2,13 @@
 
 from __future__ import print_function
 from __future__ import absolute_import
+from future import standard_library
+standard_library.install_aliases()
+from builtins import str
+from builtins import range
 import os, re, sys
 import string,threading,time, getopt
-import Queue
+import queue
 import multiprocessing
 import random
 import gc
@@ -76,7 +80,7 @@ class dbthread (myThread):
 
 def getEquipmentDict():
 	equipmentDict = {}
-	for k,v in gv.equipmentDict.iteritems():
+	for k,v in gv.equipmentDict.items():
 		try:
 			equipmentDict[k] = v.serialize()
 		except:
@@ -175,7 +179,7 @@ def start(_id=None):
 		if len(gv.sql.qselect(query)) == 0:
 			query = "REPLACE INTO `UMD`.`status` SET `id` ='%d'"%equipmentID
 		gv.sql.qselect(query)
-		for key in simpleTypes.keys():
+		for key in list(simpleTypes.keys()):
 		
 			if any( ( ( key in model_id), (key in name) ) ):
 				newird = simpleTypes[key](int(equipmentID), ip, name)
@@ -188,7 +192,7 @@ def start(_id=None):
 	#print gv.equipmentDict
 	if gv.loud:
 		print("Determining types")
-	for currentEquipment in gv.equipmentDict.values():
+	for currentEquipment in list(gv.equipmentDict.values()):
 		gv.ThreadCommandQueue.put(("determine_type", currentEquipment.serialize()), block = True)
 	
 def dbworker(myQ):
@@ -204,7 +208,7 @@ def dbworker(myQ):
 			cmd = myQ.get(timeout=1)
 			gotdata = True
 			
-		except Queue.Empty:
+		except queue.Empty:
 			time.sleep(0.1)
 			gotdata = False
 			
@@ -223,7 +227,7 @@ class dispatcher(myThread):
 		STAT_STUCK = 5
 		while gv.threadTerminationFlag.value == False:
 			if gv.threadJoinFlag == False:
-				for equipmentID, instance in gv.equipmentDict.iteritems():
+				for equipmentID, instance in gv.equipmentDict.items():
 					if gv.threadJoinFlag:
 						break
 					try:
@@ -240,7 +244,7 @@ class dispatcher(myThread):
 									queue = gv.ThreadCommandQueue
 							queue.put((task, gv.equipmentDict[equipmentID].serialize()))
 							instance.checkout.enqueue()
-					except Queue.Full:
+					except queue.Full:
 						time.sleep(0.1)
 						continue
 			else:
@@ -268,7 +272,7 @@ class checkin(myThread):
 					gv.gotCheckedInData = False
 					print("checkin fail")
 					print(data)
-			except Queue.Empty:
+			except queue.Empty:
 				gv.gotCheckedInData = False
 				time.sleep(0.1)
 
@@ -310,7 +314,7 @@ def backgroundworker(myQ, endFlag = None):
 			func, data = myQ.get(timeout=1)
 			gotdata = True
 			
-		except Queue.Empty:
+		except queue.Empty:
 			time.sleep(0.1)
 			gotdata = False
 			
@@ -453,7 +457,7 @@ def main(debugBreak = False):
 				jitterlist = []
 				lateCounter = 0
 				onTimeCounter = 0
-				for equipmentID in gv.equipmentDict.keys():
+				for equipmentID in list(gv.equipmentDict.keys()):
 					try:
 						if gv.equipmentDict[equipmentID].get_offline():
 							offcount += 1
@@ -515,9 +519,9 @@ def main(debugBreak = False):
 					print("Minimum refresh time %s seconds" % gv.min_refresh_time)
 					print("MAX: %s MIN: %s AVG:%s "%(max(jitterlist)+ gv.min_refresh_time, min(jitterlist)+ gv.min_refresh_time, avg(jitterlist)+ gv.min_refresh_time))
 					print("%s stopped threads. %s running threads"%(stoppedThreads, runningThreads))
-					for k,v in tallyDict.iteritems():
+					for k,v in tallyDict.items():
 						print("%d in status %s"%(v,k))
-					for k in statuses.values(): #returns names
+					for k in list(statuses.values()): #returns names
 						try:
 							v = tallyDict[k]
 						except KeyError:
@@ -603,7 +607,7 @@ def main(debugBreak = False):
 				print("%s Error."%str(e))
 				
 				print("Offline Equipment:")
-				for equipmentID in gv.equipmentDict.keys():
+				for equipmentID in list(gv.equipmentDict.keys()):
 					try:
 						if gv.equipmentDict[equipmentID].get_offline():
 							eq = gv.equipmentDict[equipmentID]

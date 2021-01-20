@@ -1,3 +1,4 @@
+from builtins import range
 import copy
 import plugin_tvips
 from server import gv
@@ -39,7 +40,7 @@ class TVG420(plugin_tvips.TVG420, equipment):
 		for key in seralisabledata:
 				if data.has_key(key):
 					setattr(self, key, data[key])
-		for key in data.keys():
+		for key in list(data.keys()):
 			if "port-" in key:
 				try:
 					ports[int(key.replace("port-",""))] = data[key] 
@@ -76,7 +77,7 @@ class TVG420(plugin_tvips.TVG420, equipment):
 		l = []
 		b = {"true":1,"false":0}
 		d = self.usage_by_addr()
-		for k in d.keys():
+		for k in list(d.keys()):
 			try:
 				line = "update `status` set `TvipsRec` = %s where `id` = %s" %( b[d[k]], self.multicast_id_dict[k])
 				l.append(line)

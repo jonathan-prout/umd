@@ -50,7 +50,7 @@ class virtualMatrix( mysql, matrix):
 						level = int(level)
 					except ValueError:
 						continue
-					if level not in d.keys():
+					if level not in list(d.keys()):
 						d[level] = {}
 					d[level][port] = name
 			cmd = "SELECT `status`.`input`, `status`.`output`, `status`.`levels` FROM `status` WHERE (`status`.`matrixid` ={});".format(self.prefsDict["mtxId"])
@@ -84,15 +84,15 @@ class virtualMatrix( mysql, matrix):
 		with self.lock:
 			srcNr = -1
 			srcName = ""
-			for level in self.output.keys():
-				for op,name in self.output[level].iteritems():
+			for level in list(self.output.keys()):
+				for op,name in self.output[level].items():
 					if name == destName:
 						#self.xpointStatus[level][dest][src]
 						if level in self.xpointStatus:
 							if op in self.xpointStatus[level]:
 								srcNr = self.xpointStatus[level][op]
 						if  srcNr == -1 :
-							for lvl, d in self.xpointStatus.iteritems():
+							for lvl, d in self.xpointStatus.items():
 								if op in d:
 									srcNr = d[op]
 									break

@@ -1,5 +1,6 @@
 from __future__ import print_function
 from __future__ import absolute_import
+from builtins import str
 from . import equipment
 from . import gv
 import random
@@ -61,7 +62,7 @@ def determine_type(data):
 	}
 	
 	
-	for key in simpleTypes.keys():
+	for key in list(simpleTypes.keys()):
 		if  any( ( (key in equipTypeStr), isinstance(currentEquipment, simpleTypes[key]) ) ):
 			currentEquipment = simpleTypes[key](equipmentID, ip, name)
 			#gv.addEquipment(currentEquipment)

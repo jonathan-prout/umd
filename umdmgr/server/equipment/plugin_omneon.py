@@ -1,3 +1,9 @@
+from future import standard_library
+standard_library.install_aliases()
+from builtins import zip
+from builtins import str
+from builtins import range
+from builtins import object
 class OmneonHelper(object):
 	port = "80"
 	def getrecorders(self, returnlist="namesonly"):
@@ -6,7 +12,7 @@ class OmneonHelper(object):
 		streamaddresses = []
 		streams = []
 		from xml.dom import minidom
-		import StringIO
+		import io
 		from helpers import xmlhelper
 		from helpers import httpcaller
 		import os.path
@@ -16,8 +22,8 @@ class OmneonHelper(object):
 		msg =json.loads(stringfromserver)
 		
 		if msg["result"] == "OK":
-			for ipgp in msg["data"].values():
-				for stream, value in ipgp.items():
+			for ipgp in list(msg["data"].values()):
+				for stream, value in list(ipgp.items()):
 					if value != "STOPPED":
 						streamnames.append(stream)
 		streamnames = list(set(streamnames))
@@ -77,7 +83,7 @@ class OmneonHelper(object):
 		streamaddresses = []
 		streams = []
 		from xml.dom import minidom
-		import StringIO
+		import io
 		from helpers import xmlhelper
 		from helpers import httpcaller
 		import os.path
@@ -128,7 +134,7 @@ class OmneonHelper(object):
 		elif returnlist == "byip":
 			return ipgridportiplist, streams
 		else:
-			return dict(zip(streamnames, streamaddresses))		
+			return dict(list(zip(streamnames, streamaddresses)))		
 			
 			
 	def getports(self):

@@ -1,3 +1,7 @@
+from __future__ import division
+from builtins import hex
+from builtins import range
+from past.utils import old_div
 from generic import IRD, GenericIRD
 from server import gv
 from helpers import snmp
@@ -71,7 +75,7 @@ class RX1290(IRD):
 			self.snmp_res_dict  = snmp.get(self.getoids(), self.ip)
 		except:
 			self.set_offline()
-		if len(self.snmp_res_dict.keys()) < len(self.getoids().keys()):
+		if len(list(self.snmp_res_dict.keys())) < len(list(self.getoids().keys())):
 			self.oid_mask()
 
 		if len(self.snmp_res_dict) == 0:
@@ -200,7 +204,7 @@ class RX8200(IRD):
 			self.snmp_res_dict  = snmp.get(self.getoids(), self.ip)
 		except:
 			self.set_offline()
-		if len(self.snmp_res_dict.keys()) < len(self.getoids().keys()):
+		if len(list(self.snmp_res_dict.keys())) < len(list(self.getoids().keys())):
 			self.oid_mask()
 
 		if len(self.snmp_res_dict) == 0:
@@ -287,7 +291,7 @@ class RX8200(IRD):
 			ServiceID = self.snmp_res_dict["ServiceID"]
 		except KeyError:
 			return  ""
-		for x in xrange(len(Table_Service_ID)):
+		for x in range(len(Table_Service_ID)):
 			try:
 				v = Table_Service_ID[x]
 				v = v.replace('"','')
@@ -312,7 +316,7 @@ class RX8200(IRD):
 			ServiceID = self.snmp_res_dict["ServiceID"]
 		except KeyError:
 			return  self.getBissStatus()
-		for x in xrange(len(Table_Service_ID)):
+		for x in range(len(Table_Service_ID)):
 			try:
 				v = Table_Service_ID[x]
 				v = v.replace('"','')
@@ -362,7 +366,7 @@ class RX8200(IRD):
 			fr = float(fr)
 		except:
 			fr = 0
-		fr = fr/1000
+		fr = old_div(fr,1000)
 		st = "%sHz"% fr
 		st = st.replace(".0", "")
 		return st
