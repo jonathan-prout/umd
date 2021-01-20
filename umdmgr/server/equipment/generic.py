@@ -1,10 +1,11 @@
 from __future__ import division
+from __future__ import print_function
 from builtins import str
 from builtins import range
 from past.utils import old_div
 from builtins import object
 from server import gv
-from server import bgtask
+
 from helpers import snmp
 from helpers import static_parameters
 snmp.gv = gv #in theory we don't want to import explictly the server's version of gv
@@ -13,7 +14,14 @@ import copy
 import time
 
 
-	
+class HTTPError(Exception):
+	pass
+
+
+class DBError(Exception):
+	pass
+
+
 
 class checkout(object):
 	STAT_INIT = 0
@@ -115,7 +123,7 @@ class serializableObj(object):
 			raise TypeError("Tried to serialise data from %s into %s"%(data["modelType"],self.modelType))
 		seralisabledata = ["ip", "equipmentId", "name", "snmp_res_dict", "oid_get", "masked_oids", "oid_getBulk" "multicast_id_dict", "streamDict", "addressesbyname","online",  "modelType", "refreshType", "refreshCounter"]
 		for key in seralisabledata:
-			if data.has_key(key):
+			if key in data:
 				if hasattr(self, key):
 					setattr(self, key, data[key])
 
@@ -146,14 +154,14 @@ class equipment(serializableObj):
 			for i in range(len(snmp_command)):
 				self.oid_get[snmp_command[i][0]] =snmp_command[i][1]    
 		except:
-			raise "DB Error: 'Get SNMP COMMANDS'"
+			raise DBError('Get SNMP COMMANDS')
 		try:
 			snmp_command = gv.cachedSNMP(comsel_bulk)
 			for i in range(len(snmp_command)):
 				self.oid_getBulk[snmp_command[i][0]] =snmp_command[i][1]
 					
 		except:
-			raise "DB Error: 'Get SNMP BULK COMMANDS'"
+			raise DBError('Get SNMP BULK COMMANDS')
 		#self.oid_get2 = self.oid_get #there is a bug that overwrites self.oid_get. I can't find it
 		#gv.sql.close()
 	
@@ -280,11 +288,11 @@ class equipment(serializableObj):
 			#resdict  = snmp.get({'DeviceType':".1.3.6.1.4.1.1773.1.1.1.7.0"}, self.ip)
 		resdict, ver_found = type_test(equipTypes)
 			
-		if resdict.has_key('DeviceType'):
+		if 'DeviceType' in resdict:
 			return resdict['DeviceType']
 		else:
 			if gv.loud:
-				print resdict
+				print(resdict)
 			self.offline = True
 			return "OFFLINE"
 	def determine_subtype(self):
@@ -322,9 +330,9 @@ class IRD(equipment):
 		except KeyError:
 			masks = []
 		for key in list(self.oid_get.keys()):
-			if not self.snmp_res_dict.has_key(key):
+			if key not in self.snmp_res_dict:
 				if gv.loud:
-					print "%s at %s returned no such name for %s so masking"%(self.modelType, self.ip, key)
+					print("%s at %s returned no such name for %s so masking"%(self.modelType, self.ip, key))
 				masks.append(key)
 		self.masked_oids[self.getinSatSetupInputSelect()] = masks
 		
@@ -439,7 +447,7 @@ class IRD(equipment):
 	
 	
 	def getSat(self):
-			if not self.sat_dict.has_key(self.getinSatSetupInputSelect()):
+			if self.getinSatSetupInputSelect() not in self.sat_dict:
 	
 				try:
 					req = "SELECT SAT1,SAT2,SAT3,SAT4 FROM equipment WHERE id = %i" % self.getId()

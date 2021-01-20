@@ -12,7 +12,7 @@ from multiprocessing import JoinableQueue as Queue
 import multiprocessing
 #Project imports 
 from helpers import mysql
-from . import equipment.generic
+import server.equipment.generic
 sql = None
 
 min_refresh_time = 10 #Force 10 seconds between refreshes. Gets overidden by min refresh time parameter on matrix
@@ -60,7 +60,7 @@ def addEquipment(eqInstance):
 			old = equipmentDict.pop(eqInstance.getId())
 			del old
 		equipmentDict[eqInstance.getId()] = eqInstance
-		if isinstance(eqInstance, equipment.generic.GenericIRD):
+		if isinstance(eqInstance, server.equipment.generic.GenericIRD):
 			determined = "undetermined"
 		else:
 			determined = "determined"

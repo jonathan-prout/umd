@@ -1,8 +1,10 @@
 from __future__ import division
+from __future__ import print_function
+from __future__ import absolute_import
 from builtins import hex
 from builtins import range
 from past.utils import old_div
-from generic import IRD, GenericIRD
+from .generic import IRD, GenericIRD
 from server import gv
 from helpers import snmp
 snmp.gv = gv #in theory we don't want to import explictly the server's version of gv
@@ -134,7 +136,7 @@ class RX1290(IRD):
 	
 	def getNumServices(self):
 		key = "Table_Service_ID"
-		if self.snmp_res_dict.has_key(key):
+		if key in self.snmp_res_dict:
 			return len(self.snmp_res_dict[key])
 		else:
 			return 0
@@ -392,7 +394,7 @@ class RX8200(IRD):
 		except:
 			self.offline = True
 			resdict = {'inputCardType':"OFFLINE"}
-		if resdict.has_key('inputCardType'):
+		if 'inputCardType' in resdict:
 			
 			try:
 				return subtypes[int( resdict['inputCardType'] )]
@@ -400,12 +402,12 @@ class RX8200(IRD):
 				return "Rx8200"
 			except ValueError:
 				if gv.loud:
-					print resdict
+					print(resdict)
 				self.offline = True
 				return "OFFLINE"
 		else:
 			if gv.loud:
-				print resdict
+				print(resdict)
 			self.offline = True
 			return "OFFLINE"
 	
