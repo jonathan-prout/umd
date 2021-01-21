@@ -311,9 +311,9 @@ def backgroundworker(myQ, endFlag=None):
 	item = 1
 
 	def getTerminated():
-		if endFlag:
+		try:
 			return endFlag.value
-		else:
+		except (AttributeError, OSError):  # This fails in the profiler
 			return gv.threadTerminationFlag.value
 
 	gotdata = True
@@ -411,8 +411,7 @@ def main(debugBreak=False):
 	print("Types determined. Took %s seconds. Begininng main loop. Press CTRL C to %s" % (
 	time.time() - time1, ["quit", "enter debug console"][gv.debug]))
 	if gv.debug:
-		from pympler import muppy
-		from pympler import summary
+
 
 		all_objects = muppy.get_objects()
 		gv.mem_sum1 = summary.summarize(all_objects)
