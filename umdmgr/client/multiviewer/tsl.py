@@ -35,14 +35,14 @@ class Tally(object):
 
 
 class Dmesg(object):
-	def __init__(self, index, text, left_tally= Tally.OFF, text_tally= Tally.OFF, right_tally= Tally.OFF):
+	def __init__(self, index, text, left_tally=Tally.OFF, text_tally=Tally.OFF, right_tally=Tally.OFF):
 		self.index = index
 		self.text = text
 		self.text_tally = text_tally
 		self.left_tally = left_tally
 		self.right_tally = right_tally
 
-	def __bytes__(self) ->bytes:
+	def __bytes__(self) -> bytes:
 		b = struct.pack("<H", self.index)
 		ctrl = 0
 		ctrl += (self.leftTally << 4)
@@ -67,7 +67,7 @@ class TcpSocket(object):
 		self.sock.connect((self.host, self.port))
 
 	def write(self, packet):
-		return self.sock.send(DLE+STX+bytes(packet))
+		return self.sock.send(DLE + STX + bytes(packet))
 
 	def read(self, length: int):
 		return self.sock.recv(length)
@@ -83,7 +83,7 @@ class UdpSocket(object):
 		self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
 	def write(self, packet):
-		return self.sock.sendto(DLE+STX+bytes(packet), (self.host, self.port))
+		return self.sock.sendto(DLE + STX + bytes(packet), (self.host, self.port))
 
 
 class TslMultiviewer(generic.muiltiviewer):
@@ -91,6 +91,7 @@ class TslMultiviewer(generic.muiltiviewer):
 	TSL Multiviewer class
 	url in the format of udp://host:port or tcp://host:port
 	"""
+
 	def __init__(self, url: str):
 		self.url = url
 		self.sock = None
@@ -131,4 +132,3 @@ class TslMultiviewer(generic.muiltiviewer):
 
 	def lookup(self, videoInput, level):
 		return self.lookuptable[int(videoInput)][level]
-

@@ -1,7 +1,7 @@
 from umdmgr.client import gv, labelmodel
 from umdmgr.client.multiviewer import tsl
-from umdmgr.client.multiviewer.generic import get_mv_input_from_database
-from umdmgr.client.umdclient import inputStrategies
+from umdmgr.client.multiviewer.generic import get_mv_input_from_database, status_message
+from umdmgr.client.umdclient import inputStrategies, getPollStatus
 
 
 class GvMv(tsl.TslMultiviewer):
@@ -20,122 +20,55 @@ class GvMv(tsl.TslMultiviewer):
 		self.sock.write(packet)
 
 	def refresh(self):
+		packet = tsl.TslPacket()
+		packet_commands = 0
 		while not self.q.empty():
 			if self.fullref:
 				break
 			sm = self.q.get()
 			if sm:
-				sm.cnAlarm = {True: "MAJOR", False: "DISABLE"}[sm.cnAlarm]
-				sm.recAlarm = {True: "MAJOR", False: "DISABLE"}[sm.recAlarm]
+				sm.cnAlarm = {True: "Low C/N Margin", False: ""}[sm.cnAlarm]
+				sm.recAlarm = {True: "NO REC", False: ""}[sm.recAlarm]
 
 				for videoInput, level, line, mode in sm:
-					if not line: line = " "
-					if not self.get_offline():
-						if not self.matchesPrevious(videoInput, level, line):
-							self.writeline(videoInput, level, line, mode)
+					if not line:
+						line = " "
+					if not self.get_offline() and not self.matchesPrevious(videoInput, level, line):
+						dmesg = self.writeline(videoInput, level, line, mode)
+						packet.append(dmesg)
+						packet_commands += 1
+						if packet_commands <= 9:
+							self.sock.write(packet)
+							packet = tsl.TslPacket()
+							packet_commands = 0
+		if packet_commands > 0:
+			self.sock.write(packet)
+
 		if self.fullref:
-			self.qtruncate()
+				self.qtruncate()
 
-	def getStatusMesage(self, mvInput, mvHost=self.host):
-		with gv.equipDBLock:
-
-			happy_statuses = ["RUNNING"]
-			poll_status = getPollStatus().upper()
-			display_status = gv.display_server_status.upper()
-
-			sm = tsl.TslPacket
-			# Get the multiviewer input strategy from the database for this input
-			res = get_mv_input_from_database(mvHost, mvInput)
-
-			if all((poll_status in happy_statuses, display_status in happy_statuses)):
-				try:
-					if gv.equip[int(res["equipment"])] is not None:
-						equip_found = True
-					else:
-						equip_found = False
-					e = None
-				except KeyError as e:
-					equip_found = False
-
-				if all((int(res["strategy"]) == int(inputStrategies.equip), equip_found)):
-					sm = gv.equip[res["equipment"]].getStatusMessage()
-					assert sm is not None
-					sm.strategy = "equip"
-				elif res["strategy"] == inputStrategies.matrix:
-					mtxIn = gv.mtxLookup(res["inputmtxname"])
-					if gv.getEquipByName(mtxIn):
-						sm = gv.equip[gv.getEquipByName(mtxIn)].getStatusMessage()
-						sm.strategy = "matrix + equip"
-						assert sm is not None
-					else:
-						sm = labelmodel.matrixResult(mtxIn).getStatusMessage()
-						assert sm is not None
-						sm.strategy = "matrix no equip"
-				elif res["strategy"] == inputStrategies.indirect:
-					sm = labelmodel.matrixResult(res["inputmtxname"]).getStatusMessage()
-					assert sm is not None
-					sm.strategy = "indirect"
-				elif res["strategy"] == inputStrategies.label:
-					if res["customlabel1"]:
-						sm.topLabel = res["customlabel1"]
-					if res["customlabel2"]:
-						sm.bottomLabel = res["customlabel2"]
-					sm.strategy = "label"
-			else:
-
-				equip_found = gv.equip.get(int(res["equipment"]), None) is not None
-				if all((int(res["strategy"]) == int(inputStrategies.equip), equip_found)):
-					sm.topLabel = gv.equip[int(res["equipment"])].isCalled()
-					sm.bottomLabel = " "
-					sm.strategy = "equip"
-				elif res["strategy"] == inputStrategies.label:
-					if res["customlabel1"]:
-						sm.topLabel = res["customlabel1"]
-					if res["customlabel2"]:
-						sm.bottomLabel = res["customlabel2"]
-					sm.strategy = "label"
-				else:
-					sm.topLabel = res["inputmtxname"]
-					# sm.bottomLabel = "%s, %s %s,%s"%(res["equipment"],len(gv.equip.keys()),e, int(res["strategy"]) )
-					sm.bottomLabel = " "
-					sm.strategy = "matrix"
-				if mvInput % 16 == 1:
-					sm.bottomLabel = "Display: %s, Polling:%s" % (display_status, poll_status)
-
-			sm.mv_input = mvInput
-
-		return sm
-
-	def writeline(self, videoInput, level, line, mode):
+	def writeline(self, videoInput, level, line, mode, buffered=True):
 
 		try:
 			addr = self.lookup(videoInput, level)
 		except (KeyError, ValueError):
 			print("videoIn, %s, level %s not found" % (videoInput, level))
 			return
-		a = ""
-		if mode == status_message.alarmMode:
-			if self.AlarmCapable:
-				cmd = '<setKStatusMessage>set id="%s" status="%s"</setKStatusMessage>\n' % (addr, line)
-			else:
-				return
-		else:
-			if self.lowAddressBug:
-				if addr < 100:
-					addr = "0" + str(addr)
-			cmd = '<setKDynamicText>set address="%s" text="%s" </setKDynamicText>\n' % (addr, line)
-		try:
-			self.tel.write(cmd)
-			# print cmd
-			a = self.tel.read_until("<ack/>", self.timeout)
-			if "<ack/>" not in a:
-				if "<nack/>" in a:
-					self.shout("%s: NACK ERROR in writeline when writing %s" % (self.host, cmd))
-				else:
-					self.shout(a)
-		except:
 
-			self.set_offline("writeline, %s, %s " % (line, a))
-		finally:
-			# signal.alarm(0)          # Disable the alarm
-			pass
+		dmesg = tsl.Dmesg(addr, line)
+		if not buffered:
+			packet = tsl.TslPacket()
+			packet.append(dmesg)
+			self.sock.write(packet)
+		return dmesg
+
+	def make_default_input_table(self):
+		self.lookuptable = {}
+		for i in range(1, self.size + 1):
+			d = {
+				"TOP": "0" + str(i),
+				"BOTTOM": 100 + i,
+				"C/N": 200 + i,
+				"REC": 200 + i
+			}
+			self.lookuptable[i] = d
