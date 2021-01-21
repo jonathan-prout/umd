@@ -6,7 +6,7 @@ from future import standard_library
 standard_library.install_aliases()
 from builtins import str
 import urllib.request, urllib.parse, urllib.error
-from . import httplib2
+import httplib2
 import sys
 #from taskscript import debug, die
 def debug(stuff):

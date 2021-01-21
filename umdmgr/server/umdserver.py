@@ -25,7 +25,8 @@ from . import bgtask
 from helpers import snmp
 from helpers import debug
 import traceback
-
+from pympler import muppy
+from pympler import summary
 snmp.gv = gv  # in theory we don't want to import explictly the server's version of gv
 
 from helpers import mysql

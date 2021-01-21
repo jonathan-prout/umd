@@ -6,11 +6,11 @@ from builtins import str
 import sys
 import traceback
 import threading
-from .pysnmp.proto import rfc1902
+from pysnmp.proto import rfc1902
 
-import helpers.subprocesspatch as subprocess
+import subprocess
 
-from .pysnmp.entity.rfc3413.oneliner import cmdgen
+from pysnmp.entity.rfc3413.oneliner import cmdgen
 
 
 
