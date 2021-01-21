@@ -253,6 +253,9 @@ def getMultiviewer(mvType, host):
 	elif mvType in ["KXQUAD", "KX-QUAD"]:
 		print("Starting KX-QUAD")
 		return multiviewer.miranda.KXQUAD(host)
+	elif mvType in ["GVMultiviewer", "GV-Multiviewer"]:
+		print("Starting GV-Multiviewer")
+		return multiviewer.gvgmv.GvMv(host)
 	else:  # Harris/Zandar
 		print("Starting Harris")
 		return multiviewer.harris.zprotocol(host)
