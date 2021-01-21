@@ -8,10 +8,12 @@ from .generic import IRD, GenericIRD
 from server import gv
 from helpers import snmp
 snmp.gv = gv #in theory we don't want to import explictly the server's version of gv
+
+
 class TT1260(IRD):
-	
-	
+
 	def __init__(self, equipmentId, ip, name):
+		super(TT1260, self).__init__()
 		self.equipmentId = equipmentId
 		self.ip = ip
 		self.name = name
@@ -53,12 +55,12 @@ class TT1260(IRD):
 class RX1290(IRD):
 	
 	def __init__(self, equipmentId, ip, name):
-		
+		super(RX1290, self).__init__()
 		self.equipmentId = equipmentId
 		self.ip = ip
 		self.name = name
 		self.modelType = "RX1290"
-		super( RX1290, self ).__init__()
+
 	def refresh(self):
 		""" Refresh method of class """
 		""" removed import snmp here """
@@ -170,15 +172,17 @@ class RX1290(IRD):
 	def getinput_selection(self):
 		d = {"1":"ASI","2":"SAT"}
 		return self.lookup_replace('input_selection ', d)
-		
+
+
 class RX8200(IRD):
 	
 	def __init__(self, equipmentId, ip, name):
+		super(RX8200, self).__init__()
 		self.equipmentId = equipmentId
 		self.ip = ip
 		self.name = name
 		self.modelType = "RX8200"
-		super( RX8200, self ).__init__()
+
 	def getlockState(self):
 		d = {"1":"Lock","0":"Unlock"}
 		return self.lookup_replace('LockState', d)
@@ -422,13 +426,13 @@ class RX8200(IRD):
 
 class RX8200_2RF(RX8200):
 	def __init__(self, equipmentId, ip, name):
-		super( RX8200_2RF, self ).__init__(equipmentId, ip, name)
+		super(RX8200_2RF, self).__init__(equipmentId, ip, name)
 		self.modelType = "RX8200-2RF"
 		self.getoid()
 		
 class RX8200_4RF(RX8200):
 	def __init__(self, equipmentId, ip, name):
-		super( RX8200_4RF, self ).__init__(equipmentId, ip, name)
+		super(RX8200_4RF, self).__init__(equipmentId, ip, name)
 		self.modelType = "RX8200-4RF"
 
 

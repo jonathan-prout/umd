@@ -35,6 +35,7 @@ class asiport(object):
 
 class TVG420(tvips):
 	def __init__(self, ip, username, password):
+		super(TVG420, self).__init__()
 		self.ip = ip
 		self.username = username
 		self.password = password

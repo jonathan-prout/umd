@@ -13,11 +13,12 @@ class DR5000(IRD):
 	""" ATEME DR5000 version 1.0.2.2 """
 
 	def __init__(self, equipmentId, ip, name):
+		super(DR5000, self).__init__()
 		self.equipmentId = equipmentId
 		self.ip = ip
 		self.name = name
 		self.modelType = "DR5000"
-		super(DR5000, self).__init__()
+
 
 	def getAspectRatio(self):
 		d = {1: "16:9", 2: "4:3"}
