@@ -128,7 +128,7 @@ def main(loop, test=None):
 			print("'%s' not in the multiviewer table" % test)
 			return
 
-		mul = multiviewer.generic.testmultiviewer(line[d["IP"]])
+		mul = multiviewer.generic.TestMultiviewer(line[d["IP"]])
 		gv.mvID[line[d["IP"]]] = line[d["id"]]
 		print(getAddresses(line[d["IP"]]))
 		mul.lookuptable = getAddresses(line[d["IP"]])

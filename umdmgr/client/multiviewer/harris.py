@@ -5,9 +5,9 @@
 from __future__ import absolute_import
 	
 import telnetlib, Queue, signal, time
-from .generic import telnet_multiviewer, status_message
+from .generic import TelnetMultiviewer, status_message
 
-class zprotocol(telnet_multiviewer):
+class zprotocol(TelnetMultiviewer):
 	""" This class impliments Harris/Zandar Z protocol as a class
 	TCP Port is implied, but expects an instance of a collections.queue object passed to perform FIFO queueing of UMD texts """
 	

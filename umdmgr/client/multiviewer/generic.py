@@ -10,6 +10,8 @@ import typing
 from umdmgr.client import gv, labelmodel
 from umdmgr.client.umdclient import getPollStatus
 
+from abc import abstractmethod, ABCMeta, ABC
+
 
 class status_message(object):
     def __init__(self):
@@ -27,7 +29,7 @@ class status_message(object):
         """ Each item is a tuple of videoInput, level, line, mode"""
         level = ["TOP",         "BOTTOM",           "C/N",              "REC"]
         line = [self.topLabel,  self.bottomLabel,   self.cnAlarm,       self.recAlarm]
-        mode = [self.textMode,  self.textMode,      self.alarmMode,     self.alarmMode ]
+        mode = [self.textMode,  self.textMode,      self.alarmMode,     self.alarmMode]
         msgList = []
         for i in range(4):
             if line[i]:
@@ -60,8 +62,9 @@ def get_mv_input_from_database(mvHost, mvInput):
     return dict(zip(fields, gv.sql.qselect(cmd)[0]))
 
 
-class multiviewer(object):
+class multiviewer(ABC):
     """ Base class multiviewers MUST inherit """
+    __metaclass__ = ABCMeta
 
     def __init__(self):
         self.previousLabel = {}
@@ -193,10 +196,30 @@ class multiviewer(object):
 
         return sm
 
+    @abstractmethod
+    def writeline(self, videoInput, level, line, mode, buffered=True):
+        pass
 
-class telnet_multiviewer(multiviewer):
+    def writeStatus(self, status, queued=True):
+        """ Write Errors to the multiviewer """
+
+        klist = sorted(self.lookuptable.keys())
+        for key in range(0, len(klist), 16):
+            if queued:
+                try:
+                    self.put((klist[key], "BOTTOM", status, "TEXT"))
+                except:
+                    pass
+            else:
+                try:
+                    self.writeline(klist[key], "BOTTOM", status, "TEXT", buffered=False)
+                except:
+                    pass
+
+
+class TelnetMultiviewer(multiviewer, metaclass=ABCMeta):
     """ Boilerplate stuff to inherit into sublcass that does stuff"""
-
+    __metaclass__ = ABCMeta
         
     def set_offline(self, callingFunc = None):
         self.offline = True
@@ -206,21 +229,7 @@ class telnet_multiviewer(multiviewer):
         except:
             pass
         
-    def writeStatus(self, status, queued=True):
-            """ Write Errors to the multiviewer """
-            
-            klist = sorted(self.lookuptable.keys())
-            for key in range(0, len(klist), 16):
-                    if queued:
-                        try: 
-                                self.put( (klist[key], "BOTTOM", status, "TEXT") )
-                        except:
-                                pass        
-                    else:
-                        try:
-                            self.writeline(klist[key], "BOTTOM", status, "TEXT")
-                        except:
-                            pass
+
 
     def close(self):
         try:
@@ -229,10 +238,10 @@ class telnet_multiviewer(multiviewer):
             pass
 
 
-class testmultiviewer(multiviewer):
+class TestMultiviewer(multiviewer):
 
     def __init__(self, host):
-        super(testmultiviewer, self).__init__()
+        super(TestMultiviewer, self).__init__()
         self.mv_type = "test"
         self.lookuptable = {}
         self.size = 96
@@ -241,7 +250,6 @@ class testmultiviewer(multiviewer):
         self.fullref = False
         self.make_default_input_table()
 
-        
     def make_default_input_table(self):
         self.lookuptable = {}
         for i in range(1, self.size+1):

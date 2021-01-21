@@ -5,12 +5,12 @@
 
 import telnetlib
 
-from .generic import telnet_multiviewer
+from .generic import TelnetMultiviewer
 from .. client import gv
 import xml.etree.ElementTree as etree
 
 		
-class kaleido(telnet_multiviewer):
+class kaleido(TelnetMultiviewer):
 	mv_type = "Kaleido"
 	port = 13000
 	size = 96
@@ -62,8 +62,8 @@ class kaleido(telnet_multiviewer):
 	def lookup(self, videoInput, level):
 		 return self.lookuptable[int(videoInput)][level]
 	
-	def writeline(self, videoInput, level, line, mode):
-		
+	def writeline(self, videoInput, level, line, mode, buffered = True):
+
 			try:
 				addr = self.lookup(videoInput, level)
 			except (KeyError, ValueError):
