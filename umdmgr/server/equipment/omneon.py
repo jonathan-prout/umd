@@ -1,8 +1,11 @@
-from plugin_omneon import OmneonHelper
+from __future__ import absolute_import
+from builtins import range
+from past.builtins import basestring
+from .plugin_omneon import OmneonHelper
 from server import gv
 from helpers import httpcaller
-from generic import checkout
-import generic
+from .generic import checkout
+from . import generic
 
 
 octShift = [24,16,8,0]
@@ -74,7 +77,7 @@ class IPGridport(OmneonHelper, generic.serializableObj):
 	def updatesql(self):
 		activeDict = {}
 		l = []
-		for key, val in self.multicast_id_dict.items():
+		for key, val in list(self.multicast_id_dict.items()):
 			activeDict[val] = 0
 		for key in self.activeStreams:
 			try:
@@ -85,12 +88,12 @@ class IPGridport(OmneonHelper, generic.serializableObj):
 			if _id is not None:
 				activeDict[_id] = 1
 			else:
-				for m in self.multicast_id_dict.keys():
+				for m in list(self.multicast_id_dict.keys()):
 					if ipv4equal(mca, m):
 						_id = self.multicast_id_dict[m]
 						activeDict[_id] = 1
 						break
-		for key, val in activeDict.items():
+		for key, val in list(activeDict.items()):
 			if key is not None:
 				line = "update `status` set `OmneonRec` = %s where `id` = %s" %(val, key)
 				l.append(line)

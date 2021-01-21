@@ -8,6 +8,7 @@ from __future__ import absolute_import
 	
 
 
+from builtins import zip
 from . import generic
 import threading
 import MySQLdb
@@ -86,7 +87,7 @@ class mysql(generic.IInfoSourceMixIn):
 					level = int(level)
 				except ValueError:
 					continue
-				if level not in d.keys():
+				if level not in list(d.keys()):
 					d[level] = {}
 				d[level][port] = name
 			
@@ -168,7 +169,7 @@ class mysql(generic.IInfoSourceMixIn):
 	def levelNames(self):
 		""" return dict of available item numbers and their names
 		"""
-		return dict(zip(self.input.keys(), self.input.keys()))
+		return dict(list(zip(list(self.input.keys()), list(self.input.keys()))))
 	def destNames(self, level):
 		""" return dict of available destination numbers and their names
 		"""
@@ -189,7 +190,7 @@ class mysql(generic.IInfoSourceMixIn):
 		""" return a List of the sources for a given level
 		"""
 		try:
-			return self.input[int(level)].keys()
+			return list(self.input[int(level)].keys())
 		except KeyError:
 			return {}
 		
@@ -197,7 +198,7 @@ class mysql(generic.IInfoSourceMixIn):
 		""" return a List of the destination for a given level
 		"""
 		try:
-			return self.input[int(level)].keys()
+			return list(self.input[int(level)].keys())
 		except KeyError:
 			return {}
 		
@@ -205,14 +206,14 @@ class mysql(generic.IInfoSourceMixIn):
 		""" Return a tuple of two integers, destinations, sources for given level
 		"""
 		try:
-			return ( len(self.output[int(level)].keys()), len(self.input[int(level)].keys()) )
+			return ( len(list(self.output[int(level)].keys())), len(list(self.input[int(level)].keys())) )
 		except KeyError:
 			return (0,0)
 		
 	def levels(self):
 		""" return list of available level numbers
 		"""
-		return self.input.keys()
+		return list(self.input.keys())
 	
 	def onXPointChange( self, source, dest, levels ):
 		import time

@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 """ SEE https://hg.python.org/cpython/rev/e67620048d2f#l1.2"""
+from builtins import object
 from subprocess import Popen
 
 """ Code block from subprocess """
@@ -32,13 +33,13 @@ if mswindows:
     import threading
     import msvcrt
     import _subprocess
-    class STARTUPINFO:
+    class STARTUPINFO(object):
         dwFlags = 0
         hStdInput = None
         hStdOutput = None
         hStdError = None
         wShowWindow = 0
-    class pywintypes:
+    class pywintypes(object):
         error = IOError
 else:
     import select
@@ -105,7 +106,7 @@ class PopenFix(Popen):
         _cleanup()
 
         self._child_created = False
-        if not isinstance(bufsize, (int, long)):
+        if not isinstance(bufsize, (int, int)):
             raise TypeError("bufsize must be an integer")
 
         if mswindows:

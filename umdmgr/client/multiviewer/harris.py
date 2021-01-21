@@ -16,7 +16,7 @@ class zprotocol(TelnetMultiviewer):
 		self.mv_type = "Harris/Zandar"
 		self.port = 4003
 		self.host = host
-		self.q = Queue.Queue(10000)
+		self.q = queue.Queue(10000)
 		self.connect()
 		self.fullref = False
 		self.last_cmd_sent = time.time()

@@ -1,4 +1,7 @@
 from __future__ import print_function
+from __future__ import division
+from builtins import range
+from past.utils import old_div
 def clearscreen():
 	import os
 	# works on Windows or Linux, also Vista
@@ -9,7 +12,7 @@ def progressbarhelper(top, bottom):
 	if bottom == 0:
 		percentage = 0 #Don't try to divide by zero
 	else:
-		percentage = (top / bottom) * 50
+		percentage = (old_div(top, bottom)) * 50
 	line ="*                                                     *"
 	progressbar = ""
 	for i in range (1, 50):

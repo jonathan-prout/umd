@@ -102,7 +102,7 @@ class irdResult(object):
 			elif isinstance(res[0], dict):
 				self.res = res[0]
 			elif isinstance(res, tuple):
-				self.res = dict(zip(self.commands, res))
+				self.res = dict(list(zip(self.commands, res)))
 
 		else:
 			self.refresh()
@@ -114,7 +114,7 @@ class irdResult(object):
 		request = "SELECT " + ",".join(
 			self.commands) + " FROM equipment e, status s WHERE e.id = s.id AND e.id = '%d'" % self.equipmentID
 		try:
-			self.res = dict(zip(self.commands, gv.sql.qselect(request)[0]))
+			self.res = dict(list(zip(self.commands, gv.sql.qselect(request)[0])))
 		except:
 			self.res = {}
 

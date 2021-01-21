@@ -1,10 +1,13 @@
+from __future__ import absolute_import
+from builtins import range
 import copy
-import plugin_tvips
+from . import plugin_tvips
 from server import gv
-from generic import checkout, equipment
+from .generic import checkout, equipment
 
 class TVG420(plugin_tvips.TVG420, equipment):
 	def __init__(self, equipmentId, ip, name):
+		super(TVG420, self).__init__()
 		self.equipmentId = equipmentId
 		self.ip = ip
 		self.name = name
@@ -15,13 +18,14 @@ class TVG420(plugin_tvips.TVG420, equipment):
 		self.get_equipment_ids()
 		self.checkout = checkout(self)
 		self.online = True
+		self.seralisabledata = ["ip", "equipmentId", "name", "online",  "modelType", "refreshType", "refreshCounter", "enablelist", "labellist","dirlist", "destlist", "ids", "ip_tx_rate","ip_rx_rate", "multicast_id_dict"]
+
 		
 	def serialize(self ):
 		"""serialize data without using pickle. Returns dict"""
 		
 		serial_data = {}
-		seralisabledata = ["ip", "equipmentId", "name", "online",  "modelType", "refreshType", "refreshCounter", "enablelist", "labellist","dirlist", "destlist", "ids", "ip_tx_rate","ip_rx_rate", "multicast_id_dict"]
-		for key in seralisabledata:
+		for key in self.seralisabledata:
 			if hasattr(self,key):
 				serial_data[key] = copy.copy(getattr(self, key))
 		for i in range(len(self.ports)):
@@ -34,12 +38,11 @@ class TVG420(plugin_tvips.TVG420, equipment):
 		expected errors are KeyError (no modelType), Type Error (wrong model Type)"""
 		if not data["modelType"] == self.modelType:
 			raise TypeError("Tried to serialise data from %s into %s"%(data["modelType"],self.modelType))
-		seralisabledata = ["ip", "equipmentId", "name", "online",  "modelType", "refreshType", "refreshCounter", "enablelist", "labellist","dirlist", "destlist", "ids", "ip_tx_rate","ip_rx_rate", "multicast_id_dict"]
 		ports = {}
-		for key in seralisabledata:
-				if data.has_key(key):
+		for key in self.seralisabledata:
+				if key in data:
 					setattr(self, key, data[key])
-		for key in data.keys():
+		for key in list(data.keys()):
 			if "port-" in key:
 				try:
 					ports[int(key.replace("port-",""))] = data[key] 
@@ -76,7 +79,7 @@ class TVG420(plugin_tvips.TVG420, equipment):
 		l = []
 		b = {"true":1,"false":0}
 		d = self.usage_by_addr()
-		for k in d.keys():
+		for k in list(d.keys()):
 			try:
 				line = "update `status` set `TvipsRec` = %s where `id` = %s" %( b[d[k]], self.multicast_id_dict[k])
 				l.append(line)
@@ -85,9 +88,11 @@ class TVG420(plugin_tvips.TVG420, equipment):
 		return "" + "; ".join(l) + ";update `status` set `updated`= CURRENT_TIMESTAMP where `id` = %s;"%self.equipmentId
 		
 	def getChannel(self):
-		return "DO 0;" #DO NOTHING 
+		return "DO 0;" #DO NOTHING
+
 	def getId(self):
-		return self.equipmentId 
+		return self.equipmentId
+
 	def min_refresh_time(self):
 		return 10
-	
+

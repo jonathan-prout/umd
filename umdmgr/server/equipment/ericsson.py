@@ -1,11 +1,19 @@
-from generic import IRD, GenericIRD
+from __future__ import division
+from __future__ import print_function
+from __future__ import absolute_import
+from builtins import hex
+from builtins import range
+from past.utils import old_div
+from .generic import IRD, GenericIRD
 from server import gv
 from helpers import snmp
 snmp.gv = gv #in theory we don't want to import explictly the server's version of gv
+
+
 class TT1260(IRD):
-	
-	
+
 	def __init__(self, equipmentId, ip, name):
+		super(TT1260, self).__init__()
 		self.equipmentId = equipmentId
 		self.ip = ip
 		self.name = name
@@ -47,12 +55,12 @@ class TT1260(IRD):
 class RX1290(IRD):
 	
 	def __init__(self, equipmentId, ip, name):
-		
+		super(RX1290, self).__init__()
 		self.equipmentId = equipmentId
 		self.ip = ip
 		self.name = name
 		self.modelType = "RX1290"
-		super( RX1290, self ).__init__()
+
 	def refresh(self):
 		""" Refresh method of class """
 		""" removed import snmp here """
@@ -71,7 +79,7 @@ class RX1290(IRD):
 			self.snmp_res_dict  = snmp.get(self.getoids(), self.ip)
 		except:
 			self.set_offline()
-		if len(self.snmp_res_dict.keys()) < len(self.getoids().keys()):
+		if len(list(self.snmp_res_dict.keys())) < len(list(self.getoids().keys())):
 			self.oid_mask()
 
 		if len(self.snmp_res_dict) == 0:
@@ -130,7 +138,7 @@ class RX1290(IRD):
 	
 	def getNumServices(self):
 		key = "Table_Service_ID"
-		if self.snmp_res_dict.has_key(key):
+		if key in self.snmp_res_dict:
 			return len(self.snmp_res_dict[key])
 		else:
 			return 0
@@ -164,15 +172,17 @@ class RX1290(IRD):
 	def getinput_selection(self):
 		d = {"1":"ASI","2":"SAT"}
 		return self.lookup_replace('input_selection ', d)
-		
+
+
 class RX8200(IRD):
 	
 	def __init__(self, equipmentId, ip, name):
+		super(RX8200, self).__init__()
 		self.equipmentId = equipmentId
 		self.ip = ip
 		self.name = name
 		self.modelType = "RX8200"
-		super( RX8200, self ).__init__()
+
 	def getlockState(self):
 		d = {"1":"Lock","0":"Unlock"}
 		return self.lookup_replace('LockState', d)
@@ -200,7 +210,7 @@ class RX8200(IRD):
 			self.snmp_res_dict  = snmp.get(self.getoids(), self.ip)
 		except:
 			self.set_offline()
-		if len(self.snmp_res_dict.keys()) < len(self.getoids().keys()):
+		if len(list(self.snmp_res_dict.keys())) < len(list(self.getoids().keys())):
 			self.oid_mask()
 
 		if len(self.snmp_res_dict) == 0:
@@ -287,7 +297,7 @@ class RX8200(IRD):
 			ServiceID = self.snmp_res_dict["ServiceID"]
 		except KeyError:
 			return  ""
-		for x in xrange(len(Table_Service_ID)):
+		for x in range(len(Table_Service_ID)):
 			try:
 				v = Table_Service_ID[x]
 				v = v.replace('"','')
@@ -312,7 +322,7 @@ class RX8200(IRD):
 			ServiceID = self.snmp_res_dict["ServiceID"]
 		except KeyError:
 			return  self.getBissStatus()
-		for x in xrange(len(Table_Service_ID)):
+		for x in range(len(Table_Service_ID)):
 			try:
 				v = Table_Service_ID[x]
 				v = v.replace('"','')
@@ -362,7 +372,7 @@ class RX8200(IRD):
 			fr = float(fr)
 		except:
 			fr = 0
-		fr = fr/1000
+		fr = old_div(fr,1000)
 		st = "%sHz"% fr
 		st = st.replace(".0", "")
 		return st
@@ -388,7 +398,7 @@ class RX8200(IRD):
 		except:
 			self.offline = True
 			resdict = {'inputCardType':"OFFLINE"}
-		if resdict.has_key('inputCardType'):
+		if 'inputCardType' in resdict:
 			
 			try:
 				return subtypes[int( resdict['inputCardType'] )]
@@ -396,12 +406,12 @@ class RX8200(IRD):
 				return "Rx8200"
 			except ValueError:
 				if gv.loud:
-					print resdict
+					print(resdict)
 				self.offline = True
 				return "OFFLINE"
 		else:
 			if gv.loud:
-				print resdict
+				print(resdict)
 			self.offline = True
 			return "OFFLINE"
 	
@@ -416,13 +426,13 @@ class RX8200(IRD):
 
 class RX8200_2RF(RX8200):
 	def __init__(self, equipmentId, ip, name):
-		super( RX8200_2RF, self ).__init__(equipmentId, ip, name)
+		super(RX8200_2RF, self).__init__(equipmentId, ip, name)
 		self.modelType = "RX8200-2RF"
 		self.getoid()
 		
 class RX8200_4RF(RX8200):
 	def __init__(self, equipmentId, ip, name):
-		super( RX8200_4RF, self ).__init__(equipmentId, ip, name)
+		super(RX8200_4RF, self).__init__(equipmentId, ip, name)
 		self.modelType = "RX8200-4RF"
 
 

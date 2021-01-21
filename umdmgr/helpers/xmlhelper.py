@@ -6,6 +6,8 @@
 #################################
 
 # 11/03/11 - JP  Cleaned up comments.
+from future import standard_library
+standard_library.install_aliases()
 from xml.dom import minidom
 
 
@@ -18,12 +20,12 @@ def stringtoxml(string):
 	#from taskscript import debug
 	#debug("String To XML has been called with a " + str(type(string)) + " object.")
 	from xml.dom import minidom
-	import StringIO
+	import io
 	# Python's minidom parse module breaks with the & symbol in strings. 
 	# Omneon will reply with a & in the file URI for username & password on exporters
 	# since this part of the file is not needed we can simply string-replace it
 	string = string.replace("&","_")
-	filelikeobject = StringIO.StringIO(string)
+	filelikeobject = io.StringIO(string)
 	xml = minidom.parse(filelikeobject)
 	return xml
 

@@ -1,18 +1,24 @@
 #!/usr/bin/env python
 
 
+from builtins import zip
+from builtins import str
+from builtins import range
+from builtins import object
 import helpers
 from helpers import httpcaller, xmlhelper
 from xml.dom import minidom
+
+from .generic import HTTPError
 
 class tvips(object):
 	pass
 	""" For shared class parts"""
 	
-class asiport:
+class asiport(object):
 	def __init__(self, d = None):
 		if d:
-				for k,v in d.iteritems():
+				for k,v in list(d.items()):
 					setattr(self, k,v)
 	def getData(self):
 		d = {}
@@ -29,6 +35,7 @@ class asiport:
 
 class TVG420(tvips):
 	def __init__(self, ip, username, password):
+		super(TVG420, self).__init__()
 		self.ip = ip
 		self.username = username
 		self.password = password
@@ -42,7 +49,7 @@ class TVG420(tvips):
 		try:
 			response, stringfromserver = httpcaller.get(self.ip, '80', 'txp_get_tree?path=/ports&depth=4',  username= self.username, password=  self.password)
 			if response['status'] != '200':
-				raise "HTTP Error"
+				raise HTTPError
 				#	die( zip(response, "----------", "Bad response from server when getting information on ports from the TVIPS at ", self.ip))
 			self.online = True
 		except:
@@ -58,14 +65,14 @@ class TVG420(tvips):
 			ip_tx_rate =  xmlhelper.getAttributesFromTags('iptx', 'totrate', xmldoc)
 			ip_rx_rate =  xmlhelper.getAttributesFromTags('iprx', 'totrate', xmldoc)
 		else: #offline
-			ids = range(8)
+			ids = list(range(8))
 			enablelist = ["false"] *8
 			labellist = [""] *8
 			dirlist = [""] *8
 			destlist = [""] *8
 			ip_tx_rate = ["0"] *8
 			ip_rx_rate = ["0"] *8
-		self.ports = range(len(ids))
+		self.ports = list(range(len(ids)))
 		self.ids = []
 		self.ip_tx_rate = []
 		self.ip_rx_rate = []
@@ -132,16 +139,16 @@ class TVG420(tvips):
 			
 			
 	def usage_by_label(self):
-		return dict(zip(self.labellist, self.enablelist))
+		return dict(list(zip(self.labellist, self.enablelist)))
 		
 	def usage_by_addr(self):
-		return dict(zip(self.destlist, self.enablelist))
+		return dict(list(zip(self.destlist, self.enablelist)))
 	
 	def bandwidth_by_label(self):
-		return dict(zip(self.labellist, self.ip_tx_rate))
+		return dict(list(zip(self.labellist, self.ip_tx_rate)))
 		
 	def bandwidth_by_addr(self):
-		return dict(zip(self.destlist, self.ip_tx_rate))
+		return dict(list(zip(self.destlist, self.ip_tx_rate)))
 		
 	
 	def enable(self, port):
@@ -159,9 +166,9 @@ class TVG420(tvips):
 			
 		""" 
 		if port in self.labellist:
-			portnum = dict(zip(self.labellist, self.ids))[port]
+			portnum = dict(list(zip(self.labellist, self.ids)))[port]
 		elif port in self.destlist:
-			portnum = dict(zip(self.destlist, self.ids))[port]
+			portnum = dict(list(zip(self.destlist, self.ids)))[port]
 		elif port in self.ids:
 			portnum = port
 		else:
@@ -170,7 +177,7 @@ class TVG420(tvips):
 		# http://10.73.237.65/txp_set?path=/ports/[0]|enable:true
 		response, stringfromserver = httpcaller.post(self.ip, '80', 'txp_set?path=/ports/['+ str(portnum )+']|enable:' + true_or_false, body="", username= self.username, password= self.password) 
 		if response['status'] != '200':
-			die( zip(response, "----------", "Bad response from server when getting streamstores from ", self.ip))
+			die( list(zip(response, "----------", "Bad response from server when getting streamstores from ", self.ip)))
 			
 		#print stringfromserver
 		xmldoc = xmlhelper.stringtoxml(stringfromserver)

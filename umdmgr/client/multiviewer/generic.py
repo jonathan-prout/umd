@@ -4,7 +4,13 @@
     git note: moved from multiviewer.py
     """
 from __future__ import print_function
-import telnetlib, Queue, signal, time
+from future import standard_library
+standard_library.install_aliases()
+from builtins import zip
+from builtins import str
+from builtins import range
+from builtins import object
+import telnetlib, queue, signal, time
 import typing
 
 from umdmgr.client import gv, labelmodel
@@ -59,7 +65,7 @@ def get_mv_input_from_database(mvHost, mvInput):
     cmd += "FROM `mv_input`"
     cmd += "WHERE ((`mv_input`.`multiviewer` =%d) AND (`mv_input`.`input` =%d))" % (gv.mvID[mvHost], mvInput)
 
-    return dict(zip(fields, gv.sql.qselect(cmd)[0]))
+    return dict(list(zip(fields, gv.sql.qselect(cmd)[0])))
 
 
 class multiviewer(ABC):
@@ -75,7 +81,7 @@ class multiviewer(ABC):
 
     def qtruncate(self):
         self.fullref = False
-        self.q = Queue.Queue(1000)
+        self.q = queue.Queue(1000)
         self.previousLabel = {}
 
     def get_offline(self):
@@ -245,7 +251,7 @@ class TestMultiviewer(multiviewer):
         self.mv_type = "test"
         self.lookuptable = {}
         self.size = 96
-        self.q = Queue.Queue(10000)
+        self.q = queue.Queue(10000)
         self.host = host
         self.fullref = False
         self.make_default_input_table()
@@ -263,7 +269,7 @@ class TestMultiviewer(multiviewer):
 
     def refresh(self):
         vi = {}
-        for v in self.lookuptable.values():
+        for v in list(self.lookuptable.values()):
             v["new"] = "False"
         print("refresh")
         while not self.q.empty():
@@ -284,19 +290,19 @@ class TestMultiviewer(multiviewer):
                     vi[videoInput]["strategy"] = sm.strategy
                     vi[videoInput]["new"] = "True"
         print(vi)
-        for k,v in vi.iteritems():
+        for k,v in vi.items():
             self.lookuptable[k] = v
         if self.fullref:
                     self.qtruncate()
         fbuffer = ['<HTML><HEAD><link rel="stylesheet" type="text/css" href="multiviewer.css"></HEAD><BODY><table border="0"width="100%"><tr>']
         i = 0
         line = ""
-        for key in self.lookuptable.keys():
+        for key in list(self.lookuptable.keys()):
             if i == 4: i = 0
             if i == 0:
                 line += "<tr>"
             line += "<td> input %s<br>"%key
-            for k,v in self.lookuptable[key].iteritems():
+            for k,v in self.lookuptable[key].items():
                 line += '<p class="%s">%s:%s</p>'%(k,k,v)
                 
             line += "</td>"

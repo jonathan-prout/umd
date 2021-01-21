@@ -1,13 +1,16 @@
 from __future__ import print_function
 from __future__ import absolute_import
+from future import standard_library
+standard_library.install_aliases()
+from builtins import str
 import sys
 import traceback
 import threading
-from .pysnmp.proto import rfc1902
+from pysnmp.proto import rfc1902
 
-import helpers.subprocesspatch as subprocess
+import subprocess
 
-from .pysnmp.entity.rfc3413.oneliner import cmdgen
+from pysnmp.entity.rfc3413.oneliner import cmdgen
 
 
 
@@ -85,7 +88,7 @@ def oidFromDict(n , invdict):
 			n = "." + n
 		else:
 			#print invdict
-			for k, v in invdict.items():
+			for k, v in list(invdict.items()):
 				if n in k:
 					n = k
 	return n
@@ -124,7 +127,7 @@ def get_pysnmp(commandDict, ip):
 	commands = []
 	invdict = {}
 	returndict = {}
-	for k,v in commandDict.items():
+	for k,v in list(commandDict.items()):
 		v = v.replace('enterprises.','.1.3.6.1.4.1.')
 		v = v.replace(' ', '' ) #no spaces
 		commands.append(v)
@@ -210,7 +213,7 @@ def get_subprocess(commandDict, ip):
 	commands = []
 	invdict = {}
 	returndict = {}
-	for k,v in commandDict.items():
+	for k,v in list(commandDict.items()):
 		v = v.replace('enterprises.','.1.3.6.1.4.1.')
 		v = v.replace(' ', '' ) #no spaces
 		commands.append(v)
@@ -238,7 +241,7 @@ def get_subprocess(commandDict, ip):
 			handle_netSNMP_error(serr)
 		except NetSNMPUnknownOID as e:
 			if e.failedOid:
-				for k in commandDict.keys():
+				for k in list(commandDict.keys()):
 					if commandDict[k] == e.failedOid:
 						if gv.loudSNMP:
 							print("Removing %s for %s and trying again"%(k, ip))
@@ -289,7 +292,7 @@ def getbulk(commandDict, ip, numItems):
 		return {}
 	except NetSNMPUnknownOID as e:
 		if e.failedOid:
-			for k in commandDict.keys():
+			for k in list(commandDict.keys()):
 				if commandDict[k] == e.failedOid:
 					if gv.loudSNMP:
 						print("Removing %s for %s and trying again"%(k, ip))
@@ -316,7 +319,7 @@ def getbulk_subprocess(commandDict, ip, numItems):
 	commands = []
 	invdict = {}
 	returndict = {}
-	for k,v in commandDict.items():
+	for k,v in list(commandDict.items()):
 		v = v.replace('enterprises.','.1.3.6.1.4.1.')
 		v = v.replace(' ', '' ) #no spaces
 		commands.append(v)
@@ -363,7 +366,7 @@ def walk_subprocess(commandDict, ip):
 	commands = []
 	invdict = {}
 	returndict = {}
-	for k,v in commandDict.items():
+	for k,v in list(commandDict.items()):
 		v = v.replace('enterprises.','.1.3.6.1.4.1.')
 		v = v.replace(' ', '' ) #no spaces
 		commands.append(v)
@@ -400,7 +403,7 @@ def walk_pysnmp(commandDict, ip):
 	commands = []
 	invdict = {}
 	returndict = {}
-	for k,v in commandDict.items():
+	for k,v in list(commandDict.items()):
 		v = v.replace('enterprises.','.1.3.6.1.4.1.')
 		commands.append(v)
 		invdict[v] = k
