@@ -1,7 +1,5 @@
-from umdmgr.client import gv, labelmodel
-from umdmgr.client.multiviewer import tsl
-from umdmgr.client.multiviewer.generic import get_mv_input_from_database, status_message
-from umdmgr.client.umdclient import inputStrategies, getPollStatus
+from client.multiviewer import tsl
+
 
 
 class GvMv(tsl.TslMultiviewer):
@@ -66,7 +64,7 @@ class GvMv(tsl.TslMultiviewer):
 		self.lookuptable = {}
 		for i in range(1, self.size + 1):
 			d = {
-				"TOP": "0" + str(i),
+				"TOP": i,
 				"BOTTOM": 100 + i,
 				"C/N": 200 + i,
 				"REC": 200 + i

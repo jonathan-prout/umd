@@ -1,7 +1,7 @@
 import socket
 import struct
 
-from umdmgr.client.multiviewer import generic
+from client.multiviewer import generic
 
 DLE = b"\xFE"
 STX = b"\x02"
@@ -45,14 +45,21 @@ class Dmesg(object):
 	def __bytes__(self) -> bytes:
 		b = struct.pack("<H", self.index)
 		ctrl = 0
-		ctrl += (self.leftTally << 4)
-		ctrl += (self.textTally << 2)
-		ctrl += (self.rightTally << 0)
+		ctrl += (self.left_tally << 4)
+		ctrl += (self.text_tally << 2)
+		ctrl += (self.right_tally << 0)
 		b += struct.pack("<H", ctrl)
 		txt = self.text.encode("ASCII")
 		b += struct.pack("<H", len(txt))
 		b += txt
 		return b
+
+	def __repr__(self):
+		tallyName = ["OFF", "RED", "GREEN", "AMBER"]
+		lt = tallyName[self.left_tally]
+		rt = tallyName[self.right_tally]
+		tt = tallyName[self.text_tally]
+		return f"<Dmesg index {self.index} left_tally {lt} right_tally {rt} text_tally {tt} text '{self.text}'>"
 
 
 class TcpSocket(object):
@@ -86,7 +93,7 @@ class UdpSocket(object):
 		return self.sock.sendto(DLE + STX + bytes(packet), (self.host, self.port))
 
 
-class TslMultiviewer(generic.muiltiviewer):
+class TslMultiviewer(generic.multiviewer):
 	"""
 	TSL Multiviewer class
 	url in the format of udp://host:port or tcp://host:port

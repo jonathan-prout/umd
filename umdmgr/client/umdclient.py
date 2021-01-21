@@ -1,15 +1,12 @@
 #!/usr/bin/python
 from __future__ import print_function
 from __future__ import absolute_import
-import os, re, string, threading
-import sys, time, datetime
+import threading
+import datetime
 
-import socket
-import getopt
 import time
 
-from helpers import mysql
-from ..helpers import virtualmatrix
+from helpers import virtualmatrix
 from . import multiviewer
 from . import gv
 from . import labelmodel
@@ -64,12 +61,6 @@ def bitrateToStreamcode(muxbitrate):
 		else:
 			bitratestring = str(bitratefloat)[:4]
 	return bitratestring
-
-
-def getPollStatus():
-	cmd = 'SELECT `value` FROM `management` where `key` = "current_status";'
-	pollstatus = gv.sql.qselect(cmd)[0][0]
-	return pollstatus
 
 
 def main(loop, test=None):
@@ -318,7 +309,6 @@ def mvrefresh(myInstance, name):
 # print "Leaving thread as termintation flag set"
 
 def shutdown(exit_status):
-	import sys
 	gv.programTerminationFlag = True
 	cmd = 'SELECT `value` FROM `management` where `key` = "current_status";'
 	pollstatus = gv.sql.qselect(cmd)[0][0]
