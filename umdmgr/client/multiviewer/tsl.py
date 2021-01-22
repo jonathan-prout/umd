@@ -105,10 +105,7 @@ class TslMultiviewer(generic.multiviewer):
 		self.lookuptable = {}
 		super(TslMultiviewer, self).__init__()
 
-	def connect(self):
-		"""
-		url in the format of udp://host:port or tcp://host:port
-		"""
+	def _split_url(self):
 		try:
 			protocol, host, port = self.url.split(":")
 		except (IndexError, ValueError):
@@ -116,6 +113,28 @@ class TslMultiviewer(generic.multiviewer):
 			return
 		host = host.replace("//", "")
 		port = int(port)
+		return protocol, host, port
+
+	@property
+	def host(self):
+		protocol, host, port = self._split_url()
+		return host
+
+	@property
+	def port(self):
+		protocol, host, port = self._split_url()
+		return port
+
+	@property
+	def protocol(self):
+		protocol, host, port = self._split_url()
+		return protocol
+
+	def connect(self):
+		"""
+		url in the format of udp://host:port or tcp://host:port
+		"""
+		protocol, host, port = self._split_url()
 		if protocol.lower() == "tcp":
 			self.sock = TcpSocket(host, port)
 			self.sock.connect()
