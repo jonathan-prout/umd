@@ -222,8 +222,8 @@ class K2(kaleido):
 	size = 32
 	fullref = False
 	
-	def __init__(self, host, mvid):
-		super(K2, self).__init__(host, mvid)
+	def __init__(self, *args, **kwargs):
+		super(K2, self).__init__(*args, **kwargs)
 		#self.False = True #Note to self pick out variable names I can remember
 		#what what
 		self.q = queue.Queue(100)
