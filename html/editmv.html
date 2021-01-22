@@ -90,15 +90,16 @@ $(document).ready(function () {
             <input type="hidden" name="formName", value = "addMV">
             <label class="control-label" for="name">Multiviewer Name</label><br>
             <input type="text" name="name" class="input-xlarge" required ><br>
-            <label class="control-label" for="ip">IP Address</label><br>
-            <input type="text" required  name="ip" class="input-xlarge"><br>
+            <label class="control-label" id = "ipLabelText" for="ip">IP Address</label><br>
+            <input type="text" required  name="ip" class="input-xlarge"><span id="ipHelpText"></span><br>
             <label class ="control-label" for="protocolSelect">Select Protocol</label>
-            <select class="form-control"  id="protocolSelect" name="protocolSelect" onchange="fillDefaultNumInputs()">
+            <select class="form-control"  id="protocolSelect" name="protocolSelect" onchange="onProtocolSelect()">
             <option value="Null">No Selection</option>
             <option value="KX">Kaleido X</option>
             <option value="KX16">Kaleido X 16</option>
             <option value="KXQUAD">Kaleido X Quad</option>
             <option value="K2">Kaleido 2</option>
+            <option value="GVMultiviewer">GV-Multiviewer</option>
             <option value="ZPROTOCOL">Harris/ Zandar</option>
             </select><br>
             <label class="control-label" for="numInputs">Number of Inputs</label><br>
@@ -107,17 +108,19 @@ $(document).ready(function () {
     
     </div>
     <div class="modal-footer">
-        <input class="btn btn-success" type="submit" value="Send!" id="AddMVsubmit">
-        <a href="#" class="btn" data-dismiss="modal">Nah.</a>
+        <input class="btn btn-success" type="submit" value="Add!" id="AddMVsubmit">
+        <a href="#" class="btn" data-dismiss="modal">Cancel.</a>
     </div>
     </div>
     </div>
 </div>
 <div class="container" id="thanks"><p><a data-toggle="modal" href="#form-addmv" class="btn  btn-info btn-large">Add New Multivewer</a></p></div>
 <script>
-function fillDefaultNumInputs() {
+function onProtocolSelect() {
     var x = document.getElementById("protocolSelect").value;
     var i = 0;
+    var ipLabelText = "IP Address";
+    var ipHelpText = "";
     switch (x) {
         case "KX":
         i = 96;
@@ -134,10 +137,16 @@ function fillDefaultNumInputs() {
         case "ZPROTOCOL":
             i = 32;
             break;
+        case "GVMultiviewer":
+            i = 48;
+            ipLabelText = "URL";
+            ipHelpText  = "URL in the form of udp://host:port or tcp://host:port<br>We set this on Roll Call. Normally we set UDP and port 7756 so can enter 'udp://host:7756' here"
+            break;
     
     }
+    document.getElementById("ipLabelText").innerText = ipLabelText
+    document.getElementById("ipHelpText").innerHTML = ipHelpText
     document.getElementById("numInputs").value = i
-    
 }
 </script>                                                                                                                                      
                                                                                                                                        
