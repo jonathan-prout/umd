@@ -27,6 +27,7 @@ class status_message(object):
 		self.recAlarm = False
 		self.mv_input = -1
 		self.strategy = "NoStrategy"
+		self.colour = "#37e6ab"
 
 	def __iter__(self) -> typing.Iterator:
 		""" we pack this class into a list and call the list's iterator """

@@ -32,7 +32,7 @@ class GvMv(tsl.TslMultiviewer):
 					if not line:
 						line = " "
 					if not self.get_offline() and not self.matchesPrevious(videoInput, level, line):
-						dmesg = self.writeline(videoInput, level, line, mode)
+						dmesg = self.writeline(videoInput, level, line, mode, colour= sm.colour)
 						packet.append(dmesg)
 						packet_commands += 1
 						if packet_commands <= 9:
@@ -45,7 +45,7 @@ class GvMv(tsl.TslMultiviewer):
 		if self.fullref:
 				self.qtruncate()
 
-	def writeline(self, videoInput, level, line, mode, buffered=True):
+	def writeline(self, videoInput, level, line, mode, colour="#e3642d", buffered=True):
 
 		try:
 			addr = self.lookup(videoInput, level)
@@ -53,7 +53,7 @@ class GvMv(tsl.TslMultiviewer):
 			print("videoIn, %s, level %s not found" % (videoInput, level))
 			return
 
-		dmesg = tsl.Dmesg(addr, line)
+		dmesg = tsl.Dmesg(addr, f"{line};{colour}")
 		if not buffered:
 			packet = tsl.TslPacket()
 			packet.append(dmesg)
