@@ -2,25 +2,28 @@
 	Kaleido multiviewers
 	git note: moved from mukltiviewer.py
 """
-
+import queue
 import telnetlib
 
-from .generic import telnet_multiviewer
-from .. client import gv
+from client.multiviewer.generic import TelnetMultiviewer, status_message
+from client import gv
 import xml.etree.ElementTree as etree
 
 		
-class kaleido(telnet_multiviewer):
+class kaleido(TelnetMultiviewer):
 	mv_type = "Kaleido"
 	port = 13000
 	size = 96
 	timeout = 10
+
 	def __init__(self, host):
 		super(kaleido, self).__init__()
+		self.AlarmCapable = True
+		self.lowAddressBug = False
 		self.mv_type = "Kaleido"
 		self.port = 13000
 		self.size = 96
-		self.q = Queue.Queue(10000)
+		self.q = queue.Queue(10000)
 		self.host = host
 		self.connect()
 		self.fullref = False
@@ -60,10 +63,10 @@ class kaleido(telnet_multiviewer):
 			self.lookuptable[i] = d
 			
 	def lookup(self, videoInput, level):
-		 return self.lookuptable[int(videoInput)][level]
+		return self.lookuptable[int(videoInput)][level]
 	
-	def writeline(self, videoInput, level, line, mode):
-		
+	def writeline(self, videoInput, level, line, mode, buffered = True):
+
 			try:
 				addr = self.lookup(videoInput, level)
 			except (KeyError, ValueError):
@@ -103,6 +106,7 @@ class kaleido(telnet_multiviewer):
 	def setAction(self, actionName):
 		
 		cmd = '<setKFireAction>set name="%s"</setKFireAction>\n' % actionName
+		a = ""
 		try:
 			self.tel.write(cmd)
 			a = self.tel.read_until("<ack/>", self.timeout)
@@ -112,7 +116,7 @@ class kaleido(telnet_multiviewer):
 			if "<nack/>" in a:
 				self.shout("Multiviewer did not recognise the action named %s"% actionName)
 			else:
-				self.set_offline("writeline, %s, %s "%(line,a) )
+				self.set_offline("writeline, %s, %s "%(actionName,a) )
 		finally:
 			#signal.alarm(0)          # Disable the alarm
 			pass
@@ -196,7 +200,8 @@ class KX(kaleido):
 
 	def __init__(self, host):
 		
-		self.q = Queue.Queue(1000)
+		super().__init__(host)
+		self.q = queue.Queue(1000)
 		self.host = host
 
 		self.make_default_input_table()
@@ -217,8 +222,10 @@ class K2(kaleido):
 	fullref = False
 	
 	def __init__(self, host):
-		self.False = True #Note to self pick out variable names I can remember
-		self.q = Queue.Queue(100)
+		super(K2, self).__init__(host)
+		#self.False = True #Note to self pick out variable names I can remember
+		#what what
+		self.q = queue.Queue(100)
 		self.host = host
 		
 		self.fullref = False
