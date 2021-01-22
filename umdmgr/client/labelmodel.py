@@ -1,6 +1,6 @@
 from __future__ import absolute_import
-from . import gv
-from .multiviewer.generic import status_message
+from client import gv
+from client.multiviewer.generic import status_message
 from helpers import CA
 
 CA.gv = gv
