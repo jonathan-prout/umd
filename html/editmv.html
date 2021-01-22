@@ -2,9 +2,12 @@
 
 <html>
 <head>
+     <meta charset="UTF-8">
     <title>UMD Manager Edit Multiviewer</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+<script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
 <script>
    function getUrlVars() {
     var vars = {};
@@ -24,6 +27,28 @@ function getScript(url, callback) {
 
    document.getElementsByTagName('head')[0].appendChild(script);
 }
+
+
+$(document).ready(function () {
+    $("input#AddMVsubmit").click(function(){
+        $.ajax({
+            type: "POST",
+            url: "submit_form.php", //process to mail
+            data: $('#addMVForm').serialize(),
+            success: function(msg){
+                $("#thanks").append(msg) //hide button and show thank you
+                $("#form-addmv").modal('hide'); //hide popup
+                getScript('static_parameters.php', function(){
+                    populateListbox(multiviewers )
+                   populateTable(mv_input)
+                   });
+            },
+            error: function(){
+                alert("failure");
+            }
+        });
+    });
+});
 </script>
 </head>
 
@@ -41,7 +66,8 @@ function getScript(url, callback) {
       <small>Edit Multiviewer inputs</small>
    </h2>
 </div>
-<div id="id01"></div>  
+<div id="id01"></div>
+<!-- Multiviewer Menu -->
 <div class="container">
       <h2>Select Multiviewer</h2>
                       
@@ -50,6 +76,73 @@ function getScript(url, callback) {
               
       </ul>
     </div>
+<!-- Add Multiviewer-->
+<div id="form-addmv" class="modal  fade" role="dialog" style="display: none;">
+    <div class="modal-dialog">
+    <div class="modal-content">
+    <div class="modal-header">
+        
+        <a class="close" data-dismiss="modal">�</a>
+        <h3>Add Multiviewer</h3>
+    </div>
+    <div class="modal-body">
+        <form class="form-horizontal" name="addMVForm" id="addMVForm">
+            <input type="hidden" name="formName", value = "addMV">
+            <label class="control-label" for="name">Multiviewer Name</label><br>
+            <input type="text" name="name" class="input-xlarge" required ><br>
+            <label class="control-label" for="ip">IP Address</label><br>
+            <input type="text" required  name="ip" class="input-xlarge"><br>
+            <label class ="control-label" for="protocolSelect">Select Protocol</label>
+            <select class="form-control"  id="protocolSelect" name="protocolSelect" onchange="fillDefaultNumInputs()">
+            <option value="Null">No Selection</option>
+            <option value="KX">Kaleido X</option>
+            <option value="KX16">Kaleido X 16</option>
+            <option value="KXQUAD">Kaleido X Quad</option>
+            <option value="K2">Kaleido 2</option>
+            <option value="ZPROTOCOL">Harris/ Zandar</option>
+            </select><br>
+            <label class="control-label" for="numInputs">Number of Inputs</label><br>
+            <input type="number" min="0" name="numInputs" id="numInputs" class="input-xlarge"><br>
+        </form>
+    
+    </div>
+    <div class="modal-footer">
+        <input class="btn btn-success" type="submit" value="Send!" id="AddMVsubmit">
+        <a href="#" class="btn" data-dismiss="modal">Nah.</a>
+    </div>
+    </div>
+    </div>
+</div>
+<div class="container" id="thanks"><p><a data-toggle="modal" href="#form-addmv" class="btn  btn-info btn-large">Add New Multivewer</a></p></div>
+<script>
+function fillDefaultNumInputs() {
+    var x = document.getElementById("protocolSelect").value;
+    var i = 0;
+    switch (x) {
+        case "KX":
+        i = 96;
+        break;
+        case "KX16":
+            i = 16;
+            break;
+        case "KXQUAD":
+            i = 4;
+            break;
+        case "K2":
+            i = 32;
+            break;
+        case "ZPROTOCOL":
+            i = 32;
+            break;
+    
+    }
+    document.getElementById("numInputs").value = i
+    
+}
+</script>                                                                                                                                      
+                                                                                                                                       
+  
+<!-- Multiviewer Table-->                                                                                                                                       
 <div class="container">
   <div class="col-sm-10">
     
@@ -171,7 +264,7 @@ function populateTable(arr) {
             }
             
             out += '">';
-            out += '<div class="col-sm-2"><a href="#" class="btn btn-default"  onclick="editLine('+ arr[i].PRIMARY+')" role="button">edit</a></div>';
+            out += '<div class="col-sm-2"><a href="#!" class="btn btn-default"  onclick="editLine('+ arr[i].PRIMARY+')" role="button">edit</a></div>';
             out += '<div class="col-sm-2">'+ arr[i].input+'</div>';
             out += '<div class="col-sm-2">'+ strategies[arr[i].strategy]+'</div>';
             if (strategies[arr[i].strategy] === "by equipment") {
@@ -235,21 +328,22 @@ function editLine(line){
            
            
             document.getElementById("mv" + arr[i].PRIMARY).innerHTML = out;
-            
+            var h = "mv" + arr[i].PRIMARY;
         }
     }
-    
+    jump(h);
+    return false;
 }
 
-
-
-      
-        
+function jump(h){
+    var top = document.getElementById(h).offsetTop; //Getting Y of target element
+    window.scrollTo(0, top);                        //Go there.
+}
+  
 
 </script>
 
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
-<script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+
 
         
 </body>
