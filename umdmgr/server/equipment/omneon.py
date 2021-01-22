@@ -37,7 +37,9 @@ def ismulticast(ipv4addrss):
 
 class IPGridport(OmneonHelper, generic.serializableObj):
 	def __init__(self, equipmentId, ip, name):
-		
+		super(IPGridport, self).__init__()
+		self.seralisabledata = ["ip", "equipmentId", "name", "online", "modelType", "activeStreams"
+							"refreshType", "refreshCounter"]
 		self.equipmentId = equipmentId
 		self.ip = ip
 		self.name = name
