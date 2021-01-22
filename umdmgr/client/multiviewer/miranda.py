@@ -199,9 +199,9 @@ class KX(kaleido):
 	fullref = False
 	clearAlarmsOnConnect = True
 
-	def __init__(self, host, mvid):
+	def __init__(self, *args, **kwargs):
 		
-		super().__init__(host, mvid)
+		super().__init__(*args, **kwargs)
 		self.q = queue.Queue(1000)
 		self.host = host
 
