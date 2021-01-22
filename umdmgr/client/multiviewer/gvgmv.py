@@ -1,3 +1,5 @@
+import socket
+
 from client.multiviewer import tsl
 
 
@@ -15,7 +17,11 @@ class GvMv(tsl.TslMultiviewer):
 			txt = tsl.Dmesg(203, "")
 			txt.leftTally = tsl.Tally.OFF
 			txt.rightTally = tsl.Tally.OFF
-		self.sock.write(packet)
+		try:
+			self.sock.write(packet)
+			self.set_online("OK")
+		except (socket.error, TimeoutError) as e:
+			self.set_offline(str(e))
 
 	def refresh(self):
 		packet = tsl.TslPacket()
@@ -36,14 +42,22 @@ class GvMv(tsl.TslMultiviewer):
 						packet.append(dmesg)
 						packet_commands += 1
 						if packet_commands <= 9:
-							self.sock.write(packet)
+							try:
+								self.sock.write(packet)
+								self.set_online("OK")
+							except (socket.error, TimeoutError) as e:
+								self.set_offline(str(e))
 							packet = tsl.TslPacket()
 							packet_commands = 0
 		if packet_commands > 0:
-			self.sock.write(packet)
+			try:
+				self.sock.write(packet)
+				self.set_online("OK")
+			except (socket.error, TimeoutError) as e:
+				self.set_offline(str(e))
 
 		if self.fullref:
-				self.qtruncate()
+			self.qtruncate()
 
 	def writeline(self, videoInput, level, line, mode, colour="#e3642d", buffered=True):
 
@@ -57,7 +71,11 @@ class GvMv(tsl.TslMultiviewer):
 		if not buffered:
 			packet = tsl.TslPacket()
 			packet.append(dmesg)
-			self.sock.write(packet)
+			try:
+				self.sock.write(packet)
+				self.set_online("OK")
+			except (socket.error, TimeoutError) as e:
+				self.set_offline(str(e))
 		return dmesg
 
 	def make_default_input_table(self):

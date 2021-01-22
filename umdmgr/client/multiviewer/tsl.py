@@ -73,6 +73,7 @@ class TcpSocket(object):
 		self.sock.settimeout(5)
 		self.sock.connect((self.host, self.port))
 
+
 	def write(self, packet):
 		return self.sock.send(DLE + STX + bytes(packet))
 
@@ -144,6 +145,7 @@ class TslMultiviewer(generic.multiviewer):
 		else:
 			self.set_offline("url should be in the format of udp://host:port or tcp://host:port")
 			return
+		self.set_online("Connecting")
 
 	def make_default_input_table(self):
 		self.lookuptable = {}

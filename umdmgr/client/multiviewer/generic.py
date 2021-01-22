@@ -59,8 +59,20 @@ class multiviewer(ABC):
 		except:
 			return True
 
-	def set_online(self):
-		self.offline = False
+	def set_online(self, status=""):
+		if self.get_offline():
+			if status:
+				self.set_status(status)
+			self.offline = False
+
+	def set_offline(self, reason: str = ""):
+		self.offline = True
+		if reason:
+			self.set_status(reason)
+		self.shout("Problem with %s when %s Now offline" % (self.host, reason))
+
+	def set_status(self, status):
+		gv.sql.qselect('UPDATE `Multiviewer` SET `status` = "%s" WHERE `IP` = "%s";' % (status, self.host))
 
 	def errorHandler(self, signum, frame):
 		print(('Error handler called with signal', signum))
@@ -195,9 +207,11 @@ class TelnetMultiviewer(multiviewer, metaclass=ABCMeta):
 	""" Boilerplate stuff to inherit into sublcass that does stuff"""
 	__metaclass__ = ABCMeta
 
-	def set_offline(self, callingFunc=None):
+	def set_offline(self, reason: str = ""):
 		self.offline = True
-		self.shout("Problem with %s when %s Now offline" % (self.host, callingFunc))
+		if reason:
+			self.set_status(reason)
+		self.shout("Problem with %s when %s Now offline" % (self.host, reason))
 		try:
 			self.tel.close()
 		except:
