@@ -73,7 +73,7 @@ class multiviewer(ABC):
 		self.shout("Problem with %s when %s Now offline" % (self.host, reason))
 
 	def set_status(self, status):
-		gv.sql.qselect('UPDATE `Multiviewer` SET `status` = "%s" WHERE `IP` = "%s";' % (status, self.host))
+		gv.sql.qselect('UPDATE `Multiviewer` SET `status` = "%s" WHERE `id` = "%s";' % (status, self.id))
 
 	def errorHandler(self, signum, frame):
 		print(('Error handler called with signal', signum))

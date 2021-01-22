@@ -233,7 +233,7 @@ inputStrategies = enum("Reserved", "equip", "matrix", "indirect", "label")
 
 
 def getMultiviewer(mvType, host, mvID):
-	gv.sql.qselect('UPDATE `Multiviewer` SET `status` = "STARTING" WHERE `IP` = "%s";' % host)
+	gv.sql.qselect('UPDATE `Multiviewer` SET `status` = "STARTING" WHERE `id` = "%s";' % mvID)
 	if mvType in ["kaleido", "Kaleido"]:
 		print("Starting Kaleido")
 		mv =  client.multiviewer.miranda.kaleido(host)
@@ -290,7 +290,7 @@ def mvrefresh(myInstance, name):
 	while not gv.threadTerminationFlag:
 		# If it's offline, wait 60s before reconnection attempts
 		if myInstance.get_offline():
-			gv.sql.qselect('UPDATE `Multiviewer` SET `status` = "OFFLINE" WHERE `IP` = "%s";' % myInstance.host)
+			gv.sql.qselect('UPDATE `Multiviewer` SET `status` = "OFFLINE" WHERE `id` = "%s";' % myInstance.id)
 			for seconds in range(60):
 				if gv.programTerminationFlag:
 					return
@@ -300,7 +300,7 @@ def mvrefresh(myInstance, name):
 				myInstance.connect()
 		# If it's online
 		if not myInstance.get_offline():
-			gv.sql.qselect('UPDATE `Multiviewer` SET `status` = "OK" WHERE `IP` = "%s";' % myInstance.host)
+			gv.sql.qselect('UPDATE `Multiviewer` SET `status` = "OK" WHERE `id` = "%s";' % myInstance.id)
 
 			# Generate a status message for each multiviwer input
 			for i in myInstance.lookuptable.keys():
@@ -310,7 +310,7 @@ def mvrefresh(myInstance, name):
 			myInstance.refresh()
 			time.sleep(1)
 	print("Stopping display for %s" % name)
-	gv.sql.qselect('UPDATE `Multiviewer` SET `status` = "OFFLINE" WHERE `IP` = "%s";' % myInstance.host)
+	gv.sql.qselect('UPDATE `Multiviewer` SET `status` = "OFFLINE" WHERE `id` = "%s";' % myInstance.id)
 
 
 # print "Leaving thread as termintation flag set"
