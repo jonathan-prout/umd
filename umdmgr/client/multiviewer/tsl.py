@@ -100,11 +100,11 @@ class TslMultiviewer(generic.multiviewer):
 	url in the format of udp://host:port or tcp://host:port
 	"""
 
-	def __init__(self, url: str, mvid:int):
+	def __init__(self, url: str, mvid:int, name:str):
 		self.url = url
 		self.sock = None
 		self.lookuptable = {}
-		super(TslMultiviewer, self).__init__(mvid)
+		super(TslMultiviewer, self).__init__(mvid, name)
 
 	def _split_url(self):
 		try:

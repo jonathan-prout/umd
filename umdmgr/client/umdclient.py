@@ -144,7 +144,7 @@ def main(loop, test=None):
 	else:
 
 		for line in res:
-			mul = getMultiviewer(line[d["Protocol"]], line[d["IP"]], line[d["id"]])  # returns mv instance
+			mul = getMultiviewer(line[d["Protocol"]], line[d["IP"]], line[d["id"]], line[d["Name"]])  # returns mv instance
 			gv.mvID[line[d["IP"]]] = line[d["id"]]  # Store the id in a dict
 			mul.lookuptable = getAddresses(line[d["IP"]])  # multiviewer IP dicr
 			gv.mv[line[d["IP"]]] = mul  # mulitviewer storage by IP
@@ -232,31 +232,30 @@ def writeStatus(status):
 inputStrategies = enum("Reserved", "equip", "matrix", "indirect", "label")
 
 
-def getMultiviewer(mvType, host, mvID):
+def getMultiviewer(mvType, host, mvID, name):
 	gv.sql.qselect('UPDATE `Multiviewer` SET `status` = "STARTING" WHERE `id` = "%s";' % mvID)
 	if mvType in ["kaleido", "Kaleido"]:
 		print("Starting Kaleido")
-		mv =  client.multiviewer.miranda.kaleido(host)
-		mv.id = mvID
-		return mv
+		mv = client.multiviewer.miranda.kaleido(host, mvID, name)
+		m
 	elif mvType in ["k2", "K2"]:
 		print("Starting K2")
-		return client.multiviewer.miranda.K2(host, mvID)
+		return client.multiviewer.miranda.K2(host, mvID, name)
 	elif mvType in ["KX", "KX"]:
 		print("Starting KX")
-		return client.multiviewer.miranda.KX(host, mvID)
+		return client.multiviewer.miranda.KX(host, mvID, name)
 	elif mvType in ["KX16", "KX-16"]:
 		print("Starting KX-16")
-		return client.multiviewer.miranda.KX16(host, mvID)
+		return client.multiviewer.miranda.KX16(host, mvID, name)
 	elif mvType in ["KXQUAD", "KX-QUAD"]:
 		print("Starting KX-QUAD")
-		return client.multiviewer.miranda.KXQUAD(host, mvID)
+		return client.multiviewer.miranda.KXQUAD(host, mvID, name)
 	elif mvType in ["GVMultiviewer", "GV-Multiviewer", "GVMultiv"]:
 		print("Starting GV-Multiviewer")
-		return client.multiviewer.gvgmv.GvMv(host, mvID)
+		return client.multiviewer.gvgmv.GvMv(host,  mvID, name)
 	else:  # Harris/Zandar
 		print("Starting Harris")
-		return client.multiviewer.harris.zprotocol(host, mvID)
+		return client.multiviewer.harris.zprotocol(host,  mvID, name)
 
 
 class mvThread(threading.Thread):

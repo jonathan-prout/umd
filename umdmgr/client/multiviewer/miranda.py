@@ -17,8 +17,8 @@ class kaleido(TelnetMultiviewer):
 	size = 96
 	timeout = 10
 
-	def __init__(self, host, mvid):
-		super(kaleido, self).__init__(mvid)
+	def __init__(self, host, mvid, name):
+		super(kaleido, self).__init__(mvid, name)
 		self.AlarmCapable = True
 		self.lowAddressBug = False
 		self.mv_type = "Kaleido"

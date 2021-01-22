@@ -40,9 +40,10 @@ class multiviewer(ABC):
 	""" Base class multiviewers MUST inherit """
 	__metaclass__ = ABCMeta
 
-	def __init__(self, mvid):
+	def __init__(self, mvid, name):
 		self.status = "INIT"
 		self.id = mvid
+		self.name = name
 		self.previousLabel = {}
 		self.lookuptable = {}
 		self.qtruncate()
@@ -230,8 +231,8 @@ class TelnetMultiviewer(multiviewer, metaclass=ABCMeta):
 
 class TestMultiviewer(multiviewer):
 
-	def __init__(self, host):
-		super(TestMultiviewer, self).__init__()
+	def __init__(self, host, mvid, name):
+		super(TestMultiviewer, self).__init__(mvid, name)
 		self.mv_type = "test"
 		self.lookuptable = {}
 		self.size = 96
