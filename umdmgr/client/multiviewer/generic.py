@@ -5,47 +5,16 @@
 	"""
 from __future__ import print_function
 from future import standard_library
+
+import client.multiviewer.status
+
 standard_library.install_aliases()
 from builtins import zip
 from builtins import str
 from builtins import range
-from builtins import object
 import queue
-import typing
 from abc import abstractmethod, ABCMeta, ABC
 from client import gv, labelmodel
-
-
-class status_message(object):
-	alarmMode = 1
-	textMode = 0
-
-	def __init__(self):
-		self.topLabel = None
-		self.bottomLabel = None
-		self.cnAlarm = False
-		self.recAlarm = False
-		self.mv_input = -1
-		self.strategy = "NoStrategy"
-		self.colour = "#37e6ab"
-
-	def __iter__(self) -> typing.Iterator:
-		""" we pack this class into a list and call the list's iterator """
-		""" Each item is a tuple of videoInput, level, line, mode"""
-		level = ["TOP", "BOTTOM", "C/N", "REC"]
-		line = [self.topLabel, self.bottomLabel, self.cnAlarm, self.recAlarm]
-		mode = [self.textMode, self.textMode, self.alarmMode, self.alarmMode]
-		msgList = []
-		for i in range(4):
-			if line[i]:
-				msgList.append((self.mv_input, level[i], line[i], mode[i]))
-		return msgList.__iter__()
-
-	def setBottomLabel(self, s):
-		self.bottomLabel = str(s)
-
-	def setTopLabel(self, s):
-		self.topLabel = str(s)
 
 
 def get_mv_input_from_database(mvHost, mvInput):
@@ -132,7 +101,7 @@ class multiviewer(ABC):
 			pollstatus = gv.getPollStatus().upper()
 			displayStatus = gv.display_server_status.upper()
 
-			sm = multiviewer.generic.status_message()
+			sm = client.multiviewer.status.status_message()
 
 			res = get_mv_input_from_database(mvHost, mvInput)
 			# print cmd

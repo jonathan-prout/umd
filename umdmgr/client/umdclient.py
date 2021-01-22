@@ -10,6 +10,7 @@ import client
 import client.multiviewer.miranda
 import client.multiviewer.harris
 import client.multiviewer.gvgmv
+import client.multiviewer.status
 from helpers import virtualmatrix
 from . import multiviewer
 from . import gv
@@ -223,7 +224,7 @@ def writeStatus(status):
 		klist = sorted(gv.mv[addr].lookuptable.keys())
 		for key in range(0, len(klist), 16):
 			try:
-				gv.mv[addr].put((klist[key], "BOTTOM", status, multiviewer.generic.status_message.textMode))
+				gv.mv[addr].put((klist[key], "BOTTOM", status, client.multiviewer.status.status_message.textMode))
 			except:
 				pass
 

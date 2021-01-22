@@ -5,7 +5,9 @@
 from __future__ import absolute_import
 	
 import telnetlib, queue, signal, time
-from .generic import TelnetMultiviewer, status_message
+from .generic import TelnetMultiviewer
+from .status import status_message
+
 
 class zprotocol(TelnetMultiviewer):
 	""" This class impliments Harris/Zandar Z protocol as a class
