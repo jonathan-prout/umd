@@ -105,6 +105,8 @@ class TslMultiviewer(generic.multiviewer):
 		self.sock = None
 		self.lookuptable = {}
 		super(TslMultiviewer, self).__init__(mvid, name)
+		self.make_default_input_table()
+		self.connect()
 
 	def _split_url(self):
 		try:
@@ -135,17 +137,21 @@ class TslMultiviewer(generic.multiviewer):
 		"""
 		url in the format of udp://host:port or tcp://host:port
 		"""
+
 		protocol, host, port = self._split_url()
+		self.set_status("Connecting")
 		if protocol.lower() == "tcp":
 			self.sock = TcpSocket(host, port)
+			self.set_status("Connecting TCP")
 			self.sock.connect()
 		elif protocol.lower() == "udp":
 			self.sock = UdpSocket(host, port)
+			self.set_status("Connecting UDP")
 			self.sock.connect()
 		else:
 			self.set_offline("url should be in the format of udp://host:port or tcp://host:port")
 			return
-		self.set_online("Connecting")
+
 
 	def make_default_input_table(self):
 		self.lookuptable = {}
