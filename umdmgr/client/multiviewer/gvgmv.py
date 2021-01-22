@@ -5,6 +5,7 @@ from client.multiviewer import tsl
 
 
 class GvMv(tsl.TslMultiviewer):
+	size = 48
 	def clearalarms(self):
 		""" KX has alarms on on startup, so clear them """
 		if self.get_offline():

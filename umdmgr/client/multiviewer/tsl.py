@@ -105,6 +105,7 @@ class TslMultiviewer(generic.multiviewer):
 		self.sock = None
 		self.lookuptable = {}
 		super(TslMultiviewer, self).__init__(mvid, name)
+
 		self.make_default_input_table()
 		self.connect()
 
