@@ -41,6 +41,7 @@ class multiviewer(ABC):
 	__metaclass__ = ABCMeta
 
 	def __init__(self, mvid):
+		self.status = "INIT"
 		self.id = mvid
 		self.previousLabel = {}
 		self.lookuptable = {}
@@ -73,6 +74,8 @@ class multiviewer(ABC):
 		self.shout("Problem with %s when %s Now offline" % (self.host, reason))
 
 	def set_status(self, status):
+		self.status = status
+		print(f"{self.name} {status}")
 		gv.sql.qselect('UPDATE `Multiviewer` SET `status` = "%s" WHERE `id` = "%s";' % (status, self.id))
 
 	def errorHandler(self, signum, frame):
