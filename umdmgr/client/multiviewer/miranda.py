@@ -17,8 +17,8 @@ class kaleido(TelnetMultiviewer):
 	size = 96
 	timeout = 10
 
-	def __init__(self, host):
-		super(kaleido, self).__init__()
+	def __init__(self, host, mvid):
+		super(kaleido, self).__init__(mvid)
 		self.AlarmCapable = True
 		self.lowAddressBug = False
 		self.mv_type = "Kaleido"
@@ -199,9 +199,9 @@ class KX(kaleido):
 	fullref = False
 	clearAlarmsOnConnect = True
 
-	def __init__(self, host):
+	def __init__(self, host, mvid):
 		
-		super().__init__(host)
+		super().__init__(host, mvid)
 		self.q = queue.Queue(1000)
 		self.host = host
 
@@ -210,7 +210,7 @@ class KX(kaleido):
 
 	
 	def connect(self):
-		super(KX,self).connect()
+		super(KX, self).connect()
 		if self.clearAlarmsOnConnect:
 			self.clearalarms()
 		
@@ -222,8 +222,8 @@ class K2(kaleido):
 	size = 32
 	fullref = False
 	
-	def __init__(self, host):
-		super(K2, self).__init__(host)
+	def __init__(self, host, mvid):
+		super(K2, self).__init__(host, mvid)
 		#self.False = True #Note to self pick out variable names I can remember
 		#what what
 		self.q = queue.Queue(100)

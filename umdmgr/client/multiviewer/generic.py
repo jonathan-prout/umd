@@ -17,7 +17,7 @@ from abc import abstractmethod, ABCMeta, ABC
 from client import gv, labelmodel
 
 
-def get_mv_input_from_database(mvHost, mvInput):
+def get_mv_input_from_database(mvID, mvInput):
 	""" Return the muliviewer input from the database """
 	fields = ["strategy", "equipment", "inputmtxid", "inputmtxname", "customlabel1", "customlabel2"]
 	fn = []
@@ -31,7 +31,7 @@ def get_mv_input_from_database(mvHost, mvInput):
 	cmd = "SELECT "
 	cmd += " , ".join(fn)
 	cmd += "FROM `mv_input`"
-	cmd += "WHERE ((`mv_input`.`multiviewer` =%d) AND (`mv_input`.`input` =%d))" % (gv.mvID[mvHost], mvInput)
+	cmd += "WHERE ((`mv_input`.`multiviewer` =%d) AND (`mv_input`.`input` =%d))" % (mvID, mvInput)
 
 	return dict(list(zip(fields, gv.sql.qselect(cmd)[0])))
 
@@ -40,7 +40,8 @@ class multiviewer(ABC):
 	""" Base class multiviewers MUST inherit """
 	__metaclass__ = ABCMeta
 
-	def __init__(self):
+	def __init__(self, mvid):
+		self.id = mvid
 		self.previousLabel = {}
 		self.lookuptable = {}
 		self.qtruncate()
@@ -105,8 +106,8 @@ class multiviewer(ABC):
 			if not self.get_offline():
 				self.q.put(qitem)
 
-	def getStatusMesage(self, mvInput, mvHost=None):
-		mvHost = mvHost or self.host
+	def getStatusMesage(self, mvInput, mvID=None):
+		mvID = mvID or self.id
 		with gv.equipDBLock:
 
 			happyStatuses = ["RUNNING"]
@@ -115,7 +116,7 @@ class multiviewer(ABC):
 
 			sm = client.multiviewer.status.status_message()
 
-			res = get_mv_input_from_database(mvHost, mvInput)
+			res = get_mv_input_from_database(mvID, mvInput)
 			# print cmd
 			# print res
 			if all((pollstatus in happyStatuses, displayStatus in happyStatuses)):

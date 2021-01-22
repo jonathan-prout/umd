@@ -13,8 +13,8 @@ class zprotocol(TelnetMultiviewer):
 	""" This class impliments Harris/Zandar Z protocol as a class
 	TCP Port is implied, but expects an instance of a collections.queue object passed to perform FIFO queueing of UMD texts """
 
-	def __init__(self, host):
-		super(zprotocol, self).__init__()
+	def __init__(self, host, mvid):
+		super(zprotocol, self).__init__(mvid)
 		self.mv_type = "Harris/Zandar"
 		self.tel = None
 		self.port = 4003
