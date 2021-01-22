@@ -199,11 +199,11 @@ class KX(kaleido):
 	fullref = False
 	clearAlarmsOnConnect = True
 
-	def __init__(self, host: str, mvid:int, name:str):
+	def __init__(self, *args, **kwargs):
 		
-		super().__init__(mvid, name)
+		super().__init__(*args, **kwargs)
 		self.q = queue.Queue(1000)
-		self.host = host
+
 
 		self.make_default_input_table()
 		self.connect()
