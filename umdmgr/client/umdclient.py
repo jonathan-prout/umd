@@ -8,8 +8,13 @@ import socket
 import getopt
 import time
 
-from helpers import mysql
-from ..helpers import virtualmatrix
+import client
+import client.multiviewer.miranda
+import client.multiviewer.harris
+import client.multiviewer.gvgmv
+
+from helpers import mysql 
+from helpers import virtualmatrix
 from . import multiviewer
 from . import gv
 from . import labelmodel
@@ -128,7 +133,7 @@ def main(loop, test=None):
 			print("'%s' not in the multiviewer table" % test)
 			return
 
-		mul = multiviewer.generic.testmultiviewer(line[d["IP"]])
+		mul = multiviewer.generic.TestMultiviewer(line[d["IP"]])
 		gv.mvID[line[d["IP"]]] = line[d["id"]]
 		print(getAddresses(line[d["IP"]]))
 		mul.lookuptable = getAddresses(line[d["IP"]])
@@ -240,22 +245,25 @@ def getMultiviewer(mvType, host):
 	gv.sql.qselect('UPDATE `Multiviewer` SET `status` = "STARTING" WHERE `IP` = "%s";' % host)
 	if mvType in ["kaleido", "Kaleido"]:
 		print("Starting Kaleido")
-		return multiviewer.miranda.kaleido(host)
+		return client.multiviewer.miranda.kaleido(host)
 	elif mvType in ["k2", "K2"]:
 		print("Starting K2")
-		return multiviewer.miranda.K2(host)
+		return client.multiviewer.miranda.K2(host)
 	elif mvType in ["KX", "KX"]:
 		print("Starting KX")
-		return multiviewer.miranda.KX(host)
+		return client.multiviewer.miranda.KX(host)
 	elif mvType in ["KX16", "KX-16"]:
 		print("Starting KX-16")
-		return multiviewer.miranda.KX16(host)
+		return client.multiviewer.miranda.KX16(host)
 	elif mvType in ["KXQUAD", "KX-QUAD"]:
 		print("Starting KX-QUAD")
 		return multiviewer.miranda.KXQUAD(host)
+	elif mvType in ["GVMultiviewer", "GV-Multiviewer", "GVMultiv"]:
+		print("Starting GV-Multiviewer")
+		return multiviewer.gvgmv.GvMv(host)
 	else:  # Harris/Zandar
 		print("Starting Harris")
-		return multiviewer.harris.zprotocol(host)
+		return client.multiviewer.harris.zprotocol(host)
 
 
 class mvThread(threading.Thread):
