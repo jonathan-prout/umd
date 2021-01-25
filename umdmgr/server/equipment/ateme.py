@@ -13,12 +13,11 @@ class DR5000(IRD):
 	""" ATEME DR5000 version 1.0.2.2 """
 
 	def __init__(self, equipmentId, ip, name):
-		super(DR5000, self).__init__()
 		self.equipmentId = equipmentId
 		self.ip = ip
 		self.name = name
 		self.modelType = "DR5000"
-
+		super(DR5000, self).__init__()
 
 	def getAspectRatio(self):
 		d = {1: "16:9", 2: "4:3"}
@@ -256,6 +255,7 @@ class DR5000(IRD):
 
 		try:
 			self.snmp_res_dict.update(snmp.get(self.getoids(), self.ip))
+
 		except:
 			self.set_offline()
 		if len(list(self.snmp_res_dict.keys())) < len(list(self.getoids().keys())):
@@ -263,6 +263,8 @@ class DR5000(IRD):
 
 		if len(self.snmp_res_dict) == 0:
 			self.set_offline()
+		else:
+			self.set_online()
 		if len(self.bulkoids()) != 0:
 			if self.getNumServices():
 				self.snmp_res_dict.update(snmp.getbulk(self.bulkoids(), self.ip, self.getNumServices() + 1))
