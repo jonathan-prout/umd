@@ -1,6 +1,9 @@
 from __future__ import print_function
 from __future__ import absolute_import
 from future import standard_library
+
+from helpers import processing
+
 standard_library.install_aliases()
 from builtins import str
 import sys
@@ -377,9 +380,13 @@ def walk_subprocess(commandDict, ip):
 		returncode = sub.wait() #Block here waiting for subprocess to return. Next thrad should execute from here
 		sout = sub.stdout.read()
 		try:
-			serr = sub.stderr.read()
-		except:
+			serr = processing.decodeUTF8(sub.stderr.read())
+		except (ValueError, EOFError, TypeError):
 			serr = ""
+		try:
+			sout = processing.decodeUTF8(sout)
+		except (ValueError, TypeError):
+			pass
 		if returncode != 0:
 			if gv.loudSNMP:
 				print(returncode)
