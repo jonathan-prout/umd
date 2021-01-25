@@ -256,13 +256,15 @@ class DR5000(IRD):
 		try:
 			self.snmp_res_dict.update(snmp.get(self.getoids(), self.ip))
 
-		except:
-			self.set_offline()
+
+		except Exception as e:
+
+			self.set_offline(f"Error with SNMP Get {e}")
 		if len(list(self.snmp_res_dict.keys())) < len(list(self.getoids().keys())):
 			self.oid_mask()
 
 		if len(self.snmp_res_dict) == 0:
-			self.set_offline()
+			self.set_offline("Empty SNMP Res Dict")
 		else:
 			self.set_online()
 		if len(self.bulkoids()) != 0:

@@ -622,10 +622,14 @@ class IRD(equipment):
 		except:
 			return 0
 
-	def set_online(self):
+	def set_online(self, reason: str = "") -> None:
+		if gv.loud:
+			print("{}: Online: {}".format(self.getId(), reason))
 		self.offline = False
 
-	def set_offline(self):
+	def set_offline(self, excuse: str = "") -> None:
+		if not self.offline:
+			print("{}: Offline: {}".format(self.getId(), excuse))
 		self.offline = True
 		try:
 			order = "UPDATE status SET status ='Offline' WHERE id ='%i';" % self.getId()

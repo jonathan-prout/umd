@@ -130,8 +130,8 @@ def refresh(data):
 	# print "deserialized %s: %s"%(current_equipment.equipmentId,current_equipment.modelType )
 	try:
 		current_equipment.refresh()
-	except:
-		current_equipment.set_offline()
+	except Exception as e:
+		current_equipment.set_offline(f"Exception {e} caught in refresh")
 
 	if not current_equipment.get_offline():
 
