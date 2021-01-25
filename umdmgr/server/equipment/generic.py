@@ -623,7 +623,7 @@ class IRD(equipment):
 			return 0
 
 	def set_online(self, reason: str = "") -> None:
-		if gv.loud:
+		if gv.loud and not self.offline:
 			print("{}: Online: {}".format(self.getId(), reason))
 		self.offline = False
 
