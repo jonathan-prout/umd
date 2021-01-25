@@ -6,7 +6,7 @@
 from __future__ import print_function
 from future import standard_library
 
-import client.multiviewer.status
+
 import client.status
 from client.status import inputStrategies
 
