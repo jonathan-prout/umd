@@ -3,7 +3,7 @@
 	git note: moved from mukltiviewer.py
 """
 import queue
-import telnetlib
+from helpers import telnethelper
 
 from client.multiviewer.generic import TelnetMultiviewer
 from client.status import status_message
@@ -41,7 +41,7 @@ class kaleido(TelnetMultiviewer):
 		try:
 
 			assert(gv.programTerminationFlag == False)
-			self.tel = telnetlib.Telnet(self.host, self.port)
+			self.tel = telnethelper.Telnet(self.host, self.port)
 			self.tel.write("Hello\n")
 			self.tel.read_until("<nack/>", self.timeout)
 			self.set_online()

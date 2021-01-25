@@ -5,6 +5,8 @@
 from __future__ import absolute_import
 	
 import telnetlib, queue, signal, time
+
+from helpers import telnethelper
 from .generic import TelnetMultiviewer
 from ..status import status_message
 
@@ -32,7 +34,7 @@ class zprotocol(TelnetMultiviewer):
 		
 		"""
 		try:
-			self.tel = telnetlib.Telnet(self.host, self.port)
+			self.tel = telnethelper.Telnet(self.host, self.port)
 			self.tel.write("\n")
 			self.tel.read_until(">", 1)
 			self.set_online()

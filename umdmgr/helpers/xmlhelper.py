@@ -9,18 +9,16 @@
 from future import standard_library
 standard_library.install_aliases()
 from xml.dom import minidom
-
+import io
 
 
 def stringtoxml(string):
-	# stringtoxml takes a string and returns an xml
-	# object using minidom.parse.
-	# This is useful since other xmlhelper scripts require 
-	# xml objects as their input.
-	#from taskscript import debug
-	#debug("String To XML has been called with a " + str(type(string)) + " object.")
-	from xml.dom import minidom
-	import io
+	""" stringtoxml takes a string and returns an xml
+	 object using minidom.parse.
+	 This is useful since other xmlhelper scripts require
+	 xml objects as their input.
+	"""
+
 	# Python's minidom parse module breaks with the & symbol in strings. 
 	# Omneon will reply with a & in the file URI for username & password on exporters
 	# since this part of the file is not needed we can simply string-replace it
@@ -32,13 +30,6 @@ def stringtoxml(string):
 def getAttributesFromTags(tag, attribute, document):
 	# takes tag and attribute as string and document as file like object
 	# returns list of the attributes' values
-	"""
-	try:
-		xmldoc = minidom.parse(document)
-		taglist = xmldoc.getElementsByTagName(tag)
-	except (IOError, OSError):  
-		taglist = document.getElementsByTagName(tag)
-	"""
 	taglist = document.getElementsByTagName(tag)
 	returnlist = []
 	i = 0
