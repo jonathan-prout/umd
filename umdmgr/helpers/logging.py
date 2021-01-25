@@ -12,7 +12,7 @@ Created on 1 avr. 2016
 
 import time
 
-import matrix.helpers.alarm 
+import helpers.alarm 
 
 import os
 import traceback, sys, string
@@ -30,7 +30,7 @@ debug = DEBUG_ALL
 logLock = threading.Lock()
 ioLock = True
 debugLock = threading.Lock()
-MIN_SEVERITY = matrix.helpers.alarm.level.OK
+MIN_SEVERITY = helpers.alarm.level.OK
 import logging
 import logging.handlers
 import colorlog
@@ -39,10 +39,10 @@ from pythonjsonlogger import jsonlogger
 
 pylog_level = {	}
 
-for lvl in range(len(matrix.helpers.alarm._levels)):
+for lvl in range(len(helpers.alarm._levels)):
 	""" levels should be positive integers and they should increase in increasing order of severity."""
-	levelName = matrix.helpers.alarm._levels[lvl]
-	levelValue = 60 + len(matrix.helpers.alarm._levels)- lvl
+	levelName = helpers.alarm._levels[lvl]
+	levelValue = 60 + len(helpers.alarm._levels)- lvl
 	pylog_level[lvl] = levelValue
 	logging.addLevelName(levelValue, levelName)
 	setattr(logging, levelName, levelValue)
@@ -148,20 +148,20 @@ class severityAdapter(logging.LoggerAdapter):
 		return '[%s]%s' % (self.extra['seberity'], msg), kwargs
 
 
-def basic_print_log(message, callingInstance=None, severity= matrix.helpers.alarm.level.Debug):
+def basic_print_log(message, callingInstance=None, severity= helpers.alarm.level.Debug):
 	if severity > MIN_SEVERITY:
 		return
 	print("{0}:[{1}][{2}]{3}".format(  time.strftime('%Y-%m-%dT%H:%M:%SZ',time.gmtime()),
-		  matrix.helpers.alarm.to_string(severity),
+		  helpers.alarm.to_string(severity),
 		  str(callingInstance), 
 		  message
 		  ))
 
-def basic_logfile_log(message, callingInstance=None, severity= matrix.helpers.alarm.level.Debug):
+def basic_logfile_log(message, callingInstance=None, severity= helpers.alarm.level.Debug):
 	if severity > MIN_SEVERITY:
 		return
 	msg = "{0}:[{1}][{2}]{3}".format(  time.strftime('%Y-%m-%dT%H:%M:%SZ',time.gmtime()),
-		  matrix.helpers.alarm.to_string(severity),
+		  helpers.alarm.to_string(severity),
 		  str(callingInstance), 
 		  message
 		  )
@@ -172,7 +172,7 @@ def basic_logfile_log(message, callingInstance=None, severity= matrix.helpers.al
 
 
 
-def pylogging_log(message, callingInstance=None, severity= matrix.helpers.alarm.level.Debug):
+def pylogging_log(message, callingInstance=None, severity= helpers.alarm.level.Debug):
 	if severity > MIN_SEVERITY:
 		return
 	#msg = "[{0}] {1}".format(
@@ -201,9 +201,9 @@ class list_handler(logging.Handler):
 				self._list = self._list[1:]
 
 class log_mixin(object):
-	def log(self, message, severity = matrix.helpers.alarm.level.Info):
+	def log(self, message, severity = helpers.alarm.level.Info):
 		log(message, self, severity)
-	def debug(self, message, severity = matrix.helpers.alarm.level.Debug):
+	def debug(self, message, severity = helpers.alarm.level.Debug):
 		log(message, self, severity)
 
 taskLoggers = {}
@@ -233,7 +233,7 @@ def _createTaskLogger(uid):
 	return newLog
 	
 	
-def logerr(callingInstance = "", severity = matrix.helpers.alarm.level.Critical, logger = log):
+def logerr(callingInstance = "", severity = helpers.alarm.level.Critical, logger = log):
 	limit = None
 	_type, value, tb = sys.exc_info(  )
 	_list = traceback.format_tb(tb, limit) + traceback.format_exception_only(_type, value)

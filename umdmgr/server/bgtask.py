@@ -2,7 +2,7 @@ from __future__ import print_function
 from __future__ import absolute_import
 from builtins import str
 
-from . import gv
+from server import gv
 import random
 
 import server.equipment.generic
@@ -12,6 +12,8 @@ import server.equipment.tvips
 import server.equipment.omneon
 import server.equipment.novelsat
 
+from helpers import logging
+from helpers import alarm
 
 def deserialize(data, keepData=True):
 	""" Instantiates equip with data. Beware of KeyError and TypeError"""
@@ -131,6 +133,7 @@ def refresh(data):
 	try:
 		current_equipment.refresh()
 	except Exception as e:
+		logging.logerr(current_equipment)
 		current_equipment.set_offline(f"Exception {e} caught in refresh")
 
 	if not current_equipment.get_offline():
