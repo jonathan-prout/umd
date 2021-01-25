@@ -316,10 +316,14 @@ class equipment(serializableObj):
 		except:
 			return "Unknown"
 
-	def set_offline(self):
+	def set_offline(self, excuse: str = "") -> None:
+		if not self.offline:
+			print("{}: Offline: {}".format(self.getId(), excuse))
 		self.offline = True
 
-	def set_online(self):
+	def set_online(self, reason: str = "") -> None:
+		if gv.loud and not self.offline and reason:
+			print("{}: Online: {}".format(self.getId(), reason))
 		self.offline = False
 
 	def get_offline(self):
@@ -622,10 +626,7 @@ class IRD(equipment):
 		except:
 			return 0
 
-	def set_online(self, reason: str = "") -> None:
-		if gv.loud and not self.offline:
-			print("{}: Online: {}".format(self.getId(), reason))
-		self.offline = False
+
 
 	def set_offline(self, excuse: str = "") -> None:
 		if not self.offline:
