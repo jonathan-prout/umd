@@ -84,15 +84,18 @@ class GvMv(tsl.TslMultiviewer):
 
 		return n
 
-	def writeline(self, videoInput, level, line, mode = None, colour="#e3642d", buffered=True):
+	def writeline(self, videoInput, level, line, mode= None, colour="#e3642d", buffered=True):
 
 		try:
 			addr = self.lookup(videoInput, level)
 		except (KeyError, ValueError):
 			print("videoIn, %s, level %s not found" % (videoInput, level))
 			return
-
-		dmesg = tsl.Dmesg(addr, f"{line};{colour}")
+		if level in ["TOP", "BOTTOM"]:
+			txt = f"{line};{colour}"
+		else:
+			txt = line
+		dmesg = tsl.Dmesg(addr, txt)
 		if not buffered:
 			packet = tsl.TslPacket()
 			packet.append(dmesg)
