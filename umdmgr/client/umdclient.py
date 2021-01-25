@@ -10,7 +10,7 @@ import client
 import client.multiviewer.miranda
 import client.multiviewer.harris
 import client.multiviewer.gvgmv
-import client.multiviewer.status
+
 import client.status
 from helpers import virtualmatrix
 from . import multiviewer
