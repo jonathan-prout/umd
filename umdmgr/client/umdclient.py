@@ -15,9 +15,9 @@ import client.multiviewer.gvgmv
 
 from helpers import mysql 
 from helpers import virtualmatrix
-from . import multiviewer
-from . import gv
-from . import labelmodel
+from client import multiviewer
+from client import gv
+from client import labelmodel
 
 gv.display_server_status = "Starting"
 ASI_MODE_TEXT = "ASI"

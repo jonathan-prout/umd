@@ -5,7 +5,9 @@ import getopt
 import sys
 import datetime
 import threading
-
+from client import umdclient
+from helpers import mysql
+from client import gv
 
 def usage():
 	print("v, verbose logs everything")
@@ -13,16 +15,17 @@ def usage():
 	print("e, errors, print errors")
 
 
-if __name__ == '__main__':
-	from client import umdclient
-	from helpers import mysql
-	from client import gv
+def startdb():
 	sql = mysql.mysql()
-
 	sql.semaphore = threading.BoundedSemaphore(value=1)
 	sql.mutex = threading.RLock()
 	gv.sql = sql
 	gv.display_server_status = "Starting"
+
+
+if __name__ == '__main__':
+	startdb()
+
 	try:                                
 		opts, args = getopt.getopt(sys.argv[1:], "vlet:", ["verbose", "loop", "errors", "test"]) 
 	except getopt.GetoptError as err:
