@@ -90,7 +90,7 @@ The Bagels alarm levels are as following:
 """
 from __future__ import absolute_import
 
-from matrix.helpers.processing import case_insensitive_enum as enum
+from helpers.processing import case_insensitive_enum as enum
 
 _levels = [	
 			"Emergency",
