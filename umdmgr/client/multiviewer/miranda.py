@@ -45,7 +45,7 @@ class kaleido(TelnetMultiviewer):
 			self.tel.write("Hello\n")
 			self.tel.read_until("<nack/>", self.timeout)
 			self.set_online()
-			self.writeStatus("UMD manager connected", queued=False)
+			self.write_status("UMD manager connected", queued=False)
 		except:
 			self.set_offline("init")
 			self.shout("Cannot connect to %s" %self.host)
@@ -171,7 +171,7 @@ class kaleido(TelnetMultiviewer):
 		""" KX has alarms on on startup, so clear them """
 		if self.get_offline():
 			return
-		self.writeStatus("Clearing Alarms", queued=False)
+		self.write_status("Clearing Alarms", queued=False)
 		alarm_addresses = {"REC":500, "C/N":600}
 		for alarm_type in ["REC", "C/N"]:
 			

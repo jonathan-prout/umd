@@ -127,9 +127,9 @@ def main(loop, test=None):
 		while 1:
 			try:
 				for i in list(mul.lookuptable.keys()):
-					for x in mul.getStatusMesage(i, mul.id).__iter__():
+					for x in mul.get_status_message(i, mul.id).__iter__():
 						print(x)
-					mul.put(mul.getStatusMesage(i, mul.id))
+					mul.put(mul.get_status_message(i, mul.id))
 				mul.refresh()
 				time.sleep(1)
 				gv.display_server_status = "Running"
@@ -295,7 +295,7 @@ def mvrefresh(myInstance, name):
 
 			# Generate a status message for each multiviwer input
 			for i in myInstance.lookuptable.keys():
-				myInstance.put(myInstance.getStatusMesage(i, myInstance.id))
+				myInstance.put(myInstance.get_status_message(i, myInstance.id))
 			# Now call the refresh function and loop
 			# Refresh reads through all the status messages and writes to the multiviewer
 			myInstance.refresh()

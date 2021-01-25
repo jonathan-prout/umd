@@ -9,6 +9,8 @@ class GvMv(tsl.TslMultiviewer):
 
 	def __init__(self, url: str, mvid: int, name: str):
 		super(GvMv, self).__init__(url, mvid, name)
+		self.make_default_input_table()
+		self.write_status("UMD MANAGER CONNECTED", queued=False)
 		self.clearalarms()
 
 	def clearalarms(self):

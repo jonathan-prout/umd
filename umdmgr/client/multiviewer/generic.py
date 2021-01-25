@@ -112,44 +112,47 @@ class multiviewer(ABC):
 			if not self.get_offline():
 				self.q.put(qitem)
 
-	def getStatusMesage(self, mvInput, mvID=None):
-		mvID = mvID or self.id
+	def get_status_message(self, mv_input, mv_id=None):
+		mv_id = mv_id or self.id
 		with gv.equipDBLock:
 
-			happyStatuses = ["RUNNING"]
-			pollstatus = gv.getPollStatus().upper()
-			displayStatus = gv.display_server_status.upper()
+			happy_statuses = ["RUNNING"]
+			poll_status = gv.getPollStatus().upper()
+			display_status = gv.display_server_status.upper()
 
 			sm = client.status.status_message()
 
-			res = get_mv_input_from_database(mvID, mvInput)
+			res = get_mv_input_from_database(mv_id, mv_input)
 			# print cmd
 			# print res
 			try:
 				strategy = int(res["strategy"])
 			except (ValueError, TypeError):
 				strategy = inputStrategies.label
-			if all((pollstatus in happyStatuses, displayStatus in happyStatuses)):
-				try:
-					if gv.equip[int(res["equipment"])] is not None:
-						tlOK = True
-					else:
-						tlOK = False
-					e = None
-				except KeyError as e:
-					tlOK = False
-				if all((strategy == int(inputStrategies.equip), tlOK)):
+
+			try:
+				if gv.equip[int(res["equipment"])] is not None:
+					equip_resolved = True
+				else:
+					equip_resolved = False
+				e = None
+			except (KeyError, TypeError) as e:
+				equip_resolved = False
+
+			if all((poll_status in happy_statuses, display_status in happy_statuses)):
+
+				if all((strategy == int(inputStrategies.equip), equip_resolved)):
 					sm = gv.equip[res["equipment"]].getStatusMessage()
 					assert sm is not None
 					sm.strategy = "equip"
 				elif strategy == inputStrategies.matrix:
-					mtxIn = gv.mtxLookup(res["inputmtxname"])
-					if gv.getEquipByName(mtxIn):
-						sm = gv.equip[gv.getEquipByName(mtxIn)].getStatusMessage()
+					mtx_in = gv.mtxLookup(res["inputmtxname"])
+					if gv.getEquipByName(mtx_in):
+						sm = gv.equip[gv.getEquipByName(mtx_in)].getStatusMessage()
 						sm.strategy = "matrix + equip"
 						assert sm is not None
 					else:
-						sm = labelmodel.matrixResult(mtxIn).getStatusMessage()
+						sm = labelmodel.matrixResult(mtx_in).getStatusMessage()
 						assert sm is not None
 						sm.strategy = "matrix no equip"
 				elif strategy == inputStrategies.indirect:
@@ -163,16 +166,7 @@ class multiviewer(ABC):
 						sm.bottomLabel = res["customlabel2"]
 					sm.strategy = "label"
 			else:
-				try:
-					if gv.equip[int(res["equipment"])] is not None:
-						tlOK = True
-					else:
-						tlOK = False
-					e = None
-				except (KeyError, TypeError) as e:
-					tlOK = False
-
-				if all((strategy == int(inputStrategies.equip), tlOK)):
+				if all((strategy == int(inputStrategies.equip), equip_resolved)):
 					sm.topLabel = gv.equip[int(res["equipment"])].isCalled()
 					sm.bottomLabel = " "
 					sm.strategy = "equip"
@@ -187,10 +181,10 @@ class multiviewer(ABC):
 					# sm.bottomLabel = "%s, %s %s,%s"%(res["equipment"],len(gv.equip.keys()),e, int(res["strategy"]) )
 					sm.bottomLabel = " "
 					sm.strategy = "matrix"
-				if mvInput % 16 == 1:
-					sm.bottomLabel = "Display: %s, Polling:%s" % (displayStatus, pollstatus)
+				if mv_input % 16 == 1:
+					sm.bottomLabel = "Display: %s, Polling:%s" % (display_status, poll_status)
 
-			sm.mv_input = mvInput
+			sm.mv_input = mv_input
 
 		return sm
 
@@ -198,7 +192,7 @@ class multiviewer(ABC):
 	def writeline(self, videoInput, level, line, mode, buffered=True):
 		pass
 
-	def writeStatus(self, status, queued=True):
+	def write_status(self, status, queued=True):
 		""" Write Errors to the multiviewer """
 
 		klist = sorted(self.lookuptable.keys())
