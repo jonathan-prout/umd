@@ -237,7 +237,7 @@ def get_subprocess(commandDict, ip):
 	sout = sub.stdout.read().decode("UTF-8")
 	try:
 		serr = sub.stderr.read().decode("UTF-8")
-	except (EOFError, TypeError):
+	except (EOFError, TypeError, AttributeError):
 		serr = ""
 	del sub
 	if returncode != 0:
@@ -381,7 +381,7 @@ def walk_subprocess(commandDict, ip):
 		sout = sub.stdout.read()
 		try:
 			serr = processing.decodeUTF8(sub.stderr.read())
-		except (ValueError, EOFError, TypeError):
+		except (ValueError, EOFError, TypeError, AttributeError):
 			serr = ""
 		try:
 			sout = processing.decodeUTF8(sout)
