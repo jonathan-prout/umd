@@ -100,9 +100,12 @@ class virtualMatrix( mysql, matrix):
 							if srcNr in self.input[level]:
 								return self.input[level][srcNr]
 							else:
-								for lvl, d in self.output:
-									if srcNr in d:
-										return  d[srcNr]
+								try:
+									for lvl, d in self.output.items():
+										if srcNr in d:
+											return d[srcNr]
+								except TypeError:
+									print(f"Warning outputs not set on {self}")
 		return srcName
 		
 		

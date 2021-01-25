@@ -5,19 +5,20 @@
 import queue
 from helpers import telnethelper
 
-from client.multiviewer.generic import TelnetMultiviewer, status_message
+from client.multiviewer.generic import TelnetMultiviewer
+from client.status import status_message
 from client import gv
 import xml.etree.ElementTree as etree
 
-		
+
 class kaleido(TelnetMultiviewer):
 	mv_type = "Kaleido"
 	port = 13000
 	size = 96
 	timeout = 10
 
-	def __init__(self, host):
-		super(kaleido, self).__init__()
+	def __init__(self, host, mvid, name):
+		super(kaleido, self).__init__(mvid, name)
 		self.AlarmCapable = True
 		self.lowAddressBug = False
 		self.mv_type = "Kaleido"
@@ -30,8 +31,8 @@ class kaleido(TelnetMultiviewer):
 		self.make_default_input_table()
 		self.tel = None
 
-	def connect(self):    
-		
+	def connect(self):
+
 		"""
 		# Set the signal handler and a 5-second alarm
 		signal.signal(signal.SIGALRM, self.errorHandler)
@@ -39,21 +40,22 @@ class kaleido(TelnetMultiviewer):
 		"""
 		try:
 
-			assert(gv.programTerminationFlag == False)
+			assert (gv.programTerminationFlag == False)
 			self.tel = telnethelper.Telnet(self.host, self.port)
 			self.tel.write("Hello\n")
 			self.tel.read_until("<nack/>", self.timeout)
 			self.set_online()
-			self.writeStatus("UMD manager connected", queued=False)
+			self.write_status("UMD manager connected", queued=False)
 		except:
 			self.set_offline("init")
-			self.shout("Cannot connect to %s" %self.host)
+			self.shout("Cannot connect to %s" % self.host)
 		finally:
-			#signal.alarm(0)          # Disable the alarm
+			# signal.alarm(0)          # Disable the alarm
 			pass
+
 	def make_default_input_table(self):
 		self.lookuptable = {}
-		for i in range(1, self.size+1):
+		for i in range(1, self.size + 1):
 			d = {
 				"TOP": "0" + str(i),
 				"BOTTOM": 100 + i,
@@ -61,50 +63,51 @@ class kaleido(TelnetMultiviewer):
 				"REC": 600 + i
 			}
 			self.lookuptable[i] = d
-			
+
 	def lookup(self, videoInput, level):
 		return self.lookuptable[int(videoInput)][level]
-	
-	def writeline(self, videoInput, level, line, mode, buffered = True):
 
-			try:
-				addr = self.lookup(videoInput, level)
-			except (KeyError, ValueError):
-				print("videoIn, %s, level %s not found"%(videoInput, level))
-				return
-			a = ""
-			if mode == status_message.alarmMode:
-				if self.AlarmCapable:
-					cmd = '<setKStatusMessage>set id="%s" status="%s"</setKStatusMessage>\n' %(addr, line)
-				else:
-					return
+	def writeline(self, videoInput, level, line, mode, *args, **kwargs):
+
+		try:
+			addr = self.lookup(videoInput, level)
+		except (KeyError, ValueError):
+			print("videoIn, %s, level %s not found" % (videoInput, level))
+			return
+		a = ""
+		if mode == status_message.alarmMode:
+			if self.AlarmCapable:
+				cmd = '<setKStatusMessage>set id="%s" status="%s"</setKStatusMessage>\n' % (addr, line)
 			else:
-				if self.lowAddressBug:
-					if addr < 100:
-						addr = "0"+str(addr)
-				cmd = '<setKDynamicText>set address="%s" text="%s" </setKDynamicText>\n' %(addr, line)
-			"""   
+				return
+		else:
+			if self.lowAddressBug:
+				if addr < 100:
+					addr = "0" + str(addr)
+			cmd = '<setKDynamicText>set address="%s" text="%s" </setKDynamicText>\n' % (addr, line)
+		"""   
 			# Set the signal handler and a 5-second alarm
 			signal.signal(signal.SIGALRM, self.errorHandler)
 			signal.alarm(5)
 			"""
-			try:
-				self.tel.write(cmd)
-				#print cmd
-				a = self.tel.read_until("<ack/>", self.timeout)
-				if "<ack/>" not in a:
-					if "<nack/>" in a:
-						self.shout("%s: NACK ERROR in writeline when writing %s"%(self.host,cmd))
-					else:
-						self.shout(a)
-			except:
-				
-				self.set_offline("writeline, %s, %s "%(line,a) )
-			finally:
-				#signal.alarm(0)          # Disable the alarm
-				pass
+		try:
+			self.tel.write(cmd)
+			# print cmd
+			a = self.tel.read_until("<ack/>", self.timeout)
+			if "<ack/>" not in a:
+				if "<nack/>" in a:
+					self.shout("%s: NACK ERROR in writeline when writing %s" % (self.host, cmd))
+				else:
+					self.shout(a)
+		except:
+
+			self.set_offline("writeline, %s, %s " % (line, a))
+		finally:
+			# signal.alarm(0)          # Disable the alarm
+			pass
+
 	def setAction(self, actionName):
-		
+
 		cmd = '<setKFireAction>set name="%s"</setKFireAction>\n' % actionName
 		a = ""
 		try:
@@ -114,15 +117,14 @@ class kaleido(TelnetMultiviewer):
 				self.shout(a)
 		except:
 			if "<nack/>" in a:
-				self.shout("Multiviewer did not recognise the action named %s"% actionName)
+				self.shout("Multiviewer did not recognise the action named %s" % actionName)
 			else:
-				self.set_offline("writeline, %s, %s "%(actionName,a) )
+				self.set_offline("writeline, %s, %s " % (actionName, a))
 		finally:
-			#signal.alarm(0)          # Disable the alarm
+			# signal.alarm(0)          # Disable the alarm
 			pass
 
 	def getActionList(self):
-
 		a = ""
 		cmd = '<getKActionList/>\n'
 		try:
@@ -139,27 +141,35 @@ class kaleido(TelnetMultiviewer):
 		for el in xmlData.findall("action"):
 			returnList.append(el.text)
 		return returnList
-	
+
 	def refresh(self):
 		while not self.q.empty():
 			if self.fullref:
 				break
 			sm = self.q.get()
-			if sm:
-				#print self.host + ": status %s//%s"%(sm.topLabel, sm.bottomLabel)
-				#for alarm in [sm.cnAlarm, sm.recAlarm]:
-				sm.cnAlarm = {True:"MAJOR", False:"DISABLE"}[sm.cnAlarm]
-				sm.recAlarm = {True:"MAJOR", False:"DISABLE"}[sm.recAlarm]
-					
+			if isinstance(sm, status_message):
+				# print self.host + ": status %s//%s"%(sm.topLabel, sm.bottomLabel)
+				# for alarm in [sm.cnAlarm, sm.recAlarm]:
+				sm.cnAlarm = {True: "MAJOR", False: "DISABLE"}[sm.cnAlarm]
+				sm.recAlarm = {True: "MAJOR", False: "DISABLE"}[sm.recAlarm]
+
 				for videoInput, level, line, mode in sm:
 					if not line: line = " "
 					if not self.get_offline():
 						if not self.matchesPrevious(videoInput, level, line):
 							self.writeline(videoInput, level, line, mode)
+			elif isinstance(sm, (list, tuple)):
+				try:
+					videoInput = sm[0]
+					level = sm[1]
+					line = sm[2]
+				except IndexError:
+					continue
+
+				self.writeline(videoInput, level, line, mode=status_message.textMode)
 		if self.fullref:
-				self.qtruncate()
-			
-		
+			self.qtruncate()
+
 	def __del__(self):
 		try:
 			self.tel.close()
@@ -170,13 +180,13 @@ class kaleido(TelnetMultiviewer):
 		""" KX has alarms on on startup, so clear them """
 		if self.get_offline():
 			return
-		self.writeStatus("Clearing Alarms", queued=False)
-		alarm_addresses = {"REC":500, "C/N":600}
+		self.write_status("Clearing Alarms", queued=False)
+		alarm_addresses = {"REC": 500, "C/N": 600}
 		for alarm_type in ["REC", "C/N"]:
-			
+
 			for mv_input in range(self.size):
-				addr = alarm_addresses[alarm_type] + mv_input +1
-				cmd = '<setKStatusMessage>set id="%s" status="%s"</setKStatusMessage>\n' %(addr, "DISABLE")
+				addr = alarm_addresses[alarm_type] + mv_input + 1
+				cmd = '<setKStatusMessage>set id="%s" status="%s"</setKStatusMessage>\n' % (addr, "DISABLE")
 				a = ""
 				try:
 					self.tel.write(cmd)
@@ -185,10 +195,11 @@ class kaleido(TelnetMultiviewer):
 						self.shout(a)
 				except Exception as e:
 					if "<nack/>" in a:
-						self.shout("NACK ERROR in writeline when writing %s"% cmd)
+						self.shout("NACK ERROR in writeline when writing %s" % cmd)
 					else:
-						self.set_offline("ClearAlarms, %s, %s "%(addr, e) )
+						self.set_offline("ClearAlarms, %s, %s " % (addr, e))
 						return
+
 class KX(kaleido):
 	mv_type = "KX"
 	port = 13000
@@ -198,21 +209,19 @@ class KX(kaleido):
 	fullref = False
 	clearAlarmsOnConnect = True
 
-	def __init__(self, host):
-		
-		super().__init__(host)
+	def __init__(self, *args, **kwargs):
+		super().__init__(*args, **kwargs)
 		self.q = queue.Queue(1000)
-		self.host = host
 
 		self.make_default_input_table()
 		self.connect()
 
-	
 	def connect(self):
-		super(KX,self).connect()
+		super(KX, self).connect()
 		if self.clearAlarmsOnConnect:
 			self.clearalarms()
-		
+
+
 class K2(kaleido):
 	mv_type = "K2"
 	AlarmCapable = False
@@ -220,23 +229,24 @@ class K2(kaleido):
 	port = 13000
 	size = 32
 	fullref = False
-	
-	def __init__(self, host):
-		super(K2, self).__init__(host)
-		#self.False = True #Note to self pick out variable names I can remember
-		#what what
+
+	def __init__(self, *args, **kwargs):
+		super(K2, self).__init__(*args, **kwargs)
+		# self.False = True #Note to self pick out variable names I can remember
+		# what what
 		self.q = queue.Queue(100)
 		self.host = host
-		
+
 		self.fullref = False
 		self.make_default_input_table()
 		self.connect()
+
 
 class KX16(KX):
 	mv_type = "KX-16"
 	size = 16
 
+
 class KXQUAD(KX):
 	mv_type = "KX-QUAD"
 	size = 4
-		
