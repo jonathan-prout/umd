@@ -125,6 +125,10 @@ class multiviewer(ABC):
 			res = get_mv_input_from_database(mvID, mvInput)
 			# print cmd
 			# print res
+			try:
+				strategy = int(res["strategy"])
+			except (ValueError, TypeError):
+				strategy = inputStrategies.label
 			if all((pollstatus in happyStatuses, displayStatus in happyStatuses)):
 				try:
 					if gv.equip[int(res["equipment"])] is not None:
@@ -134,11 +138,11 @@ class multiviewer(ABC):
 					e = None
 				except KeyError as e:
 					tlOK = False
-				if all((int(res["strategy"]) == int(inputStrategies.equip), tlOK)):
+				if all((strategy == int(inputStrategies.equip), tlOK)):
 					sm = gv.equip[res["equipment"]].getStatusMessage()
 					assert sm is not None
 					sm.strategy = "equip"
-				elif res["strategy"] == inputStrategies.matrix:
+				elif strategy == inputStrategies.matrix:
 					mtxIn = gv.mtxLookup(res["inputmtxname"])
 					if gv.getEquipByName(mtxIn):
 						sm = gv.equip[gv.getEquipByName(mtxIn)].getStatusMessage()
@@ -148,11 +152,11 @@ class multiviewer(ABC):
 						sm = labelmodel.matrixResult(mtxIn).getStatusMessage()
 						assert sm is not None
 						sm.strategy = "matrix no equip"
-				elif res["strategy"] == inputStrategies.indirect:
+				elif strategy == inputStrategies.indirect:
 					sm = labelmodel.matrixResult(res["inputmtxname"]).getStatusMessage()
 					assert sm is not None
 					sm.strategy = "indirect"
-				elif res["strategy"] == inputStrategies.label:
+				elif strategy == inputStrategies.label:
 					if res["customlabel1"]:
 						sm.topLabel = res["customlabel1"]
 					if res["customlabel2"]:
@@ -165,13 +169,14 @@ class multiviewer(ABC):
 					else:
 						tlOK = False
 					e = None
-				except KeyError as e:
+				except (KeyError, TypeError) as e:
 					tlOK = False
-				if all((int(res["strategy"]) == int(inputStrategies.equip), tlOK)):
+
+				if all((strategy == int(inputStrategies.equip), tlOK)):
 					sm.topLabel = gv.equip[int(res["equipment"])].isCalled()
 					sm.bottomLabel = " "
 					sm.strategy = "equip"
-				elif res["strategy"] == inputStrategies.label:
+				elif strategy == inputStrategies.label:
 					if res["customlabel1"]:
 						sm.topLabel = res["customlabel1"]
 					if res["customlabel2"]:

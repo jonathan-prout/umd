@@ -145,10 +145,12 @@ class TslMultiviewer(generic.multiviewer):
 			self.sock = TcpSocket(host, port)
 			self.set_status("Connecting TCP")
 			self.sock.connect()
+			self.set_online("Connected")
 		elif protocol.lower() == "udp":
 			self.sock = UdpSocket(host, port)
 			self.set_status("Connecting UDP")
 			self.sock.connect()
+			self.set_online("Connected")
 		else:
 			self.set_offline("url should be in the format of udp://host:port or tcp://host:port")
 			return

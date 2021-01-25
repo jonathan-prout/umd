@@ -1,28 +1,32 @@
 import socket
 
 from client.multiviewer import tsl
-
+from client.status import status_message
 
 
 class GvMv(tsl.TslMultiviewer):
 	size = 48
+
+	def __init__(self, url: str, mvid: int, name: str):
+		super(GvMv, self).__init__(url, mvid, name)
+		self.clearalarms()
+
 	def clearalarms(self):
 		""" KX has alarms on on startup, so clear them """
 		if self.get_offline():
 			return
-		self.writeStatus("Clearing Alarms", queued=False)
-		alarm_address = 200
-		packet = tsl.TslPacket()
-
-		for mv_input in range(self.size):
-			txt = tsl.Dmesg(203, "")
-			txt.leftTally = tsl.Tally.OFF
-			txt.rightTally = tsl.Tally.OFF
-		try:
-			self.sock.write(packet)
-			self.set_online("OK")
-		except (socket.error, TimeoutError) as e:
-			self.set_offline(str(e))
+		for videoInput in self.lookuptable.keys():
+			sm = status_message()
+			sm.topLabel = ""
+			sm.bottomLabel = ""
+			sm.mv_input = videoInput
+			self.put(sm)
+		sm = status_message()
+		sm.topLabel = ""
+		sm.bottomLabel = "UMD Manager Connected"
+		sm.mv_input = 1
+		self.put(sm)
+		self.refresh()
 
 	def refresh(self):
 		packet = tsl.TslPacket()
@@ -31,7 +35,7 @@ class GvMv(tsl.TslMultiviewer):
 			if self.fullref:
 				break
 			sm = self.q.get()
-			if sm:
+			if isinstance(sm, status_message):
 				sm.cnAlarm = {True: "Low C/N Margin", False: ""}[sm.cnAlarm]
 				sm.recAlarm = {True: "NO REC", False: ""}[sm.recAlarm]
 
@@ -39,28 +43,48 @@ class GvMv(tsl.TslMultiviewer):
 					if not line:
 						line = " "
 					if not self.get_offline() and not self.matchesPrevious(videoInput, level, line):
-						dmesg = self.writeline(videoInput, level, line, mode, colour= sm.colour)
+						dmesg = self.writeline(videoInput, level, line, mode, colour=sm.colour)
 						packet.append(dmesg)
 						packet_commands += 1
 						if packet_commands <= 9:
-							try:
-								self.sock.write(packet)
-								self.set_online("OK")
-							except (socket.error, TimeoutError) as e:
-								self.set_offline(str(e))
+							self.writepacket(packet)
 							packet = tsl.TslPacket()
 							packet_commands = 0
+			elif isinstance(sm, (list, tuple)):
+				try:
+					videoInput = sm[0]
+					level = sm[1]
+					line = sm[2]
+				except IndexError:
+					continue
+
+				dmesg = self.writeline(videoInput, level, line)
+				packet.append(dmesg)
+				packet_commands += 1
+				if packet_commands <= 9:
+					self.writepacket(packet)
+					packet = tsl.TslPacket()
+					packet_commands = 0
+
 		if packet_commands > 0:
-			try:
-				self.sock.write(packet)
-				self.set_online("OK")
-			except (socket.error, TimeoutError) as e:
-				self.set_offline(str(e))
+			self.writepacket(packet)
 
 		if self.fullref:
 			self.qtruncate()
 
-	def writeline(self, videoInput, level, line, mode, colour="#e3642d", buffered=True):
+
+	def writepacket(self, packet) -> int:
+		""" Write to socket return how many bytes writen"""
+		n = 0
+		try:
+			n = self.sock.write(packet)
+			self.set_online("OK")
+		except (socket.error, TimeoutError) as e:
+			self.set_offline(str(e))
+
+		return n
+
+	def writeline(self, videoInput, level, line, mode = None, colour="#e3642d", buffered=True):
 
 		try:
 			addr = self.lookup(videoInput, level)

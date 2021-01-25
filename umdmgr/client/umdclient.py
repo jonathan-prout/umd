@@ -28,7 +28,6 @@ logfile = "/var/www/programming/client/client_error.txt"
 loud = False
 errors_in_stdout = False
 
-
 def logwrite(errortext): # TODO I don't like this so will refactor with python logging
 	if any((loud, errors_in_stdout)):
 		print("**** ERROR!! ******")
@@ -221,7 +220,7 @@ def writeStatus(status):
 		for key in range(0, len(klist), 16):
 			try:
 				gv.mv[addr].put((klist[key], "BOTTOM", status, client.status.status_message.textMode))
-			except:
+			except queue.Full:
 				pass
 
 
@@ -230,7 +229,7 @@ def getMultiviewer(mvType, host, mvID, name):
 	if mvType in ["kaleido", "Kaleido"]:
 		print("Starting Kaleido")
 		mv = client.multiviewer.miranda.kaleido(host, mvID, name)
-		m
+		return mv
 	elif mvType in ["k2", "K2"]:
 		print("Starting K2")
 		return client.multiviewer.miranda.K2(host, mvID, name)
