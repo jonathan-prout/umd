@@ -223,19 +223,20 @@ def get_subprocess(commandDict, ip):
 	returncode = 0
 	
 	try:
-		sub = subprocess.Popen(["/usr/bin/snmpget", "-v1", "-cpublic", ip] + commands, stdout=subprocess.PIPE, stderr=subprocess.PIPE, close_fds=True)
+		sub = subprocess.Popen(["/usr/bin/snmpget", "-v1", "-cpublic", ip] + commands, stdout=subprocess.PIPE,
+				stderr=subprocess.PIPE, close_fds=True)
 		#sout = subprocess.check_output(["/usr/bin/snmpget", "-v1", "-cpublic", ip] + commands, stderr=subprocess.STDOUT)
 		
 	except subprocess.CalledProcessError as e:
 		returncode = 1
 
 	returncode = sub.wait() #Block here waiting for subprocess to return. Next thrad should execute from here
-	sout = sub.stdout.read()
+	sout = sub.stdout.read().decode("UTF-8")
 	try:
-		serr = sub.stderr.read()
-	except:
+		serr = sub.stderr.read().decode("UTF-8")
+	except (EOFError, TypeError):
 		serr = ""
-	del(sub)
+	del sub
 	if returncode != 0:
 		try:
 			handle_netSNMP_error(serr)
