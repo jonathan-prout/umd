@@ -147,26 +147,17 @@ class serializableObj(object):
 class equipment(serializableObj):
 	modelType = "Not Set"
 
+	def __init__(self):
+		super().__init__()
+		self.oid_getBulk = {}
+		self.oid_get = {}
+
 	def getoid(self):
 		""" Obtains SNMP Paramaters for ModelType according to database"""
 
-		""" First time this is called these will not exist so we need to intitialize them but not make them blank if we ever call this more than once """
-		try:
-			unused = list(self.oid_get.keys())
-		except AttributeError:
-			self.oid_get = {}
-		try:
-			unused = list(self.oid_getBulk.keys())
-		except AttributeError:
-			self.oid_getBulk = {}
-
 		comsel = "SELECT model_param,model_command FROM model_command WHERE model_id = '%s' AND mode = 'GET'" % self.modelType
 		comsel_bulk = "SELECT model_param,model_command FROM model_command WHERE model_id = '%s' AND mode = 'GETBULK'" % self.modelType
-		"""
-		snmp_command = gv.sql.qselect(comsel)
-		for i in range(len(snmp_command)):
-			self.oid_get[snmp_command[i][0]] =snmp_command[i][1]
-		"""
+
 		try:
 			snmp_command = gv.cachedSNMP(comsel)
 			for i in range(len(snmp_command)):
@@ -630,6 +621,9 @@ class IRD(equipment):
 			return int(self.lookup(key))
 		except:
 			return 0
+
+	def set_online(self):
+		self.offline = False
 
 	def set_offline(self):
 		self.offline = True

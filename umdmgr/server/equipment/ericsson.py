@@ -55,11 +55,12 @@ class TT1260(IRD):
 class RX1290(IRD):
 	
 	def __init__(self, equipmentId, ip, name):
-		super(RX1290, self).__init__()
+
 		self.equipmentId = equipmentId
 		self.ip = ip
 		self.name = name
 		self.modelType = "RX1290"
+		super(RX1290, self).__init__()
 
 	def refresh(self):
 		""" Refresh method of class """
@@ -77,6 +78,7 @@ class RX1290(IRD):
 		
 		try:
 			self.snmp_res_dict  = snmp.get(self.getoids(), self.ip)
+			self.set_online()
 		except:
 			self.set_offline()
 		if len(list(self.snmp_res_dict.keys())) < len(list(self.getoids().keys())):
@@ -95,6 +97,7 @@ class RX1290(IRD):
 		if not self.getRefreshType("lock"): #Did we just lock? full refresh next time.
 			if any([self.getlockState() == "Lock",int(self.getinputTsBitrate()) >1]):
 				self.set_refreshType("full")
+
 	def updatesql(self):
 		#return  "UPDATE status SET status = '%s' , servicename = '%s', aspectratio ='%s', ebno='%s', pol='%s', castatus='%s', videoresolution='%s', framerate='%s',videostate='%s',asioutencrypted='%s',frequency='%s',symbolrate='%s',fec='%s',rolloff='%s',modulationtype='%s',asi='%s',muxbitrate='%s', sat_input='%i' WHERE id = %i; " %(self.getStatus(),self.getServiceName(),self.getAspectRatio(),self.getEbno(),self.getPol(),self.getBissStatus(),self.getVResol(),self.getFrameRate(),self.getVState(),self.getAsiOutEncrypted(),self.getinSatSetupSatelliteFreq(),self.getinSatSetupSymbolRate(),self.getinSatSetupFecRate(),self.getinSatSetupRollOff(),self.getinSatSetupModType(),self.getinput_selection(),self.getinputTsBitrate(),self.getinSatSetupInputSelect(),self.getId())
 		#ALL
@@ -177,11 +180,12 @@ class RX1290(IRD):
 class RX8200(IRD):
 	
 	def __init__(self, equipmentId, ip, name):
-		super(RX8200, self).__init__()
+
 		self.equipmentId = equipmentId
 		self.ip = ip
 		self.name = name
 		self.modelType = "RX8200"
+		super(RX8200, self).__init__()
 
 	def getlockState(self):
 		d = {"1":"Lock","0":"Unlock"}
@@ -208,6 +212,7 @@ class RX8200(IRD):
 		
 		try:
 			self.snmp_res_dict  = snmp.get(self.getoids(), self.ip)
+
 		except:
 			self.set_offline()
 		if len(list(self.snmp_res_dict.keys())) < len(list(self.getoids().keys())):
@@ -215,6 +220,8 @@ class RX8200(IRD):
 
 		if len(self.snmp_res_dict) == 0:
 			self.set_offline()
+		else:
+			self.set_online()
 		if len(self.bulkoids()) !=0:
 			if self.getNumServices(): 
 				self.snmp_res_dict.update( snmp.getbulk(self.bulkoids(), self.ip, self.getNumServices() +1  ) )
@@ -434,5 +441,6 @@ class RX8200_4RF(RX8200):
 	def __init__(self, equipmentId, ip, name):
 		super(RX8200_4RF, self).__init__(equipmentId, ip, name)
 		self.modelType = "RX8200-4RF"
+		self.getoid()
 
 
