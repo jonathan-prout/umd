@@ -60,7 +60,9 @@ class TVG420(plugin_tvips.TVG420, equipment):
 		except:
 			return True
 
-	def set_offline(self):
+	def set_offline(self, excuse: str = ""):
+		if not self.offline:
+			print("{}: Offline: {}".format(self.getId(), excuse))
 		self.online = False
 
 	def refresh(self):
