@@ -4,15 +4,19 @@
 	"""
 from __future__ import absolute_import
 	
-import telnetlib, Queue, signal, time
-from .generic import TelnetMultiviewer, status_message
+import telnetlib, queue, signal, time
 
-class zprotocol(telnet_multiviewer):
+from helpers import telnethelper
+from .generic import TelnetMultiviewer
+from ..status import status_message
+
+
+class zprotocol(TelnetMultiviewer):
 	""" This class impliments Harris/Zandar Z protocol as a class
 	TCP Port is implied, but expects an instance of a collections.queue object passed to perform FIFO queueing of UMD texts """
-	
-	def __init__(self, host):
-		super(zprotocol, self).__init__()
+
+	def __init__(self, host, mvid, name):
+		super(zprotocol, self).__init__(mvid, name)
 		self.mv_type = "Harris/Zandar"
 		self.tel = None
 		self.port = 4003
@@ -30,7 +34,7 @@ class zprotocol(telnet_multiviewer):
 		
 		"""
 		try:
-			self.tel = telnetlib.Telnet(self.host, self.port)
+			self.tel = telnethelper.Telnet(self.host, self.port)
 			self.tel.write("\n")
 			self.tel.read_until(">", 1)
 			self.set_online()
