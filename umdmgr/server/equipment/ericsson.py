@@ -4,7 +4,7 @@ from __future__ import absolute_import
 from builtins import hex
 from builtins import range
 from past.utils import old_div
-from .generic import IRD, GenericIRD
+from server.equipment.generic import IRD
 from server import gv
 from helpers import snmp
 
@@ -75,9 +75,9 @@ class RX1290(IRD):
 		""" removed import snmp here """
 		try:
 			refresh_params = [self.getinput_selection(),
-			                  ["", "Locked"][self.getlockState() == "Lock"],
-			                  ["", "Locked"][int(self.getinputTsBitrate()) > 1]
-			                  ]
+							["", "Locked"][self.getlockState() == "Lock"],
+							["", "Locked"][int(self.getinputTsBitrate()) > 1]
+							]
 		except KeyError:
 			refresh_params = ["full"]
 		except ValueError:
@@ -132,11 +132,11 @@ class RX1290(IRD):
 		# Locked                                                          ]
 		if self.getRefreshType("locked"):   
 			sql +=[ "servicename = '%s'  "% self.getServiceName()         ]
-			sql + =[ "aspectratio ='%s'  "% self.getAspectRatio()          ]
-			sql + =[ "castatus='%s'  "% self.getCAStatus()                 ]
-			sql + =[ "videoresolution='%s'  "% self.getVResol()            ]
-			sql + =[ "framerate='%s'  "% self.getFrameRate()               ]
-			sql + =[ "videostate='%s' "% self.getVState()                  ]
+			sql +=[ "aspectratio ='%s'  "% self.getAspectRatio()          ]
+			sql +=[ "castatus='%s'  "% self.getCAStatus()                 ]
+			sql +=[ "videoresolution='%s'  "% self.getVResol()            ]
+			sql +=[ "framerate='%s'  "% self.getFrameRate()               ]
+			sql +=[ "videostate='%s' "% self.getVState()                  ]
 
 		sql += ["updated= CURRENT_TIMESTAMP "                            ]
 		sql = ", ".join(sql)
@@ -211,9 +211,9 @@ class RX8200(IRD):
 		""" Refresh method of Rx8200 """
 		try:
 			refresh_params = [self.getinput_selection(),
-			                  ["", "Locked"][self.getlockState() == "Lock"],
-			                  ["", "Locked"][int(self.getinputTsBitrate()) > 1]
-			                  ]
+							  ["", "Locked"][self.getlockState() == "Lock"],
+							  ["", "Locked"][int(self.getinputTsBitrate()) > 1]
+							  ]
 		except KeyError:
 			refresh_params = ["full"]
 		except ValueError:
@@ -302,8 +302,8 @@ class RX8200(IRD):
 		"""Return FEC rate. Normally Auto"""
 		# {auto(0), fec_1_2(102), fec_1_3(103), fec_1_4(104),fec_2_3(203),fec_2_5(205),fec_3_4(304), fec_3_5(305),fec_4_5(405), fec_5_6(506), fec_6_7(607), fec_7_8(708),fec_8_9(809), fec_9_10(910),fec_unknown(999)
 		d = {"999": "0", "102": "1/2", "103": "1/3", "104": "1/4", "203": "2/3", "205": "2/5", "304": "3/4",
-		     "305": "3/5", "405": "4/5", "506": "5/6", "607": "6/7", "708": "7/8", "809": "8/9", "910": "9/10",
-		     "0": "Auto"}
+			 "305": "3/5", "405": "4/5", "506": "5/6", "607": "6/7", "708": "7/8", "809": "8/9", "910": "9/10",
+			 "0": "Auto"}
 		return self.lookup_replace('inSatSetupFecRate', d)
 
 	def getinput_selection(self):
@@ -433,11 +433,7 @@ class RX8200(IRD):
 			self.offline = True
 			return "OFFLINE"
 
-		"""  Gets a unit's subtype if required. Override if the unit actually has a subtype"""
-		try:
-			return self.modelType
-		except:
-			return "Unknown"
+
 
 
 class RX8200_2RF(RX8200):
