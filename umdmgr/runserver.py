@@ -16,6 +16,11 @@ def usage():
 	print("v, verbose logs everything")
 	print("e, errors, print errors")
 
+def startdb():
+	gv.sql = mysql.mysql()
+	gv.sql.gv = gv
+	gv.sql.autocommit = True
+	gv.sql.mutex = multiprocessing.RLock()
 
 if __name__ == "__main__":
 
@@ -47,8 +52,5 @@ if __name__ == "__main__":
 	if gv.loud:
 		print("Starting in verbose mode")
 		
-	gv.sql = mysql.mysql()
-	gv.sql.gv = gv
-	gv.sql.autocommit = True
-	gv.sql.mutex = multiprocessing.RLock()
+	startdb()
 	umdserver.main()
