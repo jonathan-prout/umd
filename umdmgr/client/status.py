@@ -1,5 +1,9 @@
 import typing
 
+from helpers.processing import enum
+
+inputStrategies = enum("Reserved", "equip", "matrix", "indirect", "label")
+
 
 class status_message(object):
 	alarmMode = 1

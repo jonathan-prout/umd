@@ -6,7 +6,7 @@ import queue
 import telnetlib
 
 from client.multiviewer.generic import TelnetMultiviewer
-from client.multiviewer.status import status_message
+from client.status import status_message
 from client import gv
 import xml.etree.ElementTree as etree
 

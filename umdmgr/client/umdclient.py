@@ -11,6 +11,7 @@ import client.multiviewer.miranda
 import client.multiviewer.harris
 import client.multiviewer.gvgmv
 import client.multiviewer.status
+import client.status
 from helpers import virtualmatrix
 from . import multiviewer
 from . import gv
@@ -26,11 +27,6 @@ mythreads = []
 logfile = "/var/www/programming/client/client_error.txt"
 loud = False
 errors_in_stdout = False
-
-
-def enum(*sequential, **named):
-	enums = dict(list(zip(sequential, list(range(len(sequential))))), **named)
-	return type('Enum', (), enums)
 
 
 def logwrite(errortext): # TODO I don't like this so will refactor with python logging
@@ -224,12 +220,9 @@ def writeStatus(status):
 		klist = sorted(gv.mv[addr].lookuptable.keys())
 		for key in range(0, len(klist), 16):
 			try:
-				gv.mv[addr].put((klist[key], "BOTTOM", status, client.multiviewer.status.status_message.textMode))
+				gv.mv[addr].put((klist[key], "BOTTOM", status, client.status.status_message.textMode))
 			except:
 				pass
-
-
-inputStrategies = enum("Reserved", "equip", "matrix", "indirect", "label")
 
 
 def getMultiviewer(mvType, host, mvID, name):

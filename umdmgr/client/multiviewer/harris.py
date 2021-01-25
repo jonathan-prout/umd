@@ -6,7 +6,7 @@ from __future__ import absolute_import
 	
 import telnetlib, queue, signal, time
 from .generic import TelnetMultiviewer
-from .status import status_message
+from ..status import status_message
 
 
 class zprotocol(TelnetMultiviewer):
