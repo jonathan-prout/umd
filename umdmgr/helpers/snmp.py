@@ -335,9 +335,13 @@ def getbulk_subprocess(commandDict, ip, numItems):
 		returncode = sub.wait() #Block here waiting for subprocess to return. Next thrad should execute from here
 		sout = sub.stdout.read()
 		try:
-			serr = sub.stderr.read()
-		except:
+			serr = processing.decodeUTF8(sub.stderr.read())
+		except (ValueError, EOFError, TypeError, AttributeError):
 			serr = ""
+		try:
+			sout = processing.decodeUTF8(sout)
+		except (ValueError, TypeError):
+			pass
 		
 		if returncode != 0:
 			if gv.loudSNMP:
