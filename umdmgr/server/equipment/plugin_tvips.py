@@ -72,7 +72,7 @@ class TVG420(tvips):
 			destlist = [""] *8
 			ip_tx_rate = ["0"] *8
 			ip_rx_rate = ["0"] *8
-		self.ports = list(range(len(ids)))
+		
 		self.ids = []
 		self.ip_tx_rate = []
 		self.ip_rx_rate = []
@@ -89,7 +89,9 @@ class TVG420(tvips):
 		self.dirlist = dirlist
 		self.destlist = destlist
 		if len(self.ports) != len(ids):
-			self.ports = [asiport() for a in range(len(ids))]
+			self.ports = []
+			for a in range(len(ids)):
+				self.ports.append(asiport())
 		for item in range(len(self.ports)):
 			self.ports[item].id = ids[item]
 			self.ports[item].enable = enablelist[item]
