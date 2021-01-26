@@ -234,10 +234,10 @@ def getMultiviewer(mvType, host, mvID, name):
 		print("Starting K2 {} {}".format(name, host))
 		return client.multiviewer.miranda.K2(host, mvID, name)
 	elif mvType in ["KX", "KX"]:
-		print("Starting KX{} {}".format(name, host))
+		print("Starting KX {} {}".format(name, host))
 		return client.multiviewer.miranda.KX(host, mvID, name)
-	elif mvType in ["KX16", "KX-16 {} {}".format(name, host)]:
-		print("Starting KX-16")
+	elif mvType in ["KX16", "KX-16"]:
+		print("Starting KX-16 {} {}".format(name, host) )
 		return client.multiviewer.miranda.KX16(host, mvID, name)
 	elif mvType in ["KXQUAD", "KX-QUAD {} {}".format(name, host)]:
 		print("Starting KX-QUAD")

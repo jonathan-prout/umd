@@ -40,6 +40,7 @@ class kaleido(TelnetMultiviewer):
 		signal.signal(signal.SIGALRM, self.errorHandler)
 		signal.alarm(5)
 		"""
+		self.shout("%s: Connecting to to %s" % (self.name, self.host))
 		try:
 
 			assert (gv.programTerminationFlag == False)
@@ -48,9 +49,10 @@ class kaleido(TelnetMultiviewer):
 			self.tel.read_until("<nack/>", self.timeout)
 			self.set_online()
 			self.write_status("UMD manager connected", queued=False)
+			self.shout("Connected to %s" % self.host)
 		except:
 			self.set_offline("init")
-			self.shout("Cannot connect to %s" % self.host)
+			self.shout("%s: Cannot connect to %s" % (self.name, self.host))
 		finally:
 			# signal.alarm(0)          # Disable the alarm
 			pass
