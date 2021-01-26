@@ -91,6 +91,8 @@ class TVG420(tvips):
 		
 		
 		for item in self.ports:
+			if item in self.ports:
+				del self.ports[item]
 			self.ports[item] = asiport()
 			self.ports[item].id = ids[item]
 			self.ports[item].enable = enablelist[item]

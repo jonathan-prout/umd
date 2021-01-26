@@ -231,22 +231,22 @@ def getMultiviewer(mvType, host, mvID, name):
 		mv = client.multiviewer.miranda.kaleido(host, mvID, name)
 		return mv
 	elif mvType in ["k2", "K2"]:
-		print("Starting K2")
+		print("Starting K2 {} {}".format(name, host))
 		return client.multiviewer.miranda.K2(host, mvID, name)
 	elif mvType in ["KX", "KX"]:
-		print("Starting KX")
+		print("Starting KX{} {}".format(name, host))
 		return client.multiviewer.miranda.KX(host, mvID, name)
-	elif mvType in ["KX16", "KX-16"]:
+	elif mvType in ["KX16", "KX-16 {} {}".format(name, host)]:
 		print("Starting KX-16")
 		return client.multiviewer.miranda.KX16(host, mvID, name)
-	elif mvType in ["KXQUAD", "KX-QUAD"]:
+	elif mvType in ["KXQUAD", "KX-QUAD {} {}".format(name, host)]:
 		print("Starting KX-QUAD")
 		return client.multiviewer.miranda.KXQUAD(host, mvID, name)
 	elif mvType in ["GVMultiviewer", "GV-Multiviewer", "GVMultiv"]:
-		print("Starting GV-Multiviewer")
+		print("Starting GV-Multiviewer {} {}".format(name, host))
 		return client.multiviewer.gvgmv.GvMv(host,  mvID, name)
 	else:  # Harris/Zandar
-		print("Starting Harris")
+		print("Starting Harris {} {}".format(name, host))
 		return client.multiviewer.harris.zprotocol(host,  mvID, name)
 
 
@@ -261,6 +261,7 @@ class mvThread(threading.Thread):
 
 	def run(self):
 		""" Runs the mvrefresh function"""
+		self.instance.start()
 		mvrefresh(self.instance, self.name)
 
 

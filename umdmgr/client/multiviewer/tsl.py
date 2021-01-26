@@ -107,6 +107,8 @@ class TslMultiviewer(generic.multiviewer):
 		super(TslMultiviewer, self).__init__(mvid, name)
 
 		self.make_default_input_table()
+
+	def start(self):
 		self.connect()
 
 	def _split_url(self):

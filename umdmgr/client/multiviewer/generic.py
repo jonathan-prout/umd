@@ -49,6 +49,8 @@ class multiviewer(ABC):
 		self.previousLabel = {}
 		self.lookuptable = {}
 		self.qtruncate()
+	def start(self):
+		pass
 
 	def shout(self, stuff):
 		print("%s" % stuff)
