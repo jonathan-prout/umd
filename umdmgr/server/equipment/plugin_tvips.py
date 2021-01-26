@@ -88,12 +88,11 @@ class TVG420(tvips):
 		self.labellist = labellist
 		self.dirlist = dirlist
 		self.destlist = destlist
-		
-		
+		if len(self.ports) != len(ids):
+			self.ports = list(range(len(ids)))
+			for item in self.ports:
+				self.ports[item] = asiport()
 		for item in self.ports:
-			if item in self.ports:
-				del self.ports[item]
-			self.ports[item] = asiport()
 			self.ports[item].id = ids[item]
 			self.ports[item].enable = enablelist[item]
 			self.ports[item].dir = dirlist[item]

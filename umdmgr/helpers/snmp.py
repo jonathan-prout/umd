@@ -353,7 +353,7 @@ def getbulk_subprocess(commandDict, ip, numItems):
 				print(returncode)
 				print(sout)
 				print(serr)
-		del (sub)
+		del sub
 
 		if serr:
 			handle_netSNMP_error(serr)
@@ -403,7 +403,7 @@ def walk_subprocess(commandDict, ip):
 				print(returncode)
 				print(sout)
 				print(serr)
-		del (sub)
+		del sub
 		assert (
 					returncode == 0)  # Error if NET SNMP has an error. Fall back to PYSNMP which is slower but with better error handling
 		results = []
