@@ -17,7 +17,7 @@ class GvMv(tsl.TslMultiviewer):
 		""" KX has alarms on on startup, so clear them """
 		if self.get_offline():
 			return
-		self.qtrucate()
+		self.qtruncate()
 		for videoInput in self.lookuptable.keys():
 			sm = status_message()
 			sm.topLabel = ""
