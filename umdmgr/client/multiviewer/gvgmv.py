@@ -17,6 +17,7 @@ class GvMv(tsl.TslMultiviewer):
 		""" KX has alarms on on startup, so clear them """
 		if self.get_offline():
 			return
+		self.qtrucate()
 		for videoInput in self.lookuptable.keys():
 			sm = status_message()
 			sm.topLabel = ""
@@ -40,10 +41,15 @@ class GvMv(tsl.TslMultiviewer):
 			if isinstance(sm, status_message):
 				sm.cnAlarm = {True: "Low C/N Margin", False: ""}[sm.cnAlarm]
 				sm.recAlarm = {True: "NO REC", False: ""}[sm.recAlarm]
-
-				for videoInput, level, line, mode in sm:
-					if not line:
-						line = " "
+				alarmText = ", ".join([s for s in [sm.cnAlarm, sm.recAlarm] if s != ""])
+				mode = sm.textMode
+				videoInput = sm.mv_input
+				for level, line in [
+					["TOP", sm.topLabel],
+					["BOTTOM", sm.bottomLabel],
+					["C/N", alarmText]]:
+					if not line:  # Checks against None. Might not be necessary.
+						line = ""
 					if not self.get_offline() and not self.matchesPrevious(videoInput, level, line):
 						dmesg = self.writeline(videoInput, level, line, mode, colour=sm.colour)
 						packet.append(dmesg)

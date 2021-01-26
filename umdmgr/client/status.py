@@ -10,8 +10,8 @@ class status_message(object):
 	textMode = 0
 
 	def __init__(self):
-		self.topLabel = None
-		self.bottomLabel = None
+		self.topLabel = ""
+		self.bottomLabel = ""
 		self.cnAlarm = False
 		self.recAlarm = False
 		self.mv_input = -1
