@@ -137,7 +137,9 @@ class serializableObj(object):
 		for key in self.seralisabledata:
 			if key in data:
 				if hasattr(self, key):
+					setattr(self, key, None)
 					setattr(self, key, copy.deepcopy(data[key]))
+					del data[key]
 		del data
 
 	def __del__(self):

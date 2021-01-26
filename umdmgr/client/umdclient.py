@@ -1,11 +1,9 @@
 #!/usr/bin/python
 from __future__ import print_function
 from __future__ import absolute_import
-import os, re, string, threading
-import sys, time, datetime
+import threading
+import datetime
 
-import socket
-import getopt
 import time
 
 import client
@@ -13,7 +11,7 @@ import client.multiviewer.miranda
 import client.multiviewer.harris
 import client.multiviewer.gvgmv
 
-from helpers import mysql 
+import client.status
 from helpers import virtualmatrix
 from client import multiviewer
 from client import gv
@@ -29,12 +27,6 @@ mythreads = []
 logfile = "/var/www/programming/client/client_error.txt"
 loud = False
 errors_in_stdout = False
-
-
-def enum(*sequential, **named):
-	enums = dict(list(zip(sequential, list(range(len(sequential))))), **named)
-	return type('Enum', (), enums)
-
 
 def logwrite(errortext): # TODO I don't like this so will refactor with python logging
 	if any((loud, errors_in_stdout)):
@@ -69,12 +61,6 @@ def bitrateToStreamcode(muxbitrate):
 		else:
 			bitratestring = str(bitratefloat)[:4]
 	return bitratestring
-
-
-def getPollStatus():
-	cmd = 'SELECT `value` FROM `management` where `key` = "current_status";'
-	pollstatus = gv.sql.qselect(cmd)[0][0]
-	return pollstatus
 
 
 def main(loop, test=None):
@@ -141,9 +127,9 @@ def main(loop, test=None):
 		while 1:
 			try:
 				for i in list(mul.lookuptable.keys()):
-					for x in mul.getStatusMesage(i, mul.host).__iter__():
+					for x in mul.get_status_message(i, mul.id).__iter__():
 						print(x)
-					mul.put(mul.getStatusMesage(i, mul.host))
+					mul.put(mul.get_status_message(i, mul.id))
 				mul.refresh()
 				time.sleep(1)
 				gv.display_server_status = "Running"
@@ -153,7 +139,7 @@ def main(loop, test=None):
 	else:
 
 		for line in res:
-			mul = getMultiviewer(line[d["Protocol"]], line[d["IP"]])  # returns mv instance
+			mul = getMultiviewer(line[d["Protocol"]], line[d["IP"]], line[d["id"]], line[d["Name"]])  # returns mv instance
 			gv.mvID[line[d["IP"]]] = line[d["id"]]  # Store the id in a dict
 			mul.lookuptable = getAddresses(line[d["IP"]])  # multiviewer IP dicr
 			gv.mv[line[d["IP"]]] = mul  # mulitviewer storage by IP
@@ -233,37 +219,35 @@ def writeStatus(status):
 		klist = sorted(gv.mv[addr].lookuptable.keys())
 		for key in range(0, len(klist), 16):
 			try:
-				gv.mv[addr].put((klist[key], "BOTTOM", status, multiviewer.generic.status_message.textMode))
-			except:
+				gv.mv[addr].put((klist[key], "BOTTOM", status, client.status.status_message.textMode))
+			except queue.Full:
 				pass
 
 
-inputStrategies = enum("Reserved", "equip", "matrix", "indirect", "label")
-
-
-def getMultiviewer(mvType, host):
-	gv.sql.qselect('UPDATE `Multiviewer` SET `status` = "STARTING" WHERE `IP` = "%s";' % host)
+def getMultiviewer(mvType, host, mvID, name):
+	gv.sql.qselect('UPDATE `Multiviewer` SET `status` = "STARTING" WHERE `id` = "%s";' % mvID)
 	if mvType in ["kaleido", "Kaleido"]:
 		print("Starting Kaleido")
-		return client.multiviewer.miranda.kaleido(host)
+		mv = client.multiviewer.miranda.kaleido(host, mvID, name)
+		return mv
 	elif mvType in ["k2", "K2"]:
-		print("Starting K2")
-		return client.multiviewer.miranda.K2(host)
+		print("Starting K2 {} {}".format(name, host))
+		return client.multiviewer.miranda.K2(host, mvID, name)
 	elif mvType in ["KX", "KX"]:
-		print("Starting KX")
-		return client.multiviewer.miranda.KX(host)
-	elif mvType in ["KX16", "KX-16"]:
+		print("Starting KX{} {}".format(name, host))
+		return client.multiviewer.miranda.KX(host, mvID, name)
+	elif mvType in ["KX16", "KX-16 {} {}".format(name, host)]:
 		print("Starting KX-16")
-		return client.multiviewer.miranda.KX16(host)
-	elif mvType in ["KXQUAD", "KX-QUAD"]:
+		return client.multiviewer.miranda.KX16(host, mvID, name)
+	elif mvType in ["KXQUAD", "KX-QUAD {} {}".format(name, host)]:
 		print("Starting KX-QUAD")
-		return multiviewer.miranda.KXQUAD(host)
+		return client.multiviewer.miranda.KXQUAD(host, mvID, name)
 	elif mvType in ["GVMultiviewer", "GV-Multiviewer", "GVMultiv"]:
-		print("Starting GV-Multiviewer")
-		return multiviewer.gvgmv.GvMv(host)
+		print("Starting GV-Multiviewer {} {}".format(name, host))
+		return client.multiviewer.gvgmv.GvMv(host,  mvID, name)
 	else:  # Harris/Zandar
-		print("Starting Harris")
-		return client.multiviewer.harris.zprotocol(host)
+		print("Starting Harris {} {}".format(name, host))
+		return client.multiviewer.harris.zprotocol(host,  mvID, name)
 
 
 class mvThread(threading.Thread):
@@ -277,6 +261,7 @@ class mvThread(threading.Thread):
 
 	def run(self):
 		""" Runs the mvrefresh function"""
+		self.instance.start()
 		mvrefresh(self.instance, self.name)
 
 
@@ -297,7 +282,7 @@ def mvrefresh(myInstance, name):
 	while not gv.threadTerminationFlag:
 		# If it's offline, wait 60s before reconnection attempts
 		if myInstance.get_offline():
-			gv.sql.qselect('UPDATE `Multiviewer` SET `status` = "OFFLINE" WHERE `IP` = "%s";' % myInstance.host)
+			gv.sql.qselect('UPDATE `Multiviewer` SET `status` = "OFFLINE" WHERE `id` = "%s";' % myInstance.id)
 			for seconds in range(60):
 				if gv.programTerminationFlag:
 					return
@@ -307,23 +292,22 @@ def mvrefresh(myInstance, name):
 				myInstance.connect()
 		# If it's online
 		if not myInstance.get_offline():
-			gv.sql.qselect('UPDATE `Multiviewer` SET `status` = "OK" WHERE `IP` = "%s";' % myInstance.host)
+			gv.sql.qselect('UPDATE `Multiviewer` SET `status` = "OK" WHERE `id` = "%s";' % myInstance.id)
 
 			# Generate a status message for each multiviwer input
 			for i in myInstance.lookuptable.keys():
-				myInstance.put(myInstance.getStatusMesage(i, myInstance.host))
+				myInstance.put(myInstance.get_status_message(i, myInstance.id))
 			# Now call the refresh function and loop
 			# Refresh reads through all the status messages and writes to the multiviewer
 			myInstance.refresh()
 			time.sleep(1)
 	print("Stopping display for %s" % name)
-	gv.sql.qselect('UPDATE `Multiviewer` SET `status` = "OFFLINE" WHERE `IP` = "%s";' % myInstance.host)
+	gv.sql.qselect('UPDATE `Multiviewer` SET `status` = "OFFLINE" WHERE `id` = "%s";' % myInstance.id)
 
 
 # print "Leaving thread as termintation flag set"
 
 def shutdown(exit_status):
-	import sys
 	gv.programTerminationFlag = True
 	cmd = 'SELECT `value` FROM `management` where `key` = "current_status";'
 	pollstatus = gv.sql.qselect(cmd)[0][0]

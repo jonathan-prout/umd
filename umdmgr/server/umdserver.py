@@ -266,6 +266,7 @@ class checkin(myThread):
 		while gv.threadTerminationFlag.value == False:
 			try:
 				data = myq.get(timeout=1)
+				myq.task_done()
 				if "equipmentId" in data:
 					gv.gotCheckedInData = True
 					equipmentID = data["equipmentId"]
@@ -277,11 +278,12 @@ class checkin(myThread):
 					except TypeError:  # Equipment Type Changed
 						gv.equipmentDict[equipmentID] = bgtask.deserialize(data, keepData=False)
 					gv.equipmentDict[equipmentID].checkout.checkin()
-					myq.task_done()
+
 				else:
 					gv.gotCheckedInData = False
 					print("checkin fail")
 					print(data)
+				del data
 			except queue.Empty:
 				gv.gotCheckedInData = False
 				time.sleep(0.1)

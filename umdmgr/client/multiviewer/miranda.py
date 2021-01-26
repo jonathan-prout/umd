@@ -26,10 +26,12 @@ class kaleido(TelnetMultiviewer):
 		self.size = 96
 		self.q = queue.Queue(10000)
 		self.host = host
-		self.connect()
+
 		self.fullref = False
 		self.make_default_input_table()
 		self.tel = None
+	def start(self):
+		self.connect()
 
 	def connect(self):
 
@@ -214,7 +216,7 @@ class KX(kaleido):
 		self.q = queue.Queue(1000)
 
 		self.make_default_input_table()
-		self.connect()
+
 
 	def connect(self):
 		super(KX, self).connect()
@@ -239,7 +241,7 @@ class K2(kaleido):
 
 		self.fullref = False
 		self.make_default_input_table()
-		self.connect()
+
 
 
 class KX16(KX):
