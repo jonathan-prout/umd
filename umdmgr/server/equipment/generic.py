@@ -599,12 +599,12 @@ class IRD(equipment):
 		key = 'inputtsbitrate '
 		return self.lookupstr(key)
 
-	def getinSatSetupInputSelect(self):
+	def getinSatSetupInputSelect(self) -> int:
 		"""For TT1260 and RX1290"""
 		key = 'inSatSetupInputSelect '
 		try:
 			return int(self.lookupstr(key)) - 1
-		except:
+		except (TypeError, ValueError):
 			# print "can't be int"
 			# print self.lookupstr(key)
 			return 1

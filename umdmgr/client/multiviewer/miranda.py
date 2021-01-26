@@ -49,7 +49,7 @@ class kaleido(TelnetMultiviewer):
 			self.tel.read_until("<nack/>", self.timeout)
 			self.set_online()
 			self.write_status("UMD manager connected", queued=False)
-			self.shout("Connected to %s" % self.host)
+			self.shout("%s: Connected to %s" % (self.name, self.host))
 		except:
 			self.set_offline("init")
 			self.shout("%s: Cannot connect to %s" % (self.name, self.host))

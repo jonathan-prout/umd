@@ -154,7 +154,7 @@ class DR5000(IRD):
 		d = {"1": "unknown", "2": "qpsk", "3": "8psk", "4": "16apsk", "5": "32apsk"}
 		return self.lookup_replace(key, d)
 
-	def getinSatSetupInputSelect(self):
+	def getinSatSetupInputSelect(self)->int:
 		""" DR5000 """
 		key = 'dr5000ChannelConfigurationInputSatInterface'
 		inp = self.lookupstr(key)

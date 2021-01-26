@@ -283,7 +283,7 @@ class RX8200(IRD):
 		d = {"1": "DVB-S2", "0": "DVB-S"}
 		return self.lookup_replace(key, d)
 
-	def getinSatSetupInputSelect(self):
+	def getinSatSetupInputSelect(self) ->int:
 		"""For RX8200
 		# {channel_1(0),channel_2(1), channel_3(2), channel_4(3), channel_5(4), channel_6(5), channel_7(6), channel_8(7)}"""
 		key = 'inSatSetupInputSelect '
