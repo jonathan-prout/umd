@@ -6,6 +6,7 @@ from client.status import status_message
 
 class GvMv(tsl.TslMultiviewer):
 	size = 48
+	MAX_LABEL_LEN = 24
 
 	def __init__(self, url: str, mvid: int, name: str):
 		super(GvMv, self).__init__(url, mvid, name)
@@ -100,6 +101,7 @@ class GvMv(tsl.TslMultiviewer):
 			print("videoIn, %s, level %s not found" % (videoInput, level))
 			return
 		if level in ["TOP", "BOTTOM"]:
+			line = line[:self.MAX_LABEL_LEN]
 			txt = f"{line};{colour}"
 		else:
 			txt = line
