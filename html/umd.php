@@ -1,16 +1,5 @@
 <?php
- //usage: http://fxchange1.ebu.ch/umd/umd.php?id=1
- //id = 1 equivalent a 192.168.58.1
- //$kaleidoconv = array(1 => "192.168.3.51",
- //                     2 => "192.168.3.52",
- //                     3 => "192.168.3.53",
- //                     4 => "192.168.3.54",
- //                     5 => "192.168.3.55",
- //                     6 => "192.168.3.56",
- //                     7 => "192.168.3.57",
- //                     8 => "192.168.3.58",
- //                     9 => "192.168.3.59");    
- //
+
  require_once('umd.common.php');
  require_once ('sql.php');
  dbstart();
@@ -19,13 +8,7 @@
 ?>
 <html>
  <head>
- <?php $xajax->printJavascript('xajax/'); ?>
-    <script type="text/javascript">
-       function submitUMD(){    
-            xajax_processFormData(xajax.getFormValues('updateUMD'),'submitButton','<? print $kip; ?>');
-         return false;
-       }
-    </script>
+
  </head>
  <body>
  	<? print $kaleido; ?>

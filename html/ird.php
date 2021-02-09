@@ -7,7 +7,7 @@
  //usage: http://fxchange1.ebu.ch/umd/ird.php?sat=W3A
 
  //
- require_once('umd.common.php');
+
  require_once ('sql.php');
  dbstart();
  $sat = $_GET['sat'];
@@ -15,7 +15,7 @@
 
 ?>
 
-<html>
+<html lang="en">
  <head>
  <title>
   <?php 
@@ -35,7 +35,7 @@ if (lowtarget=="_self") {window.location=loc;}
 else {if (lowtarget=="_top") {top.location=loc;}
 else {if (lowtarget=="_blank") {window.open(loc);}
 else {if (lowtarget=="_parent") {parent.location=loc;}
-else {parent.frames[target].location=loc;};
+else {parent.frames[target].location=loc;}
 }}}
 }
 function jump(menu)
@@ -47,13 +47,13 @@ if (splitc!=-1)
 {loc=ref.substring(0,splitc);
 target=ref.substring(splitc+1,1000);}
 else {loc=ref; target="_self";};
-if (ref != "") {land(loc,target);}
+if (ref !== "") {land(loc,target);}
 }
 //-->
 </script>
   </head>
  <body>
- <center>
+ <div style="text-align: center;">
  <?php 
  if ($sat == "")
 	echo "All Receivers";
@@ -66,7 +66,7 @@ else
 <td style="vertical-align:middle"> <form action="dummy" method="post"><select name="choice" size="1" onChange="jump(this.form)"><option value="#">Please Select</option><option value="ird.php?sat=W3">W3A</option><option value="ird.php?sat=W2">W2A</option><option value="ird.php?sat=806">NSS806</option><option value="ird.php?sat=RX">HD Rx</option><option value="ird.php?sat=FiNE">FiNE</option></select></form></td>
 </tr>
 </table>
- </center>
+ </div>
  <table border="1" bordercolor="grey" style="background-color:lightgrey" width="90%" cellpadding="3" cellspacing="3">
 	<tr>
 		<td>IRD</td>
@@ -89,23 +89,23 @@ WHERE (`equipment`.`labelnamestatic` like  "%'. $sat .'%") AND `equipment`.`id`=
 		//print $sql;
 		
 		
-            $result = mysql_query($sql);
-			$num=mysql_numrows($result);
+            $result = mysqli_query($sql);
+			$num=mysqli_numrows($result);
 			//print $num;
 		
 	
 	$i=0;
 	while ($i < $num) {
-		$label=mysql_result($result,$i,"equipment.labelnamestatic");
-		$channel=mysql_result($result,$i,"status.channel");
-		$videoresolution=mysql_result($result,$i,"status.videoresolution");
-		$aspectratio=mysql_result($result,$i,"status.aspectratio");
-		$servicename=mysql_result($result,$i,"status.servicename");
-		$ip=mysql_result($result,$i,"equipment.ip");
-		$videostate=mysql_result($result,$i,"status.videostate");
-		$modulation=mysql_result($result,$i,"status.modulationtype");
-		$framerate=mysql_result($result,$i,"status.framerate");
-		$asioutencrypted=mysql_result($result,$i,"status.asioutencrypted");
+		$label=mysqli_result($result,$i,"equipment.labelnamestatic");
+		$channel=mysqli_result($result,$i,"status.channel");
+		$videoresolution=mysqli_result($result,$i,"status.videoresolution");
+		$aspectratio=mysqli_result($result,$i,"status.aspectratio");
+		$servicename=mysqli_result($result,$i,"status.servicename");
+		$ip=mysqli_result($result,$i,"equipment.ip");
+		$videostate=mysqli_result($result,$i,"status.videostate");
+		$modulation=mysqli_result($result,$i,"status.modulationtype");
+		$framerate=mysqli_result($result,$i,"status.framerate");
+		$asioutencrypted=mysqli_result($result,$i,"status.asioutencrypted");
 		if ($videostate == "Running")
 			$background = "lightgreen";
 		else
