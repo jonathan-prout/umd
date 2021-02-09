@@ -7,7 +7,7 @@ from .generic import checkout, equipment
 
 
 class TVG420(plugin_tvips.TVG420, equipment):
-	def __init__(self, equipmentId, ip, name):
+	def __init__(self, equipmentId, ip, name, *args, **kwargs):
 		super(TVG420, self).__init__(equipmentId, ip, name)
 		self.equipmentId = equipmentId
 		self.ip = ip

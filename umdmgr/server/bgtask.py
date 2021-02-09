@@ -31,6 +31,7 @@ def deserialize(data, keepData=True):
 		"RX8200": server.equipment.ericsson.RX8200,
 		"RX8200-4RF": server.equipment.ericsson.RX8200_4RF,
 		"RX8200-2RF": server.equipment.ericsson.RX8200_2RF,
+		"Titan": server.equipment.ateme_titan.Titan
 	}
 	equip = equipTypes[data["modelType"]](data["equipmentId"], data["ip"], data["name"])
 	if keepData:
@@ -67,8 +68,8 @@ def determine_type(data):
 		"DR5000": server.equipment.ateme.DR5000,
 		"TVG420": server.equipment.tvips.TVG420,
 		"IP GRIDPORT": server.equipment.omneon.IPGridport,
-		"IP Gridport": server.equipment.omneon.IPGridport
-
+		"IP Gridport": server.equipment.omneon.IPGridport,
+		"Titan": server.equipment.ateme_titan.Titan
 	}
 
 	for key in list(simpleTypes.keys()):

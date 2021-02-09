@@ -10,7 +10,7 @@ from helpers import snmp
 snmp.gv = gv #in theory we don't want to import explictly the server's version of gv
 
 class NS2000(IRD):
-	def __init__(self, equipmentId, ip, name):
+	def __init__(self, equipmentId, ip, name, *args, **kwargs):
 		self.equipmentId = equipmentId
 		self.ip = ip
 		self.name = name
@@ -80,7 +80,7 @@ class NS2000(IRD):
 		d = {"0":"?","1":"Y","2":"Y","3":"X","4":"X"}
 		return self.lookup_replace('polarisation', d)
 class NS2000_WEB(NS2000):
-	def __init__(self, equipmentId, ip, name):
+	def __init__(self, equipmentId, ip, name, *args, **kwargs):
 		super( NS2000_WEB, self ).__init__(equipmentId, ip, name)
 		self.modelType = "NS2000_WEB"
 	
@@ -209,7 +209,7 @@ class NS2000_WEB(NS2000):
 
 class NS2000_SNMP(NS2000):
 	def __init__(self, equipmentId, ip, name):
-		super( NS2000_SNMP, self ).__init__(equipmentId, ip, name)
+		super( NS2000_SNMP, self ).__init__(equipmentId, ip, name, *args, **kwargs)
 		self.modelType = "NS2000_SNMP"
 	def getinSatSetupSatelliteFreq(self):
 		""" Take Hz Return MHz """

@@ -667,11 +667,12 @@ class IRD(equipment):
 
 
 class GenericIRD(IRD):
-	def __init__(self, equipmentId, ip, name):
+	def __init__(self, equipmentId, ip, name, subequipment):
 		super(GenericIRD, self).__init__()
 		self.equipmentId = equipmentId
 		self.ip = ip
 		self.name = name
+		self.subequipment = subequipment
 		self.modelType = "GenericIRD"
 
 		super(GenericIRD, self).__init__()

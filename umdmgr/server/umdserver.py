@@ -40,9 +40,9 @@ def retrivalList(_id=None):
 	globallist = []
 	# request = "select * FROM equipment"
 	if _id:
-		request = "select id, ip, labelnamestatic, model_id FROM equipment WHERE id='%d'" % _id
+		request = "select id, ip, labelnamestatic, model_id, subequipment FROM equipment WHERE id='%d'" % _id
 	else:
-		request = "select id, ip, labelnamestatic, model_id FROM equipment"
+		request = "select id, ip, labelnamestatic, model_id, subequipment FROM equipment"
 
 	return gv.sql.qselect(request)
 
@@ -175,11 +175,12 @@ def start(_id=None):
 		"TVG420": server.equipment.tvips.TVG420,
 		"IP Gridport": server.equipment.omneon.IPGridport,
 		"Rx8200": server.equipment.ericsson.RX8200,
+		"Titan": server.equipment.ateme_titan.Titan
 
 	}
 	if gv.loud:
 		print("Getting equipment")
-	for equipmentID, ip, name, model_id in retrivalList(_id):
+	for equipmentID, ip, name, model_id, subequipment in retrivalList(_id):
 		# print equipmentID, ip, name
 		query = "SELECT `id` from `status` WHERE `status`.`id` ='%d'" % equipmentID
 		if len(gv.sql.qselect(query)) == 0:
@@ -188,12 +189,12 @@ def start(_id=None):
 		for key in list(simpleTypes.keys()):
 
 			if any(((key in model_id), (key in name))):
-				newird = simpleTypes[key](int(equipmentID), ip, name)
+				newird = simpleTypes[key](int(equipmentID), ip, name, subequipment)
 				break
 		# elif "NS2000" in name: #Method not supported yet
 		#	newird = equipment_new.NS2000(int(equipmentID), ip, name)
 		else:
-			newird = equipment.generic.GenericIRD(int(equipmentID), ip, name)
+			newird = equipment.generic.GenericIRD(int(equipmentID), ip, name, subequipment)
 		gv.addEquipment(newird)
 	# print gv.equipmentDict
 	if gv.loud:

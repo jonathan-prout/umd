@@ -13,7 +13,7 @@ snmp.gv = gv  # in theory we don't want to import explictly the server's version
 
 class TT1260(IRD):
 
-	def __init__(self, equipmentId, ip, name):
+	def __init__(self, equipmentId, ip, name, *args, **kwargs):
 		super(TT1260, self).__init__()
 		self.equipmentId = equipmentId
 		self.ip = ip
@@ -62,7 +62,7 @@ class TT1260(IRD):
 
 class RX1290(IRD):
 
-	def __init__(self, equipmentId, ip, name):
+	def __init__(self, equipmentId, ip, name, *args, **kwargs):
 
 		self.equipmentId = equipmentId
 		self.ip = ip
@@ -190,7 +190,7 @@ class RX1290(IRD):
 
 class RX8200(IRD):
 
-	def __init__(self, equipmentId, ip, name):
+	def __init__(self, equipmentId, ip, name, *args, **kwargs):
 
 		self.equipmentId = equipmentId
 		self.ip = ip
@@ -437,14 +437,14 @@ class RX8200(IRD):
 
 
 class RX8200_2RF(RX8200):
-	def __init__(self, equipmentId, ip, name):
+	def __init__(self, equipmentId, ip, name, *args, **kwargs):
 		super(RX8200_2RF, self).__init__(equipmentId, ip, name)
 		self.modelType = "RX8200-2RF"
 		self.getoid()
 
 
 class RX8200_4RF(RX8200):
-	def __init__(self, equipmentId, ip, name):
+	def __init__(self, equipmentId, ip, name, *args, **kwargs):
 		super(RX8200_4RF, self).__init__(equipmentId, ip, name)
 		self.modelType = "RX8200-4RF"
 		self.getoid()
