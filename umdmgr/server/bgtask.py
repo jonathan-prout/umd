@@ -11,6 +11,7 @@ import server.equipment.ateme
 import server.equipment.tvips
 import server.equipment.omneon
 import server.equipment.novelsat
+import server.equipment.ateme_titan
 
 from helpers import logging
 from helpers import alarm
@@ -33,7 +34,7 @@ def deserialize(data, keepData=True):
 		"RX8200-2RF": server.equipment.ericsson.RX8200_2RF,
 		"Titan": server.equipment.ateme_titan.Titan
 	}
-	equip = equipTypes[data["modelType"]](data["equipmentId"], data["ip"], data["name"])
+	equip = equipTypes[data["modelType"]](data["equipmentId"], data["ip"], data["name"], data.get("subequipment"))
 	if keepData:
 		equip.deserialize(data)
 	return equip

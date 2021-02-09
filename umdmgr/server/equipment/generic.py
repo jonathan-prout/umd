@@ -6,7 +6,7 @@ from past.utils import old_div
 from builtins import object
 from server import gv
 
-from helpers import snmp
+from helpers import httpcaller, snmp
 from helpers import static_parameters
 
 snmp.gv = gv  # in theory we don't want to import explictly the server's version of gv
@@ -272,7 +272,7 @@ class equipment(serializableObj):
 				equipTypes = test
 				break
 
-		def type_test(equipTypes):
+		def type_test_snmp(equipTypes):
 			for test, blurb, setType in equipTypes:
 				ver_found = False
 				try:
@@ -296,13 +296,32 @@ class equipment(serializableObj):
 				ver_found = False
 			return resdict, ver_found
 
+		def type_test_http():
+			try:
+				response, stringfromserver = httpcaller.get(self.ip, '80', '/appliance/api/ping')
+				if response['status'] != '200':
+					raise HTTPError()
+				self.online = True
+				resdict = {'DeviceType': "Titan"}
+				ver_found = True
+				return resdict, ver_found
+			
+			except HTTPError:
+				pass
+
+				self.offline = True
+				resdict = {'DeviceType': "OFFLINE"}
+				ver_found = False
+
+			return resdict, ver_found
 		sysdesc = {'DeviceType': ".1.3.6.1.2.1.1.1.0"}  # sysdescr.0
 		nov_soft_ver = {
 			'DeviceType': ".1.3.6.1.4.1.37576.2.3.1.5.1.2.1"}  # This is not the best but then that is not on older versions of NS mib
 
 		# resdict  = snmp.get({'DeviceType':".1.3.6.1.4.1.1773.1.1.1.7.0"}, self.ip)
-		resdict, ver_found = type_test(equipTypes)
-
+		resdict, ver_found = type_test_snmp(equipTypes)
+		if resdict.get("DeviceType", "OFFLINE") == "OFFLINE":
+			resdict, ver_found = type_test_http()
 		if 'DeviceType' in resdict:
 			return resdict['DeviceType']
 		else:
@@ -667,7 +686,7 @@ class IRD(equipment):
 
 
 class GenericIRD(IRD):
-	def __init__(self, equipmentId, ip, name, subequipment):
+	def __init__(self, equipmentId, ip, name, subequipment = None):
 		super(GenericIRD, self).__init__()
 		self.equipmentId = equipmentId
 		self.ip = ip
@@ -675,7 +694,7 @@ class GenericIRD(IRD):
 		self.subequipment = subequipment
 		self.modelType = "GenericIRD"
 
-		super(GenericIRD, self).__init__()
+
 
 	def updatesql(self):
 		return "DO 0;"  # DO NOTHING

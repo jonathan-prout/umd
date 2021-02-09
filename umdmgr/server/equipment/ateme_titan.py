@@ -14,7 +14,7 @@ class HTTPError(Exception):
 class Titan(IRD, DictKeyProxy):
 	""" ATEME Titan Edge version 2.3.2 """
 
-	def __init__(self, equipmentId, ip, name, subequipment):
+	def __init__(self, equipmentId, ip, name, subequipment=None):
 		super(Titan, self).__init__()
 		self.equipmentId = equipmentId
 		self.ip = ip
@@ -22,7 +22,7 @@ class Titan(IRD, DictKeyProxy):
 		self.modelType = "Titan"
 		self.subequipment = subequipment
 		self.data = {}
-		self.seralisabledata = ["ip", "equipmentId", "name", "online", "modelType", "refreshType", "refreshCounter",
+		self.seralisabledata = ["ip", "equipmentId", "name", "subequipment", "online", "modelType", "refreshType", "refreshCounter",
 		                        "data"]
 
 

@@ -12,7 +12,7 @@ from helpers import snmp
 class DR5000(IRD):
 	""" ATEME DR5000 version 1.0.2.2 """
 
-	def __init__(self, equipmentId, ip, name):
+	def __init__(self, equipmentId, ip, name, *args, **kwargs):
 		self.equipmentId = equipmentId
 		self.ip = ip
 		self.name = name

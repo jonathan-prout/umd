@@ -7,6 +7,7 @@ from future import standard_library
 import server
 import server.equipment.ericsson
 import server.equipment.ateme
+import server.equipment.ateme_titan
 import server.equipment.tvips
 import server.equipment.omneon
 
