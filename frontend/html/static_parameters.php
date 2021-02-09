@@ -22,6 +22,7 @@ $doc = $_GET['doc'];
 
 if ($mode == "json")
 {
+    header('Content-type: application/json');
  if ($doc == "multiviewer")
  {
   $sql = 'SELECT `id`,`Name` FROM `Multiviewer` WHERE 1';  
@@ -52,14 +53,17 @@ if ($mode == "json")
  $inpuutStrategies = query($sql);
  echo json_encode(array_from_sql($inpuutStrategies));
  
- }elseif  ($doc == "matrix_in")
+ }elseif  ($doc == "matrix_in") {
+     $db = select_db("matrix");
+     $sql = 'SELECT * FROM `input`';
+     $mtx_in = query($sql);
+     $db = select_db("UMD");
+     echo json_encode(array_from_sql($mtx_in));
+ }elseif  ($doc == "equipment")
  {
- $db = select_db("matrix");
- $sql = 'SELECT * FROM `input`';
- $mtx_in = query($sql);
- $db = select_db("UMD");
- echo json_encode(array_from_sql($mtx_in));
- 
+    $sql = 'SELECT * FROM `equipment` WHERE 1';
+    $irds = query($sql);
+     echo json_encode(array_from_sql($irds));
  }elseif  ($doc == "matrix_out")
  {
  $db = select_db("matrix");
@@ -73,6 +77,7 @@ if ($mode == "json")
  }
 }else
 {
+    header('Content-type: text/javascript');
  $sql = 'SELECT `id`,`Name` FROM `Multiviewer` WHERE 1';  
  $multiviewers = query($sql);
  $sql = 'SELECT `PRIMARY`, `multiviewer`, `input` , `labeladdr1` , `labeladdr2` , `strategy` , `equipment` , `inputmtxid` , `inputmtxname` , `customlabel1`, `customlabel2` FROM `mv_input` WHERE 1';  

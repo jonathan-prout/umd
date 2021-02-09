@@ -1,8 +1,9 @@
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
 <head>
     <title>UMD Manager Edit IRD</title>
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
@@ -78,7 +79,7 @@ $(document).ready(function () {
     <div class="modal-content">
     <div class="modal-header">
         
-        <a class="close" data-dismiss="modal">×</a>
+        <a class="close" data-dismiss="modal">Ã—</a>
         <h3>Add Equipment</h3>
     </div>
     <div class="modal-body">
@@ -117,6 +118,7 @@ $(document).ready(function () {
         </td><td width=5%>name
         </td><td width=5%>model_id
         </td><td width=5%>ip
+        </td><td width=5%>subequipment
         </td><td width=5%>Label
         </td><td width=5%>MulticastIp
         </td><td width=5%>InMTXName
@@ -187,6 +189,8 @@ getScript('static_parameters.php', function(){
 function populateNewIRDDrops() {
     var out = "";
     // Assuming the equipment is ASI in SDI out
+    out +=     build_select([{"v":"1"},{"v":"2"},{"v":"3"},{"v":"4"},], "v", "v","", "Sub Equipment", "subequipment", "null" );
+    out +=     "<br>"
     out +=     build_select(mtx_out_asi, "PRIMARY", "name","", "ASI Input", "InMTXName", "null" );
     out +=     "<br>"
     out +=     build_select(mtx_in_sdi, "PRIMARY", "name","", "SDI Output", "OutMTXName", "null" );
@@ -294,6 +298,7 @@ function populateTable(arr, criteria) {
             out += '<td width=5%>' + arr[i].name+'</td>';
             out += '<td width=5%>' + arr[i].model_id+'</td>';
             out += '<td width=5%>' + arr[i].ip+'</td>';
+            out += '<td width=5%>' + arr[i].subequipment+'</td>';
             out += '<td width=5%>' + arr[i].labelnamestatic+'</td>';
             out += '<td width=5%>' + arr[i].MulticastIp+'</td>';
             out += '<td width=5%>' + arr[i].InMTXName+'</td>';
@@ -327,7 +332,9 @@ function build_select(arr, key,val, selected, name, id, nullval, usesDiv){
     }
     
     out +='<label for="sel1">' + name +'</label>';
-    out +='<select class="form-control" onchange="formsubmit(editLineForm)" name="'+id+'">';
+    //  out +='<select class="form-control" onchange="formsubmit(editLineForm)" name="'+id+'">';
+    //  Todo: onchange
+    out +='<select class="form-control"  name="'+id+'">';
     var i;
     out += '<option value="'+nullval+'">No Selection</option>';
     for(i = 0; i < arr.length; i++) {
@@ -425,6 +432,8 @@ function editLine(line){
             out += '<div class="form-group"><label for="labelnamestatic">Label</label><input type="text" class="form-control" name="labelnamestatic" onchange="formsubmit(editLineForm)" value="'+ arr[i].labelnamestatic+'"></div>';
             out += '<div class="form-group"><label for="MulticastIp">MulticastIp</label><input type="text" class="form-control" name="MulticastIp" onchange="formsubmit(editLineForm)" value="'+ arr[i].MulticastIp+'"></div>';
             // Assuming the equipment is ASI in SDI out
+            out +=     build_select([{"v":"1"},{"v":"2"},{"v":"3"},{"v":"4"},], "v", "v","", "Sub Equipment", "subequipment", "null" );
+            out +=     "<br>"
             out += build_select(mtx_out_asi, "PRIMARY", "name",mtx_out_asi_kv[arr[i].InMTXName], "ASI Input", "InMTXName", "null" , true);
             out += build_select(mtx_in_sdi, "PRIMARY", "name",mtx_in_sdi_kv[arr[i].OutMTXName], "SDI Output", "OutMTXName", "null", true );
             out += satListSelect(arr[i].SAT1, "SAT1", "SAT1", true);

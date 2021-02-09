@@ -1,5 +1,6 @@
 <?php
- $dbhost = 'localhost';
+ $dbhost = '172.17.0.2';
+ $dbport = 3306;
  $dblogin= 'umd';
  $dbpass = 'umd';
  $dbname ='UMD';
@@ -9,9 +10,9 @@
                                                                                                                                
  
  function dbstart(){
- 	global $dbhost,$dblogin,$dbpass,$dbname,$connection;
- 	
- 	$connection = mysqli_connect("$dbhost","$dblogin","$dbpass") or die ("Failure with the UMD manager database. Please restart machine.");
+ 	global $dbhost,$dblogin,$dbpass,$dbname, $dbport, $connection;
+ 	//echo($dbhost.$dblogin.$dbpass.$dbname.$dbport);
+ 	$connection = mysqli_connect("$dbhost","$dblogin","$dbpass", "UMD", 3306, ) or die ("Failure with the UMD manager database. Please restart machine.");
  	$db = mysqli_select_db($connection, $dbname);
  }
 

@@ -112,7 +112,7 @@ if ($_POST["formName"] == "updateMVInput"){
     $sql = "UPDATE `UMD`.`equipment` SET ";
     $search = array("\n", "\r", "\u", "\\t", "\t", "\f", "\b", "/", '\\',  ";", "null");
     $replace = array("", "", "", "", "","", "", "", "", "", "");
-    $keys = array("Demod", "MulticastIp");
+    $keys = array("Demod", "subequipment", "MulticastIp");
     $args = array();
     foreach($keys as $key){
         if($_POST[$key] == "null")
@@ -166,7 +166,7 @@ if ($_POST["formName"] == "updateMVInput"){
         }
     }
     $sql = $sql.join(",", $args)." WHERE `equipment`.`id` =".$_POST["equipmentID"].";";
-    //echo $sql;
+    // echo $sql;
     $result = query($sql);
           if($result == TRUE){
            echo "OK";
@@ -290,7 +290,7 @@ if ($_POST["formName"] == "updateMVInput"){
     $sql = "INSERT INTO `UMD`.`equipment` ( `id`, ";
     $search = array("\n", "\r", "\u", "\\t", "\t", "\f", "\b", "/", '\\',  ";", "null");
     $replace = array("", "", "", "", "","", "", "", "", "", "");
-    $keys = array("Demod", "MulticastIp");
+    $keys = array("Demod", "subequipment", "MulticastIp");
     $args = array();
     foreach($keys as $key){
         if($_POST[$key] == "null")
