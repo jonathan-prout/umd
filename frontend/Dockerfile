@@ -3,18 +3,19 @@
 
 FROM php:7.4-apache-buster
 
-RUN curl -sL https://deb.nodesource.com/setup_12.x | bash -
+#RUN curl -sL https://deb.nodesource.com/setup_12.x | bash -
 
 RUN apt-get -y update && \
-    apt-get -y upgrade && \
     apt-get -y install \
       pkg-config \
-      nodejs npm
+      nodejs npm git
 
 
 RUN docker-php-ext-install mysqli
 EXPOSE 80
 WORKDIR /app/html
+
+RUN npm install -g bower  gulp
 
 RUN bower --allow-root install \
     bootstrap#3.4.1 \
