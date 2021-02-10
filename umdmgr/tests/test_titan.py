@@ -28,7 +28,21 @@ class TestTitan(unittest.TestCase):
 		self.assertEqual(decoder.getKey("frame_rate"), 25.0)
 		self.assertEqual(decoder.getKey("service_id"), 1)
 
+	def test_sql1(self):
+		titan = ateme_titan.Titan(1, "10.0.0.1", "titan", 1)
+		fname = "get__decoder_api_channels_1.json"
+		with open(os.sep.join(["testdata", fname]), "r") as fobj:
+			jdata = json.load(fobj)
+		titan.set_get_decoder_api_channels_id_content(jdata)
+		sql = titan.updatesql()
 
+	def test_sql2(self):
+		titan = ateme_titan.Titan(1, "10.0.0.1", "titan", 2)
+		fname = "get__decoder_api_channels_2.json"
+		with open(os.sep.join(["testdata", fname]), "r") as fobj:
+			jdata = json.load(fobj)
+		titan.set_get_decoder_api_channels_id_content(jdata)
+		sql = titan.updatesql()
 
 if __name__ == '__main__':
 	unittest.main()

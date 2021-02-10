@@ -259,17 +259,22 @@ class equipment(serializableObj):
 		equipTypes_ateme_first = [equipTypes[0], equipTypes[1], equipTypes[2]]
 		equipTypes_novelsat_first = [equipTypes[1], equipTypes[0], equipTypes[2]]
 		equipTypes_sysdecr_first = [equipTypes[2], equipTypes[0], equipTypes[1]]
+		SNMPFIRST = 0
+		HTTPFIRST = 1
 		testmap = [
-			("RX8200", equipTypes_sysdecr_first),
-			("RX1290", equipTypes_sysdecr_first),
-			("TT1260", equipTypes_sysdecr_first),
-			("TVG420", equipTypes_sysdecr_first),
-			("DR5000", equipTypes_ateme_first),
-			("NS2000", equipTypes_novelsat_first),
+			("RX8200", equipTypes_sysdecr_first, SNMPFIRST),
+			("RX1290", equipTypes_sysdecr_first, SNMPFIRST),
+			("TT1260", equipTypes_sysdecr_first, SNMPFIRST),
+			("TVG420", equipTypes_sysdecr_first, SNMPFIRST),
+			("DR5000", equipTypes_ateme_first, SNMPFIRST),
+			("NS2000", equipTypes_novelsat_first, SNMPFIRST),
+			("Titan", equipTypes_sysdecr_first, HTTPFIRST),
 		]
-		for name, test in testmap:
+		get_order = SNMPFIRST
+		for name, test, order in testmap:
 			if name in self.modelType.upper():
 				equipTypes = test
+				get_order = order
 				break
 
 		def type_test_snmp(equipTypes):
@@ -319,16 +324,28 @@ class equipment(serializableObj):
 			'DeviceType': ".1.3.6.1.4.1.37576.2.3.1.5.1.2.1"}  # This is not the best but then that is not on older versions of NS mib
 
 		# resdict  = snmp.get({'DeviceType':".1.3.6.1.4.1.1773.1.1.1.7.0"}, self.ip)
-		resdict, ver_found = type_test_snmp(equipTypes)
-		if resdict.get("DeviceType", "OFFLINE") == "OFFLINE":
+		if get_order == HTTPFIRST:
 			resdict, ver_found = type_test_http()
-		if 'DeviceType' in resdict:
-			return resdict['DeviceType']
+			if resdict.get("DeviceType", "OFFLINE") == "OFFLINE":
+				resdict, ver_found = type_test_snmp(equipTypes)
+			if 'DeviceType' in resdict:
+				return resdict['DeviceType']
+			else:
+				if gv.loud:
+					print(resdict)
+				self.offline = True
+				return "OFFLINE"
 		else:
-			if gv.loud:
-				print(resdict)
-			self.offline = True
-			return "OFFLINE"
+			resdict, ver_found = type_test_snmp(equipTypes)
+			if resdict.get("DeviceType", "OFFLINE") == "OFFLINE":
+				resdict, ver_found = type_test_http()
+			if 'DeviceType' in resdict:
+				return resdict['DeviceType']
+			else:
+				if gv.loud:
+					print(resdict)
+				self.offline = True
+				return "OFFLINE"
 
 	def determine_subtype(self):
 		"""  Gets a unit's subtype if required. Override if the unit actually has a subtype"""

@@ -11,11 +11,12 @@ snmp.gv = gv #in theory we don't want to import explictly the server's version o
 
 class NS2000(IRD):
 	def __init__(self, equipmentId, ip, name, *args, **kwargs):
+		super(NS2000, self).__init__()
 		self.equipmentId = equipmentId
 		self.ip = ip
 		self.name = name
 		self.modelType = "NS2000"
-		super(NS2000, self).__init__()
+
 	
 	
 	def determine_type(self):

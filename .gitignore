@@ -8,3 +8,11 @@ server-crashdump*
 *.pickle
 *.bak
 venv
+frontend/html/bower_components/
+frontend/html/node_modules/@babel/runtime/helpers/classStaticPrivateMethodGet.js
+frontend/html/node_modules/
+*.orig
+*_BASE_*
+*_BACKUP_*
+*_REMOTE_*
+*_LOCAL_*

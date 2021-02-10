@@ -1,9 +1,10 @@
 import typing
 
 from helpers.interfaceproxy import DictKeyProxy
+from helpers.logging import log
 from server.equipment.generic import IRD, GenericIRD
 from server import gv
-from helpers import httpcaller
+from helpers import alarm, httpcaller
 import time
 import json
 
@@ -33,7 +34,9 @@ class Titan(IRD, DictKeyProxy):
 			if response['status'] != '200':
 				raise HTTPError()
 			self.online = True
-		except HTTPError:
+		except (HTTPError, TimeoutError) as e:
+			log(f"{e} error getting the url 'http://{self.ip}:80/decoder/api/channels/{self.subequipment}'", self,
+				alarm.level.critical)
 			self.online = False
 			return
 
@@ -216,7 +219,7 @@ class Titan(IRD, DictKeyProxy):
 		decoder = self.getInterface("decoder")
 		current_service_id = decoder.getKey("service_id", 0)
 		services = decoder.getKey("services", {})
-		current_service = services.get(current_service_id)
+		current_service = services.get(current_service_id, {})
 		pcr = current_service.get("PCR", 0)
 		for pid in current_service.get("PIDs", []):
 			if pid.get("pid", 0) == pcr:
@@ -225,21 +228,21 @@ class Titan(IRD, DictKeyProxy):
 
 	def updatesql(self):
 		decoder = self.getInterface("decoder")
-		selected_input_name = decoder.getKey("input")
+		selected_input_name = decoder.getKey("input", "UNKNOWN")
 		selected_input = self.getInterface(selected_input_name)
 		asi = self.getInterface(selected_input_name + "_asi")
 		ip  = self.getInterface(selected_input_name + "_ip")
 		sat = self.getInterface(selected_input_name + "_sat")
 
 		sql = ["UPDATE status SET status = '%s'  " % self.getStatus()]
-		sql += ["asi='%s'" % selected_input.getKey("input").upper()]
-		sql += ["muxbitrate='%s' " % selected_input.getKey("ts_bitrate")]
-		sql += ["muxstate='%s' " % selected_input.getKey("ts_locked")]
+		sql += ["asi='%s'" % selected_input.getKey("input", "").upper()]
+		sql += ["muxbitrate='%s' " % selected_input.getKey("ts_bitrate", "0")]
+		sql += ["muxstate='%s' " % selected_input.getKey("ts_locked", False)]
 
 		# TODO: Maybe? I don't know if the Titan can do this. Ignore for now
 		# sql += ["asioutencrypted='%s'" % "True"]
 		# sql += ["ipoutencrypted='%s' " % "True"]
-		sql += ["numServices='%s' " % decoder.getKey("service_count")]
+		sql += ["numServices='%s' " % decoder.getKey("service_count", 0)]
 		sql += ["frequency='%s'" % sat.getKey("downlink_frequency", "")]
 		sql += ["symbolrate='%s'" % sat.getKey("symbol_rate", "")]
 		sql += ["fec='%s'" % sat.getKey("fec", "")]
@@ -255,16 +258,16 @@ class Titan(IRD, DictKeyProxy):
 
 		current_service_id = decoder.getKey("service_id", 0)
 		services = decoder.getKey("services", {})
-		current_service = services.get(current_service_id)
+		current_service = services.get(current_service_id, {})
 
 		sql += ["servicename = '%s' " % current_service.get("name", "")]
 		sql += ["aspectratio ='%s' " % decoder.getKey("aspect_ration", "")]
 		sql += ["castatus='%s' " % self.getCAType()]
-		sql += ["videoresolution='%s' " % decoder.getKey("height")]
-		sql += ["framerate='%s' " % decoder.getKey("frame_rate")]
-		sql += ["videostate='%s'" % decoder.getKey("video_status")]
+		sql += ["videoresolution='%s' " % decoder.getKey("height", 0)]
+		sql += ["framerate='%s' " % decoder.getKey("frame_rate", 0)]
+		sql += ["videostate='%s'" % decoder.getKey("video_status", False)]
 		sql += ["ServiceID='%s' " % current_service_id]
-		sql += ["ipinaddr='%s' " % ip.getKey("address")]
+		sql += ["ipinaddr='%s' " % ip.getKey("address", "0.0.0.0")]
 
 		sql += ["updated= CURRENT_TIMESTAMP "]
 
