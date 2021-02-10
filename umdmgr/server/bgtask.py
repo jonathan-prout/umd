@@ -62,6 +62,7 @@ def determine_type(data):
 	ip = current_equipment.ip
 
 	name = current_equipment.name
+	subequipment = getattr(current_equipment, "subequipment", None)
 	# Equipment equipTypeStrs without subtype
 	simpleTypes = {
 		"TT1260": server.equipment.ericsson.TT1260,
@@ -75,7 +76,7 @@ def determine_type(data):
 
 	for key in list(simpleTypes.keys()):
 		if any(((key in equipTypeStr), isinstance(current_equipment, simpleTypes[key]))):
-			current_equipment = simpleTypes[key](equipmentID, ip, name)
+			current_equipment = simpleTypes[key](equipmentID, ip, name, subequipment)
 			# gv.addEquipment(current_equipment)
 			t = key
 			break

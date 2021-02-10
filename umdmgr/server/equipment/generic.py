@@ -117,7 +117,7 @@ class serializableObj(object):
 	def __init__(self):
 		self.seralisabledata = ["ip", "equipmentId", "name", "snmp_res_dict", "oid_get", "masked_oids",
 							"oid_getBulk" "multicast_id_dict", "streamDict", "addressesbyname", "online", "modelType",
-							"refreshType", "refreshCounter"]
+							"refreshType", "refreshCounter", "subequipment"]
 	def serialize(self):
 		"""serialize data without using pickle. Returns dict"""
 
