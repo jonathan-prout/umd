@@ -67,7 +67,7 @@ class Titan(IRD, DictKeyProxy):
 			iface = self.getInterface(ifacename)
 
 
-			iface.setKey("ts_bitrate", _input.get("bitrate", 0) / 1000000)
+			iface.setKey("ts_bitrate", _input.get("bitrate", 0) )
 			iface.setKey("ts_lock", _input.get("tsLocked", False))
 
 			ip = _input.get("ip", {})
@@ -193,7 +193,7 @@ class Titan(IRD, DictKeyProxy):
 			availableInputs.append(satname)
 			inputMapping["sat"] = satport
 			satport.setKey("mode", sat.get("mode"))
-			satport.setKey("symbol_rate", sat.get("symbolRate", 0) / 1000)
+			satport.setKey("symbol_rate", sat.get("symbolRate", 0) )
 			satport.setKey("downlink_frequency", sat.get("downlinkFrequency", 0) / 1000)
 			satport.setKey("lo_frequency", sat.get("oscillatorFrequency", 0) / 1000)
 
@@ -237,7 +237,7 @@ class Titan(IRD, DictKeyProxy):
 		sql = ["UPDATE status SET status = '%s'  " % self.getStatus()]
 		sql += ["asi='%s'" % selected_input.getKey("input", "").upper()]
 		sql += ["muxbitrate='%s' " % selected_input.getKey("ts_bitrate", "0")]
-		sql += ["muxstate='%s' " % selected_input.getKey("ts_locked", False)]
+		sql += ["muxstate='%s' " % ["Unlock", "Lock"][selected_input.getKey("ts_locked", False)]
 
 		# TODO: Maybe? I don't know if the Titan can do this. Ignore for now
 		# sql += ["asioutencrypted='%s'" % "True"]
@@ -265,7 +265,7 @@ class Titan(IRD, DictKeyProxy):
 		sql += ["castatus='%s' " % self.getCAType()]
 		sql += ["videoresolution='%s' " % decoder.getKey("height", 0)]
 		sql += ["framerate='%s' " % decoder.getKey("frame_rate", 0)]
-		sql += ["videostate='%s'" % decoder.getKey("video_status", False)]
+		sql += ["videostate='%s'" % ["Stopped", "Running"][decoder.getKey("video_status", False)]]
 		sql += ["ServiceID='%s' " % current_service_id]
 		sql += ["ipinaddr='%s' " % ip.getKey("address", "0.0.0.0")]
 
