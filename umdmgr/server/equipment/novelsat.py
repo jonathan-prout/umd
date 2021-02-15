@@ -209,7 +209,7 @@ class NS2000_WEB(NS2000):
 		
 
 class NS2000_SNMP(NS2000):
-	def __init__(self, equipmentId, ip, name):
+	def __init__(self, equipmentId, ip, name, *args, **kwargs):
 		super( NS2000_SNMP, self ).__init__(equipmentId, ip, name, *args, **kwargs)
 		self.modelType = "NS2000_SNMP"
 	def getinSatSetupSatelliteFreq(self):
