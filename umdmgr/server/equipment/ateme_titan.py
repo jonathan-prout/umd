@@ -237,7 +237,7 @@ class Titan(IRD, DictKeyProxy):
 		sql = ["UPDATE status SET status = '%s'  " % self.getStatus()]
 		sql += ["asi='%s'" % selected_input.getKey("input", "").upper()]
 		sql += ["muxbitrate='%s' " % selected_input.getKey("ts_bitrate", "0")]
-		sql += ["muxstate='%s' " % ["Unlock", "Lock"][selected_input.getKey("ts_locked", False)]
+		sql += ["muxstate='%s' " % ["Unlock", "Lock"][selected_input.getKey("ts_locked", False)]]
 
 		# TODO: Maybe? I don't know if the Titan can do this. Ignore for now
 		# sql += ["asioutencrypted='%s'" % "True"]
