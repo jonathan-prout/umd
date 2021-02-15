@@ -249,7 +249,7 @@ class Titan(IRD, DictKeyProxy):
 		sql += ["rolloff='%s'" % sat.getKey("roll_off", "")]
 		sql += ["modulationtype='%s'" % sat.getKey("mode", "")]
 		sql += ["ebno='%s' " % sat.getKey("margin", "")]
-		sql += ["pol='%s' " % sat.getKey("polarization", "").upper()[0]]
+		sql += ["pol='%s' " % sat.getKey("polarization", "").upper()[0:1]]
 
 		# TODO: Ask Ateme why this is broken. Sat connector name shows as emptystring.
 		# For now this will be cabled on the basis of one sat input per decoder
