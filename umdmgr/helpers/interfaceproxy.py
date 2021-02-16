@@ -11,7 +11,7 @@ class DictKeyProxy(object):
 
 	def setKey(self, key, value):
 		"""Function to set the data key """
-		if self.getKey(key) != value:
+		if any([self.getKey(key) != value, key not in self.data]):
 			self.data[key] = {
 				"value": value,
 				"updated": time.time(),

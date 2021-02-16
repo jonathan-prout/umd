@@ -44,5 +44,28 @@ class TestTitan(unittest.TestCase):
 		titan.set_get_decoder_api_channels_id_content(jdata)
 		sql = titan.updatesql()
 
+
+	def test_sql4(self):
+		titan = ateme_titan.Titan(1, "10.0.0.1", "titan", 2)
+		fname = "titandata2.json"
+		with open(os.sep.join(["testdata", fname]), "r") as fobj:
+			titan.data = json.load(fobj)
+
+		sql = titan.updatesql().split(",")
+		d = {}
+		for line in sql:
+			try:
+				k, v = line.split("=")
+				d[k.strip()] = v.strip().replace("'", "")
+			except ValueError:
+				continue
+
+		self.assertEqual(d['muxbitrate'], '31379456')
+		self.assertEqual(d['muxstate'], 'Lock')
+		self.assertEqual(d['fec'], '3_4')
+		self.assertEqual(d['rolloff'], '0_20')
+		self.assertEqual(d['aspectratio'], '16_9')
+
+
 if __name__ == '__main__':
 	unittest.main()

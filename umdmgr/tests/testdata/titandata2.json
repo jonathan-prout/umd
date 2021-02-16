@@ -1,0 +1,1114 @@
+{
+    "updated": {
+        "value": "OK",
+        "updated": 1613500422.6090562,
+        "changed": 1613500422.5750532
+    },
+    "id": {
+        "value": "1",
+        "updated": 1613500422.6090562,
+        "changed": 1613500422.5750532
+    },
+    "interface-decoder": {
+        "running": {
+            "value": true,
+            "updated": 1613500422.6090562,
+            "changed": 1613500422.5750532
+        },
+        "enabled": {
+            "value": true,
+            "updated": 1613500422.6090562,
+            "changed": 1613500422.5750532
+        },
+        "name": {
+            "value": "RX61 - 7B  b1 A",
+            "updated": 1613500422.5750532,
+            "changed": 1613500422.5750532
+        },
+        "input": {
+            "value": "input_1",
+            "updated": 1613500422.5750532,
+            "changed": 1613500422.5750532
+        },
+        "service_id": {
+            "value": 1,
+            "updated": 1613500422.5750532,
+            "changed": 1613500422.5750532
+        },
+        "video_status": {
+            "value": true,
+            "updated": 1613500422.5750532,
+            "changed": 1613500422.5750532
+        },
+        "video_codec": {
+            "value": "h264",
+            "updated": 1613500422.5750532,
+            "changed": 1613500422.5750532
+        },
+        "video_bitrate": {
+            "value": 26.653696,
+            "updated": 1613500422.5750532,
+            "changed": 1613500422.5750532
+        },
+        "width": {
+            "value": 1920,
+            "updated": 1613500422.5750532,
+            "changed": 1613500422.5750532
+        },
+        "height": {
+            "value": 1080,
+            "updated": 1613500422.5750532,
+            "changed": 1613500422.5750532
+        },
+        "frame_rate": {
+            "value": 25.0,
+            "updated": 1613500422.5750532,
+            "changed": 1613500422.5750532
+        },
+        "aspect_ratio": {
+            "value": "16_9",
+            "updated": 1613500422.5750532,
+            "changed": 1613500422.5750532
+        },
+        "services": {
+            "value": {
+                "1": {
+                    "service_id": 1,
+                    "PCR": 512,
+                    "name": "CRO-019 M1 MAIN",
+                    "PIDs": [
+                        {
+                            "pid": 512,
+                            "id": 0,
+                            "label": "",
+                            "type": "video",
+                            "codec": "h264",
+                            "payload": "h264_annexe_b_streaming",
+                            "bitrate": 0,
+                            "nDvbSubService": 0,
+                            "dvbSubService": [],
+                            "caType": "",
+                            "language": ""
+                        },
+                        {
+                            "pid": 4112,
+                            "id": 1,
+                            "label": "",
+                            "type": "audio",
+                            "codec": "mpa",
+                            "payload": "unknown",
+                            "bitrate": 0,
+                            "nDvbSubService": 0,
+                            "dvbSubService": [],
+                            "caType": "",
+                            "language": ""
+                        },
+                        {
+                            "pid": 4128,
+                            "id": 2,
+                            "label": "",
+                            "type": "audio",
+                            "codec": "mpa",
+                            "payload": "unknown",
+                            "bitrate": 0,
+                            "nDvbSubService": 0,
+                            "dvbSubService": [],
+                            "caType": "",
+                            "language": ""
+                        },
+                        {
+                            "pid": 4144,
+                            "id": 3,
+                            "label": "",
+                            "type": "audio",
+                            "codec": "302m",
+                            "payload": "unknown",
+                            "bitrate": 0,
+                            "nDvbSubService": 0,
+                            "dvbSubService": [],
+                            "caType": "",
+                            "language": ""
+                        }
+                    ]
+                }
+            },
+            "updated": 1613500422.5750532,
+            "changed": 1613500422.5750532
+        },
+        "service_count": {
+            "value": 1,
+            "updated": 1613500422.5750532,
+            "changed": 1613500422.5750532
+        }
+    },
+    "interface-input_1": {
+        "enabled": {
+            "value": true,
+            "updated": 1613500422.5750532,
+            "changed": 1613500422.5750532
+        },
+        "input": {
+            "value": "ip",
+            "updated": 1613500422.5750532,
+            "changed": 1613500422.5750532
+        },
+        "ts_bitrate": {
+            "value": 31379456,
+            "updated": 1613500422.6090562,
+            "changed": 1613500422.6090562
+        },
+        "ts_lock": {
+            "value": true,
+            "updated": 1613500422.6090562,
+            "changed": 1613500422.5750532
+        }
+    },
+    "interface-input_1_asi": {
+        "connector": {
+            "value": "",
+            "updated": 1613500422.5750532,
+            "changed": 1613500422.5750532
+        }
+    },
+    "interface-input_1_ip": {
+        "address": {
+            "value": "225.1.1.1",
+            "updated": 1613500422.5750532,
+            "changed": 1613500422.5750532
+        },
+        "port": {
+            "value": 1231,
+            "updated": 1613500422.5750532,
+            "changed": 1613500422.5750532
+        },
+        "connector": {
+            "value": "IPIN",
+            "updated": 1613500422.5750532,
+            "changed": 1613500422.5750532
+        },
+        "rtp": {
+            "value": false,
+            "updated": 1613500422.6090562,
+            "changed": 1613500422.6090562
+        },
+        "packet_counter": {
+            "value": 0,
+            "updated": 1613500422.6090562,
+            "changed": 1613500422.6090562
+        },
+        "missing_packet_counter": {
+            "value": 0,
+            "updated": 1613500422.6090562,
+            "changed": 1613500422.6090562
+        },
+        "input_error_rate": {
+            "value": 0,
+            "updated": 1613500422.6090562,
+            "changed": 1613500422.5750532
+        },
+        "output_error_rate": {
+            "value": 0,
+            "updated": 1613500422.6090562,
+            "changed": 1613500422.5750532
+        },
+        "jitter": {
+            "value": 0,
+            "updated": 1613500422.6090562,
+            "changed": 1613500422.6090562
+        }
+    },
+    "interface-input_1_sat": {
+        "mode": {
+            "value": "dvbs2",
+            "updated": 1613500422.5750532,
+            "changed": 1613500422.5750532
+        },
+        "symbol_rate": {
+            "value": 4973,
+            "updated": 1613500422.5750532,
+            "changed": 1613500422.5750532
+        },
+        "downlink_frequency": {
+            "value": 11044.0,
+            "updated": 1613500422.5750532,
+            "changed": 1613500422.5750532
+        },
+        "lo_frequency": {
+            "value": 9950.0,
+            "updated": 1613500422.5750532,
+            "changed": 1613500422.5750532
+        },
+        "polarization": {
+            "value": "vertical",
+            "updated": 1613500422.5750532,
+            "changed": 1613500422.5750532
+        },
+        "high_band": {
+            "value": false,
+            "updated": 1613500422.5750532,
+            "changed": 1613500422.5750532
+        },
+        "connector": {
+            "value": "",
+            "updated": 1613500422.5750532,
+            "changed": 1613500422.5750532
+        },
+        "lock": {
+            "value": true,
+            "updated": 1613500422.6090562,
+            "changed": 1613500422.6090562
+        },
+        "carrier_noise_ratio": {
+            "value": 12.4,
+            "updated": 1613500422.6090562,
+            "changed": 1613500422.6090562
+        },
+        "margin": {
+            "value": 4.490000000113382,
+            "updated": 1613500422.6090562,
+            "changed": 1613500422.6090562
+        },
+        "bit_error_rate": {
+            "value": 0.0,
+            "updated": 1613500422.6090562,
+            "changed": 1613500422.5750532
+        },
+        "fec": {
+            "value": "3_4",
+            "updated": 1613500422.6090562,
+            "changed": 1613500422.6090562
+        },
+        "roll_off": {
+            "value": "0_20",
+            "updated": 1613500422.6090562,
+            "changed": 1613500422.6090562
+        },
+        "pilot_symbols": {
+            "value": "on",
+            "updated": 1613500422.6090562,
+            "changed": 1613500422.6090562
+        }
+    },
+    "interface-input_2": {
+        "enabled": {
+            "value": false,
+            "updated": 1613500422.5750532,
+            "changed": 1613500422.5750532
+        },
+        "input": {
+            "value": "ip",
+            "updated": 1613500422.5750532,
+            "changed": 1613500422.5750532
+        },
+        "ts_bitrate": {
+            "value": 0,
+            "updated": 1613500422.6100588,
+            "changed": 1613500422.5750532
+        },
+        "ts_lock": {
+            "value": false,
+            "updated": 1613500422.6100588,
+            "changed": 1613500422.5750532
+        }
+    },
+    "interface-input_2_asi": {
+        "connector": {
+            "value": "",
+            "updated": 1613500422.5750532,
+            "changed": 1613500422.5750532
+        }
+    },
+    "interface-input_2_ip": {
+        "address": {
+            "value": "0.0.0.0",
+            "updated": 1613500422.5750532,
+            "changed": 1613500422.5750532
+        },
+        "port": {
+            "value": 1234,
+            "updated": 1613500422.5750532,
+            "changed": 1613500422.5750532
+        },
+        "connector": {
+            "value": "eno5",
+            "updated": 1613500422.5750532,
+            "changed": 1613500422.5750532
+        },
+        "rtp": {
+            "value": false,
+            "updated": 1613500422.6100588,
+            "changed": 1613500422.5750532
+        },
+        "packet_counter": {
+            "value": 0,
+            "updated": 1613500422.6100588,
+            "changed": 1613500422.5750532
+        },
+        "missing_packet_counter": {
+            "value": 0,
+            "updated": 1613500422.6100588,
+            "changed": 1613500422.5750532
+        },
+        "input_error_rate": {
+            "value": 0,
+            "updated": 1613500422.6100588,
+            "changed": 1613500422.5750532
+        },
+        "output_error_rate": {
+            "value": 0,
+            "updated": 1613500422.6100588,
+            "changed": 1613500422.5750532
+        },
+        "jitter": {
+            "value": 0,
+            "updated": 1613500422.6100588,
+            "changed": 1613500422.5750532
+        }
+    },
+    "interface-input_2_sat": {
+        "mode": {
+            "value": "dvbs",
+            "updated": 1613500422.5750532,
+            "changed": 1613500422.5750532
+        },
+        "symbol_rate": {
+            "value": 27500,
+            "updated": 1613500422.5750532,
+            "changed": 1613500422.5750532
+        },
+        "downlink_frequency": {
+            "value": 1000.0,
+            "updated": 1613500422.5750532,
+            "changed": 1613500422.5750532
+        },
+        "lo_frequency": {
+            "value": 0.0,
+            "updated": 1613500422.5750532,
+            "changed": 1613500422.5750532
+        },
+        "polarization": {
+            "value": "vertical",
+            "updated": 1613500422.5750532,
+            "changed": 1613500422.5750532
+        },
+        "high_band": {
+            "value": false,
+            "updated": 1613500422.5750532,
+            "changed": 1613500422.5750532
+        },
+        "connector": {
+            "value": "",
+            "updated": 1613500422.5750532,
+            "changed": 1613500422.5750532
+        },
+        "lock": {
+            "value": false,
+            "updated": 1613500422.6100588,
+            "changed": 1613500422.5750532
+        },
+        "carrier_noise_ratio": {
+            "value": 0.0,
+            "updated": 1613500422.6100588,
+            "changed": 1613500422.5750532
+        },
+        "margin": {
+            "value": 0.0,
+            "updated": 1613500422.6100588,
+            "changed": 1613500422.5750532
+        },
+        "bit_error_rate": {
+            "value": 0.0,
+            "updated": 1613500422.6100588,
+            "changed": 1613500422.5750532
+        },
+        "fec": {
+            "value": "unknown",
+            "updated": 1613500422.6100588,
+            "changed": 1613500422.5750532
+        },
+        "roll_off": {
+            "value": "unknown",
+            "updated": 1613500422.6100588,
+            "changed": 1613500422.5750532
+        },
+        "pilot_symbols": {
+            "value": "unknown",
+            "updated": 1613500422.6100588,
+            "changed": 1613500422.5750532
+        }
+    },
+    "interface-gateway": {
+        "name": {
+            "value": "GW RX61 IP/ASI OUT",
+            "updated": 1613500422.6090562,
+            "changed": 1613500422.6090562
+        },
+        "input": {
+            "value": "gateway_input_1",
+            "updated": 1613500422.6090562,
+            "changed": 1613500422.6090562
+        },
+        "services": {
+            "value": {
+                "1": {
+                    "service_id": 1,
+                    "PCR": 512,
+                    "name": "CRO-019 M1 MAIN",
+                    "PIDs": [
+                        {
+                            "pid": 512,
+                            "id": 0,
+                            "label": "",
+                            "type": "video",
+                            "codec": "h264",
+                            "payload": "h264_annexe_b_streaming",
+                            "bitrate": 0,
+                            "nDvbSubService": 0,
+                            "dvbSubService": [],
+                            "caType": "",
+                            "language": ""
+                        },
+                        {
+                            "pid": 4112,
+                            "id": 1,
+                            "label": "",
+                            "type": "audio",
+                            "codec": "mpa",
+                            "payload": "unknown",
+                            "bitrate": 0,
+                            "nDvbSubService": 0,
+                            "dvbSubService": [],
+                            "caType": "",
+                            "language": ""
+                        },
+                        {
+                            "pid": 4128,
+                            "id": 2,
+                            "label": "",
+                            "type": "audio",
+                            "codec": "mpa",
+                            "payload": "unknown",
+                            "bitrate": 0,
+                            "nDvbSubService": 0,
+                            "dvbSubService": [],
+                            "caType": "",
+                            "language": ""
+                        },
+                        {
+                            "pid": 4144,
+                            "id": 3,
+                            "label": "",
+                            "type": "audio",
+                            "codec": "302m",
+                            "payload": "unknown",
+                            "bitrate": 0,
+                            "nDvbSubService": 0,
+                            "dvbSubService": [],
+                            "caType": "",
+                            "language": ""
+                        }
+                    ]
+                }
+            },
+            "updated": 1613500422.6100588,
+            "changed": 1613500422.6100588
+        },
+        "service_count": {
+            "value": 1,
+            "updated": 1613500422.6100588,
+            "changed": 1613500422.6100588
+        }
+    },
+    "interface-gateway_input_1": {
+        "enabled": {
+            "value": true,
+            "updated": 1613500422.6090562,
+            "changed": 1613500422.6090562
+        },
+        "input": {
+            "value": "sat",
+            "updated": 1613500422.6090562,
+            "changed": 1613500422.6090562
+        },
+        "ts_bitrate": {
+            "value": 31379456,
+            "updated": 1613500422.6100588,
+            "changed": 1613500422.6100588
+        },
+        "ts_lock": {
+            "value": true,
+            "updated": 1613500422.6100588,
+            "changed": 1613500422.6100588
+        }
+    },
+    "interface-gateway_input_1_asi": {
+        "connector": {
+            "value": "",
+            "updated": 1613500422.6090562,
+            "changed": 1613500422.6090562
+        }
+    },
+    "interface-gateway_input_1_ip": {
+        "address": {
+            "value": "0.0.0.0",
+            "updated": 1613500422.6090562,
+            "changed": 1613500422.6090562
+        },
+        "port": {
+            "value": 1234,
+            "updated": 1613500422.6090562,
+            "changed": 1613500422.6090562
+        },
+        "connector": {
+            "value": "eno5",
+            "updated": 1613500422.6090562,
+            "changed": 1613500422.6090562
+        },
+        "rtp": {
+            "value": false,
+            "updated": 1613500422.6100588,
+            "changed": 1613500422.6100588
+        },
+        "packet_counter": {
+            "value": 0,
+            "updated": 1613500422.6100588,
+            "changed": 1613500422.6100588
+        },
+        "missing_packet_counter": {
+            "value": 0,
+            "updated": 1613500422.6100588,
+            "changed": 1613500422.6100588
+        },
+        "input_error_rate": {
+            "value": 0,
+            "updated": 1613500422.6100588,
+            "changed": 1613500422.6100588
+        },
+        "output_error_rate": {
+            "value": 0,
+            "updated": 1613500422.6100588,
+            "changed": 1613500422.6100588
+        },
+        "jitter": {
+            "value": 0,
+            "updated": 1613500422.6100588,
+            "changed": 1613500422.6100588
+        }
+    },
+    "interface-gateway_input_1_sat": {
+        "mode": {
+            "value": "dvbs2",
+            "updated": 1613500422.6090562,
+            "changed": 1613500422.6090562
+        },
+        "symbol_rate": {
+            "value": 14.4,
+            "updated": 1613500422.6090562,
+            "changed": 1613500422.6090562
+        },
+        "downlink_frequency": {
+            "value": 1014.5,
+            "updated": 1613500422.6090562,
+            "changed": 1613500422.6090562
+        },
+        "lo_frequency": {
+            "value": 0.0,
+            "updated": 1613500422.6090562,
+            "changed": 1613500422.6090562
+        },
+        "polarization": {
+            "value": "vertical",
+            "updated": 1613500422.6090562,
+            "changed": 1613500422.6090562
+        },
+        "high_band": {
+            "value": false,
+            "updated": 1613500422.6090562,
+            "changed": 1613500422.6090562
+        },
+        "connector": {
+            "value": "1:1",
+            "updated": 1613500422.6090562,
+            "changed": 1613500422.6090562
+        },
+        "lock": {
+            "value": true,
+            "updated": 1613500422.6100588,
+            "changed": 1613500422.6100588
+        },
+        "carrier_noise_ratio": {
+            "value": 12.4,
+            "updated": 1613500422.6100588,
+            "changed": 1613500422.6100588
+        },
+        "margin": {
+            "value": 4.490000000113382,
+            "updated": 1613500422.6100588,
+            "changed": 1613500422.6100588
+        },
+        "bit_error_rate": {
+            "value": 0.0,
+            "updated": 1613500422.6100588,
+            "changed": 1613500422.6100588
+        },
+        "fec": {
+            "value": "3_4",
+            "updated": 1613500422.6100588,
+            "changed": 1613500422.6100588
+        },
+        "roll_off": {
+            "value": "0_20",
+            "updated": 1613500422.6100588,
+            "changed": 1613500422.6100588
+        },
+        "pilot_symbols": {
+            "value": "on",
+            "updated": 1613500422.6100588,
+            "changed": 1613500422.6100588
+        }
+    },
+    "interface-gateway_input_2": {
+        "enabled": {
+            "value": false,
+            "updated": 1613500422.6090562,
+            "changed": 1613500422.6090562
+        },
+        "input": {
+            "value": "ip",
+            "updated": 1613500422.6090562,
+            "changed": 1613500422.6090562
+        },
+        "ts_bitrate": {
+            "value": 0,
+            "updated": 1613500422.6100588,
+            "changed": 1613500422.6100588
+        },
+        "ts_lock": {
+            "value": false,
+            "updated": 1613500422.6100588,
+            "changed": 1613500422.6100588
+        }
+    },
+    "interface-gateway_input_2_asi": {
+        "connector": {
+            "value": "",
+            "updated": 1613500422.6090562,
+            "changed": 1613500422.6090562
+        }
+    },
+    "interface-gateway_input_2_ip": {
+        "address": {
+            "value": "0.0.0.0",
+            "updated": 1613500422.6090562,
+            "changed": 1613500422.6090562
+        },
+        "port": {
+            "value": 1234,
+            "updated": 1613500422.6090562,
+            "changed": 1613500422.6090562
+        },
+        "connector": {
+            "value": "eno5",
+            "updated": 1613500422.6090562,
+            "changed": 1613500422.6090562
+        },
+        "rtp": {
+            "value": false,
+            "updated": 1613500422.6100588,
+            "changed": 1613500422.6100588
+        },
+        "packet_counter": {
+            "value": 0,
+            "updated": 1613500422.6100588,
+            "changed": 1613500422.6100588
+        },
+        "missing_packet_counter": {
+            "value": 0,
+            "updated": 1613500422.6100588,
+            "changed": 1613500422.6100588
+        },
+        "input_error_rate": {
+            "value": 0,
+            "updated": 1613500422.6100588,
+            "changed": 1613500422.6100588
+        },
+        "output_error_rate": {
+            "value": 0,
+            "updated": 1613500422.6100588,
+            "changed": 1613500422.6100588
+        },
+        "jitter": {
+            "value": 0,
+            "updated": 1613500422.6100588,
+            "changed": 1613500422.6100588
+        }
+    },
+    "interface-gateway_input_2_sat": {
+        "mode": {
+            "value": "dvbs",
+            "updated": 1613500422.6090562,
+            "changed": 1613500422.6090562
+        },
+        "symbol_rate": {
+            "value": 27.5,
+            "updated": 1613500422.6090562,
+            "changed": 1613500422.6090562
+        },
+        "downlink_frequency": {
+            "value": 1000.0,
+            "updated": 1613500422.6090562,
+            "changed": 1613500422.6090562
+        },
+        "lo_frequency": {
+            "value": 0.0,
+            "updated": 1613500422.6090562,
+            "changed": 1613500422.6090562
+        },
+        "polarization": {
+            "value": "vertical",
+            "updated": 1613500422.6090562,
+            "changed": 1613500422.6090562
+        },
+        "high_band": {
+            "value": false,
+            "updated": 1613500422.6090562,
+            "changed": 1613500422.6090562
+        },
+        "connector": {
+            "value": "",
+            "updated": 1613500422.6090562,
+            "changed": 1613500422.6090562
+        },
+        "lock": {
+            "value": false,
+            "updated": 1613500422.6100588,
+            "changed": 1613500422.6100588
+        },
+        "carrier_noise_ratio": {
+            "value": 0.0,
+            "updated": 1613500422.6100588,
+            "changed": 1613500422.6100588
+        },
+        "margin": {
+            "value": 0.0,
+            "updated": 1613500422.6100588,
+            "changed": 1613500422.6100588
+        },
+        "bit_error_rate": {
+            "value": 0.0,
+            "updated": 1613500422.6100588,
+            "changed": 1613500422.6100588
+        },
+        "fec": {
+            "value": "unknown",
+            "updated": 1613500422.6100588,
+            "changed": 1613500422.6100588
+        },
+        "roll_off": {
+            "value": "unknown",
+            "updated": 1613500422.6100588,
+            "changed": 1613500422.6100588
+        },
+        "pilot_symbols": {
+            "value": "unknown",
+            "updated": 1613500422.6100588,
+            "changed": 1613500422.6100588
+        }
+    },
+    "interface-gateway_ip_out_1": {
+        "protocol": {
+            "value": "rtp",
+            "updated": 1613500422.6100588,
+            "changed": 1613500422.6100588
+        },
+        "enabled": {
+            "value": true,
+            "updated": 1613500422.6100588,
+            "changed": 1613500422.6100588
+        },
+        "bitRate": {
+            "value": 31356364,
+            "updated": 1613500422.6100588,
+            "changed": 1613500422.6100588
+        },
+        "interface": {
+            "value": "STREAM1",
+            "updated": 1613500422.6100588,
+            "changed": 1613500422.6100588
+        },
+        "address": {
+            "value": "239.255.0.1",
+            "updated": 1613500422.6100588,
+            "changed": 1613500422.6100588
+        },
+        "port": {
+            "value": 5500,
+            "updated": 1613500422.6100588,
+            "changed": 1613500422.6100588
+        },
+        "input": {
+            "value": "gateway",
+            "updated": 1613500422.6100588,
+            "changed": 1613500422.6100588
+        }
+    },
+    "interface-gateway_ip_out_2": {
+        "protocol": {
+            "value": "rtp",
+            "updated": 1613500422.6100588,
+            "changed": 1613500422.6100588
+        },
+        "enabled": {
+            "value": false,
+            "updated": 1613500422.6100588,
+            "changed": 1613500422.6100588
+        },
+        "bitRate": {
+            "value": 31356364,
+            "updated": 1613500422.6100588,
+            "changed": 1613500422.6100588
+        },
+        "interface": {
+            "value": "eno5",
+            "updated": 1613500422.6100588,
+            "changed": 1613500422.6100588
+        },
+        "address": {
+            "value": "225.1.1.1",
+            "updated": 1613500422.6100588,
+            "changed": 1613500422.6100588
+        },
+        "port": {
+            "value": 1234,
+            "updated": 1613500422.6100588,
+            "changed": 1613500422.6100588
+        },
+        "input": {
+            "value": "gateway",
+            "updated": 1613500422.6100588,
+            "changed": 1613500422.6100588
+        }
+    },
+    "interface-gateway_ip_out_3": {
+        "protocol": {
+            "value": "rtp",
+            "updated": 1613500422.6100588,
+            "changed": 1613500422.6100588
+        },
+        "enabled": {
+            "value": false,
+            "updated": 1613500422.6100588,
+            "changed": 1613500422.6100588
+        },
+        "bitRate": {
+            "value": 31356364,
+            "updated": 1613500422.6100588,
+            "changed": 1613500422.6100588
+        },
+        "interface": {
+            "value": "STREAM2",
+            "updated": 1613500422.6100588,
+            "changed": 1613500422.6100588
+        },
+        "address": {
+            "value": "239.100.23.69",
+            "updated": 1613500422.6100588,
+            "changed": 1613500422.6100588
+        },
+        "port": {
+            "value": 6501,
+            "updated": 1613500422.6100588,
+            "changed": 1613500422.6100588
+        },
+        "input": {
+            "value": "gateway",
+            "updated": 1613500422.6100588,
+            "changed": 1613500422.6100588
+        }
+    },
+    "interface-gateway_ip_out_4": {
+        "protocol": {
+            "value": "rtp",
+            "updated": 1613500422.6100588,
+            "changed": 1613500422.6100588
+        },
+        "enabled": {
+            "value": false,
+            "updated": 1613500422.6100588,
+            "changed": 1613500422.6100588
+        },
+        "bitRate": {
+            "value": 31356364,
+            "updated": 1613500422.6100588,
+            "changed": 1613500422.6100588
+        },
+        "interface": {
+            "value": "eno5",
+            "updated": 1613500422.6100588,
+            "changed": 1613500422.6100588
+        },
+        "address": {
+            "value": "225.1.1.1",
+            "updated": 1613500422.6100588,
+            "changed": 1613500422.6100588
+        },
+        "port": {
+            "value": 1234,
+            "updated": 1613500422.6100588,
+            "changed": 1613500422.6100588
+        },
+        "input": {
+            "value": "gateway",
+            "updated": 1613500422.6100588,
+            "changed": 1613500422.6100588
+        }
+    },
+    "interface-gateway_ip_out_5": {
+        "protocol": {
+            "value": "rtp",
+            "updated": 1613500422.6100588,
+            "changed": 1613500422.6100588
+        },
+        "enabled": {
+            "value": false,
+            "updated": 1613500422.6100588,
+            "changed": 1613500422.6100588
+        },
+        "bitRate": {
+            "value": 31356364,
+            "updated": 1613500422.6100588,
+            "changed": 1613500422.6100588
+        },
+        "interface": {
+            "value": "eno5",
+            "updated": 1613500422.6100588,
+            "changed": 1613500422.6100588
+        },
+        "address": {
+            "value": "225.1.1.1",
+            "updated": 1613500422.6100588,
+            "changed": 1613500422.6100588
+        },
+        "port": {
+            "value": 1234,
+            "updated": 1613500422.6100588,
+            "changed": 1613500422.6100588
+        },
+        "input": {
+            "value": "gateway",
+            "updated": 1613500422.6100588,
+            "changed": 1613500422.6100588
+        }
+    },
+    "interface-gateway_ip_out_6": {
+        "protocol": {
+            "value": "rtp",
+            "updated": 1613500422.6100588,
+            "changed": 1613500422.6100588
+        },
+        "enabled": {
+            "value": false,
+            "updated": 1613500422.6100588,
+            "changed": 1613500422.6100588
+        },
+        "bitRate": {
+            "value": 31356364,
+            "updated": 1613500422.6100588,
+            "changed": 1613500422.6100588
+        },
+        "interface": {
+            "value": "eno5",
+            "updated": 1613500422.6100588,
+            "changed": 1613500422.6100588
+        },
+        "address": {
+            "value": "225.1.1.1",
+            "updated": 1613500422.6100588,
+            "changed": 1613500422.6100588
+        },
+        "port": {
+            "value": 1234,
+            "updated": 1613500422.6100588,
+            "changed": 1613500422.6100588
+        },
+        "input": {
+            "value": "gateway",
+            "updated": 1613500422.6100588,
+            "changed": 1613500422.6100588
+        }
+    },
+    "interface-gateway_ip_out_7": {
+        "protocol": {
+            "value": "rtp",
+            "updated": 1613500422.6100588,
+            "changed": 1613500422.6100588
+        },
+        "enabled": {
+            "value": true,
+            "updated": 1613500422.6100588,
+            "changed": 1613500422.6100588
+        },
+        "bitRate": {
+            "value": 31356364,
+            "updated": 1613500422.6100588,
+            "changed": 1613500422.6100588
+        },
+        "interface": {
+            "value": "IPIN",
+            "updated": 1613500422.6100588,
+            "changed": 1613500422.6100588
+        },
+        "address": {
+            "value": "225.1.1.1",
+            "updated": 1613500422.6100588,
+            "changed": 1613500422.6100588
+        },
+        "port": {
+            "value": 1231,
+            "updated": 1613500422.6100588,
+            "changed": 1613500422.6100588
+        },
+        "input": {
+            "value": "gateway",
+            "updated": 1613500422.6100588,
+            "changed": 1613500422.6100588
+        }
+    },
+    "interface-gateway_ip_out_8": {
+        "protocol": {
+            "value": "rtp",
+            "updated": 1613500422.6100588,
+            "changed": 1613500422.6100588
+        },
+        "enabled": {
+            "value": false,
+            "updated": 1613500422.6100588,
+            "changed": 1613500422.6100588
+        },
+        "bitRate": {
+            "value": 31356364,
+            "updated": 1613500422.6100588,
+            "changed": 1613500422.6100588
+        },
+        "interface": {
+            "value": "eno5",
+            "updated": 1613500422.6100588,
+            "changed": 1613500422.6100588
+        },
+        "address": {
+            "value": "225.1.1.1",
+            "updated": 1613500422.6100588,
+            "changed": 1613500422.6100588
+        },
+        "port": {
+            "value": 1234,
+            "updated": 1613500422.6100588,
+            "changed": 1613500422.6100588
+        },
+        "input": {
+            "value": "gateway",
+            "updated": 1613500422.6100588,
+            "changed": 1613500422.6100588
+        }
+    }
+}
