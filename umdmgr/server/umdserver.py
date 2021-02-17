@@ -20,9 +20,9 @@ import queue
 import multiprocessing
 import random
 import gc
-from . import equipment
-from . import gv
-from . import bgtask
+from server import equipment
+from server import gv
+from server import bgtask
 from helpers import snmp
 from helpers import debug
 import traceback

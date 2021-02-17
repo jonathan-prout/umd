@@ -91,8 +91,8 @@ bg_worker_threads = cpus * workers_per_proc
 """ Queues """
 ThreadCommandQueue = Queue(bg_worker_threads)
 offlineQueue = Queue(offlineCheckThreads)
-dbQ =  Queue()
-CheckInQueue = Queue()
+dbQ =  Queue(bg_worker_threads)
+CheckInQueue = Queue(bg_worker_threads)
 
 
 gotCheckedInData = False
