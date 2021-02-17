@@ -104,8 +104,8 @@ class Titan(IRD, DictKeyProxy):
 					"service_id": service_id,
 					"PCR": PCR,
 					"name": name,
-					"PIDs": program.get("stream")
-
+					"PIDs": program.get("stream"),
+					"caType": program.get("caType")
 				}
 
 				services[service_id] = service
@@ -266,7 +266,8 @@ class Titan(IRD, DictKeyProxy):
 				"service_id": service_id,
 				"PCR": PCR,
 				"name": name,
-				"PIDs": program.get("stream")
+				"PIDs": program.get("stream"),
+				"caType": program.get("caType")
 
 			}
 
@@ -358,10 +359,9 @@ class Titan(IRD, DictKeyProxy):
 		services = decoder.getKey("services", {})
 		current_service = services.get(current_service_id, {})
 		pcr = current_service.get("PCR", 0)
-		for pid in current_service.get("PIDs", []):
-			if pid.get("pid", 0) == pcr:
-				return pid.get("caType", "")
-		return ""
+
+		return current_service.get("caType", "")
+
 
 
 	def get_input_interface(self):
