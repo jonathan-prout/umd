@@ -57,16 +57,16 @@ if (ref != "") {land(loc,target);}
 		//print $sql;
 		
 		
-            $result = mysql_query($sql);
-			$num=mysql_numrows($result);
+            $result = query($sql);
+			$num=mysqli_num_rows($result);
 			//print $num;
 		
 	
 	$i=0;
 	$mgmt = array();
 	while ($i < $num) {
-		$key=mysql_result($result,$i,"key");
-		$value=mysql_result($result,$i,"value");
+		$key=mysqli_result($result,$i,"key");
+		$value=mysqli_result($result,$i,"value");
 		$mgmt[$key] = $value;
 		$i++;
 	}
@@ -276,18 +276,18 @@ if (ref != "") {land(loc,target);}
 		//print $sql;
 		
 		
-            $result = mysql_query($sql);
-			$num=mysql_numrows($result);
+            $result = query($sql);
+			$num=mysqli_num_rows($result);
 			//print $num;
 		
 	
 	$i=0;
 	while ($i < $num) {
-		$name=mysql_result($result,$i,"Name");
-		$protocol=mysql_result($result,$i,"Protocol");
-		$status=mysql_result($result,$i,"status");
+		$name=mysqli_result($result,$i,"Name");
+		$protocol=mysqli_result($result,$i,"Protocol");
+		$status=mysqli_result($result,$i,"status");
 
-		$ip=mysql_result($result,$i,"IP");
+		$ip=mysqli_result($result,$i,"IP");
 
 		if ($status == "OK")
 			$background = "lightgreen";
@@ -316,38 +316,38 @@ if (ref != "") {land(loc,target);}
 		<td>Slow IRDs</td><td>Updated</td></tr>
 <?php 
 	
-	$sql = 'SELECT `equipment`.*,`status`.*
+	$sql = 'SELECT `equipment`.*,`status`.*, timestampdiff(SECOND, `status`.`updated`, now()) age
 FROM equipment, status
 WHERE (`status`.`updated` <= NOW() - INTERVAL 30 SECOND ) AND (`status`.`status` NOT like  "Offline") AND `equipment`.`id`= `status`.`id` ORDER BY `status`.`updated` ASC';
 		
 		//print $sql;
 		
 		
-            $result = mysql_query($sql);
-			$num=mysql_numrows($result);
+            $result = query($sql);
+			$num=mysqli_num_rows($result);
 			//print $num;
 		
 	
 	$i=0;
 	while ($i < $num) {
-		$label=mysql_result($result,$i,"equipment.labelnamestatic");
-		$channel=mysql_result($result,$i,"status.channel");
-		$videoresolution=mysql_result($result,$i,"status.videoresolution");
-		$aspectratio=mysql_result($result,$i,"status.aspectratio");
-		$servicename=mysql_result($result,$i,"status.servicename");
-		$ip=mysql_result($result,$i,"equipment.ip");
-		$videostate=mysql_result($result,$i,"status.videostate");
-		$modulation=mysql_result($result,$i,"status.modulationtype");
-		$framerate=mysql_result($result,$i,"status.framerate");
-		$asioutencrypted=mysql_result($result,$i,"status.asioutencrypted");
-		$updated=mysql_result($result,$i,"status.updated");
+        $label=mysqli_result($result,$i,"labelnamestatic");
+        $channel=mysqli_result($result,$i,"channel");
+        $videoresolution=mysqli_result($result,$i,"videoresolution");
+        $aspectratio=mysqli_result($result,$i,"aspectratio");
+        $servicename=mysqli_result($result,$i,"servicename");
+        $ip=mysqli_result($result,$i,"ip");
+        $videostate=mysqli_result($result,$i,"videostate");
+        $modulation=mysqli_result($result,$i,"modulationtype");
+        $framerate=mysqli_result($result,$i,"framerate");
+        $asioutencrypted=mysqli_result($result,$i,"asioutencrypted");
+		$updated=mysqli_result($result,$i,"age");
 		if ($videostate == "Running")
 			$background = "lightgreen";
 		else
 			$background = "99FFFF";
 			
 		echo '<tr>';
-		echo '<td bgcolor="'. $background .'"><a href ="http://'. $ip . '/" target=_blank>'. $label .'</a></td><td>'.$updated.'</td>';
+		echo '<td bgcolor="'. $background .'"><a href ="http://'. $ip . '/" target=_blank>'. $label .'</a></td><td>'.$updated.'s</td>';
 		
 		echo '</tr>';
 	
@@ -370,23 +370,33 @@ WHERE (`status`.`status` like  "Offline") AND `equipment`.`id`= `status`.`id`';
 		//print $sql;
 		
 		
-            $result = mysql_query($sql);
-			$num=mysql_numrows($result);
+            $result = query($sql);
+			$num=mysqli_num_rows($result);
 			//print $num;
 		
 	
 	$i=0;
 	while ($i < $num) {
-		$label=mysql_result($result,$i,"equipment.labelnamestatic");
-		$channel=mysql_result($result,$i,"status.channel");
-		$videoresolution=mysql_result($result,$i,"status.videoresolution");
-		$aspectratio=mysql_result($result,$i,"status.aspectratio");
-		$servicename=mysql_result($result,$i,"status.servicename");
-		$ip=mysql_result($result,$i,"equipment.ip");
-		$videostate=mysql_result($result,$i,"status.videostate");
-		$modulation=mysql_result($result,$i,"status.modulationtype");
-		$framerate=mysql_result($result,$i,"status.framerate");
-		$asioutencrypted=mysql_result($result,$i,"status.asioutencrypted");
+/*		$label=mysqli_result($result,$i,"equipment.labelnamestatic");
+		$channel=mysqli_result($result,$i,"status.channel");
+		$videoresolution=mysqli_result($result,$i,"status.videoresolution");
+		$aspectratio=mysqli_result($result,$i,"status.aspectratio");
+		$servicename=mysqli_result($result,$i,"status.servicename");
+		$ip=mysqli_result($result,$i,"equipment.ip");
+		$videostate=mysqli_result($result,$i,"status.videostate");
+		$modulation=mysqli_result($result,$i,"status.modulationtype");
+		$framerate=mysqli_result($result,$i,"status.framerate");
+		$asioutencrypted=mysqli_result($result,$i,"status.asioutencrypted");*/
+        $label=mysqli_result($result,$i,"labelnamestatic");
+		$channel=mysqli_result($result,$i,"channel");
+		$videoresolution=mysqli_result($result,$i,"videoresolution");
+		$aspectratio=mysqli_result($result,$i,"aspectratio");
+		$servicename=mysqli_result($result,$i,"servicename");
+		$ip=mysqli_result($result,$i,"ip");
+		$videostate=mysqli_result($result,$i,"videostate");
+		$modulation=mysqli_result($result,$i,"modulationtype");
+		$framerate=mysqli_result($result,$i,"framerate");
+		$asioutencrypted=mysqli_result($result,$i,"asioutencrypted");
 		if ($videostate == "Running")
 			$background = "lightgreen";
 		else
