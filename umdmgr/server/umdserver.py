@@ -242,6 +242,7 @@ class dispatcher(myThread):
 					if gv.threadJoinFlag:
 						break
 					try:
+						put_block = True
 						if instance.checkout.getStatus() in [STAT_INIT, STAT_READY, STAT_STUCK]:
 							if isinstance(instance, server.equipment.generic.GenericIRD):
 								task = "determine_type"
@@ -250,10 +251,11 @@ class dispatcher(myThread):
 								if instance.get_offline():
 									task = "determine_type"
 									myq = gv.offlineQueue
+									put_block = False
 								else:
 									task = "refresh"
 									myq = gv.ThreadCommandQueue
-							myq.put((task, gv.equipmentDict[equipmentID].serialize()))
+							myq.put((task, gv.equipmentDict[equipmentID].serialize()), block=put_block)
 							instance.checkout.enqueue()
 					except queue.Full:
 						time.sleep(0.1)
