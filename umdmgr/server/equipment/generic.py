@@ -145,6 +145,9 @@ class serializableObj(object):
 	def __del__(self):
 		for key in self.seralisabledata:
 			setattr(self, key, None)
+	
+	def __repr__(self):
+		return f"<{self.__class__.__name__} {self.name} {self.ip}>"
 
 class equipment(serializableObj):
 	modelType = "Not Set"

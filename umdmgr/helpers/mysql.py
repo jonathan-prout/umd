@@ -1,7 +1,9 @@
 #!/usr/bin/python
 from __future__ import print_function
 import os, re, sys,time,datetime
-import threading, MySQLdb
+import threading
+import MySQLdb
+import MySQLdb._exceptions
 
 class mysql(object):
 	autocommit = False
@@ -115,9 +117,11 @@ class mysql(object):
 		print("Closing database.....")
 		try:
 			self.db.close()
-		except AttributeError:
+		except (AttributeError, MySQLdb._exceptions.OperationalError):  # Hey bossy IDE it's not my fault they organize their packages like that
 			pass
-		self.connected = False
+		finally:
+			self.db = None
+			self.connected = False
 		
 	def __del__(self):
 		self.close()
