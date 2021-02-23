@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 from __future__ import print_function
 from __future__ import absolute_import
+
+from . import alarm
+from .logging import log
 from .matrix.generic import matrix
 from .infosource.sql import mysql
 import threading
@@ -34,7 +37,10 @@ class virtualMatrix( mysql, matrix):
 		self.openPrefs()
 		self.getSizeAndLevels()
 		self.refresh()
-		
+
+	def __repr__(self):
+		return self.name
+
 	def refresh(self):
 		with self.lock:
 			self.dbclose() #MYSQL BUG!!
@@ -73,12 +79,14 @@ class virtualMatrix( mysql, matrix):
 				self.xpointStatus[level] = {}
 		self.xpointStatus[level][dest - self.countFrom1] = src - self.countFrom1
 		try:
-			print(self.name +" %s -> %s"%(self.input[level][src + self.countFrom1],self.output[level][dest + self.countFrom1] ))
+			log(self.name +" %s -> %s"%(self.input[level][src + self.countFrom1],self.output[level][dest + self.countFrom1]),
+				self, alarm.level.OK)
 		except KeyError:
 			try:
-				print(self.name +" %s -> %s"%(self.input[0][src + self.countFrom1],self.output[0][dest + self.countFrom1] ))
+				log(self.name +" %s -> %s"%(self.input[0][src + self.countFrom1], self.output[0][dest + self.countFrom1]),
+					self, alarm.level.OK)
 			except:
-				print(self.name +" %s -> %s"%(dest + self.countFrom1 ,src + self.countFrom1))
+				log(self.name +" %s -> %s"%(dest + self.countFrom1 ,src + self.countFrom1), self, alarm.level.OK)
 			
 	def sourceNameFromDestName(self, destName):
 		with self.lock:
@@ -105,7 +113,7 @@ class virtualMatrix( mysql, matrix):
 										if srcNr in d:
 											return d[srcNr]
 								except TypeError:
-									print(f"Warning outputs not set on {self}")
+									log(f"Warning outputs not set", self, alarm.level.Warining)
 		return srcName
 		
 		

@@ -2,6 +2,7 @@ from __future__ import print_function
 from __future__ import absolute_import
 from builtins import str
 
+from helpers.logging import log
 from server import gv
 import random
 
@@ -93,7 +94,7 @@ def determine_type(data):
 			t = "Rx8200-2RF"
 			current_equipment = server.equipment.ericsson.RX8200_2RF(equipmentID, ip, name)
 		else:
-			print("WARNING: id %d at %s not subtyped" % (equipmentID, ip))
+			log("id %d at %s not subtyped" % (equipmentID, ip), "determine_type", alarm.level.Warning)
 	# gv.addEquipment(current_equipment)
 
 
@@ -118,7 +119,7 @@ def determine_type(data):
 	query = "UPDATE equipment SET model_id ='%s' WHERE id ='%i'" % (t, equipmentID)
 
 	if gv.loud:
-		print("IRD " + str(equipmentID) + " is a " + t)
+		log("IRD " + str(equipmentID) + " is a " + t, "determine_type", alarm.level.Debug)
 	sendToSQL(query)
 	u = 'Online'
 	if t == 'OFFLINE':
@@ -131,8 +132,7 @@ def determine_type(data):
 
 def refresh(data):
 	current_equipment = deserialize(data)
-	# print "refresh method"
-	# print "deserialized %s: %s"%(current_equipment.equipmentId,current_equipment.modelType )
+
 	try:
 		current_equipment.refresh()
 	except Exception as e:
@@ -164,7 +164,7 @@ def refresh(data):
 		checkin(current_equipment.serialize())
 
 
-# print "end refresh method"
+
 
 funcs = {"determine_type": determine_type,
          "refresh": refresh}

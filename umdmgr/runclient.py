@@ -9,6 +9,11 @@ from client import umdclient
 from helpers import mysql
 from client import gv
 
+from helpers.logging import log, logerr, startlogging
+from helpers import alarm
+import helpers.logging
+
+
 def usage():
 	print("v, verbose logs everything")
 	print("l, loop, loops every 10s")
@@ -23,7 +28,12 @@ def startdb():
 	gv.display_server_status = "Starting"
 
 
+
+
 if __name__ == '__main__':
+
+	startlogging("/var/log/umd/umdclient.log")
+
 	startdb()
 
 	try:                                

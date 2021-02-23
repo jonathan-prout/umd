@@ -5,6 +5,10 @@ import threading
 import MySQLdb
 import MySQLdb._exceptions
 
+from helpers.logging import logerr, log
+from helpers import alarm
+
+
 class mysql(object):
 	autocommit = False
 	def __init__(self, dhost="localhost", duser="umd", dpass="umd", dname="UMD"):
@@ -22,30 +26,35 @@ class mysql(object):
 		self.connected = False
 		self.connect()
 		
-		
+	def __repr__(self):
+		status = ["Disconnected", "Connected"][self.connected]
+		return f"<mysql connection {status} {self.duser}@{self.dhost}>"
 		
 	def connect(self):
 		self.reconnectsLeft -=1
 		if self.reconnectsLeft <10:
-			print("%s Waiting before reconnecting to database. Retries left %d"%(time.strftime("%d-%m-%Y %H:%M:%S"), self.reconnectsLeft))
+			log("Waiting before reconnecting to database. Retries left %d"% self.reconnectsLeft, self, alarm.level.Info)
 			time.sleep(1)
-		if self.reconnectsLeft <0:
+		if self.reconnectsLeft < 0:
 			if hasattr(self, "gv"):
 				if hasattr(self.gv, programCrashed): # Applicable to server version
 					self.gv.sql.programCrashed = True
+					gv.programCrashed = True
 			errorText = "Run out of database reconnects. Program should now close"		
 			print("%s %s"%(time.strftime("%d-%m-%Y %H:%M:%S"), errorText))
 			raise RuntimeError(errorText)
 		try:
-			print("Opening Database Connection....")
+
+			log("Opening Database Connection....", self, alarm.level.OK)
 			self.db = MySQLdb.Connection(self.dhost,self.duser,self.dpass,self.dname)
 			self.cursor = self.db.cursor()
 			self.connected = True
 
 		except Exception as e:
 			now = datetime.datetime.now()
-			print("Database error at ", now.strftime("%H:%M:%S"))
-			print("Error %s" % (e.__repr__()))
+
+			log("Database error on connection", self, alarm.level.Critical)
+			logerr(str(self), alarm.level.Critical)
 			try:
 				self.close()
 			except:
@@ -87,19 +96,18 @@ class mysql(object):
 					
 					
 					try:
-						rows +=  data.fetch_row(maxrows=0)
+						rows += data.fetch_row(maxrows=0)
 					except:
 						pass
 					if self.autocommit:
 						self.db.commit()
 
 		except Exception as e:
-			with open("sqlerror.log", "a") as fobj:
-				fobj.write( "%s,%s,%s"%(time.strftime("%d-%m-%Y %H:%M:%S"), e.__repr__(),sql) )
-				print("%s SQL error %s, %s"%(time.strftime("%d-%m-%Y %H:%M:%S"), e.__repr__(),sql))
+			log("Database error on query", self, alarm.level.Critical)
+			logerr(str(self), alarm.level.Critical)
+			log(sql, self, alarm.level.critical)
 			self.close()
-		
-		
+
 		finally:
 			""" semaphore & mutex lock to release locked share database """
 			if self.mutex:
@@ -114,7 +122,7 @@ class mysql(object):
 		return rows
 		
 	def close(self):
-		print("Closing database.....")
+		log("Closing database.....", self, alarm.level.Info)
 		try:
 			self.db.close()
 		except (AttributeError, MySQLdb._exceptions.OperationalError):  # Hey bossy IDE it's not my fault they organize their packages like that

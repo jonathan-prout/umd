@@ -1,3 +1,8 @@
+""""
+SERVER GLOBAL VARIABLES
+"""
+
+
 from __future__ import print_function
 from __future__ import absolute_import
 
@@ -14,6 +19,8 @@ import multiprocessing
 from helpers import mysql
 import server.equipment.generic
 sql = None
+
+programCrashed = True
 
 min_refresh_time = 10 #Force 10 seconds between refreshes. Gets overidden by min refresh time parameter on matrix
 
