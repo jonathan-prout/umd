@@ -115,6 +115,7 @@ def removeAllHandlers(logger):
 
 def addFileLogger(logger, filename):
 	filelogger = logging.handlers.TimedRotatingFileHandler(filename, when="midnight", backupCount=30)
+	logging.handlers.RotatingFileHandler.doRollover(filelogger)
 	filelogger.setLevel(logging.DEBUG)
 	formatter = logging.Formatter('%(asctime)s;%(levelname)s;%(callingInstance)s;%(message)s')
 	filelogger.setFormatter(formatter)
