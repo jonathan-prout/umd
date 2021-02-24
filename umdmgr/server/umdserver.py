@@ -37,9 +37,7 @@ errors_in_stdout = False
 
 
 def retrivalList(_id=None):
-	# global gv.sql
 	globallist = []
-	# request = "select * FROM equipment"
 	if _id:
 		request = "select id, ip, labelnamestatic, model_id, subequipment FROM equipment WHERE id='%d'" % _id
 	else:
@@ -59,7 +57,7 @@ class myThread(threading.Thread):
 		self.running = False
 
 	def run(self):
-		# print "Starting " + self.name
+
 		try:
 			self.running = True
 			backgroundworker(self.myQ)
@@ -74,7 +72,7 @@ class dbthread(myThread):
 	myQ = gv.dbQ
 
 	def run(self):
-		# print "Starting " + self.name
+
 		try:
 			self.running = True
 			dbworker(self.myQ)
@@ -101,7 +99,6 @@ def crashdump():
 		gv.threadJoinFlag = True
 		import pickle, time
 
-		# filepath = "/var/www/programming/server/"
 		filepath = ""
 		filename = filepath + "server-crashdump-%s.pickle" % time.strftime("%Y_%m_%d_%H_%M_%S")
 		cmd = "UPDATE `UMD`.`management` SET `value` = 'OFFLINE_ERROR' WHERE `management`.`key` = 'current_status';"
@@ -192,8 +189,6 @@ def start(_id=None):
 			if any(((key in model_id), (key in name))):
 				newird = simpleTypes[key](int(equipmentID), ip, name, subequipment)
 				break
-		# elif "NS2000" in name: #Method not supported yet
-		#	newird = equipment_new.NS2000(int(equipmentID), ip, name)
 		else:
 			newird = equipment.generic.GenericIRD(int(equipmentID), ip, name, subequipment)
 		gv.addEquipment(newird)
@@ -210,9 +205,6 @@ def dbworker(myQ):
 
 	gotdata = True
 	while gv.threadTerminationFlag.value == False:
-		# while not gv.ThreadCommandQueue.empty():
-		# print "still in while"
-		# func, data = gv.ThreadCommandQueue.get()
 		try:
 			cmd = myQ.get(timeout=1)
 			gotdata = True
@@ -324,10 +316,6 @@ def backgroundworker(myQ, endFlag=None):
 
 	gotdata = True
 	while not getTerminated():
-		# while not gv.ThreadCommandQueue.empty():
-		# print "still in while"
-		# func, data = gv.ThreadCommandQueue.get()
-
 		try:
 			func, data = myQ.get(timeout=1)
 			gotdata = True
@@ -337,7 +325,7 @@ def backgroundworker(myQ, endFlag=None):
 			gotdata = False
 
 		if gotdata:
-			# print  "Processing Item %s" % item
+
 			error = None
 			try:
 				bgtask.funcs[func](data)
@@ -357,11 +345,9 @@ def backgroundworker(myQ, endFlag=None):
 				sys.stderr.flush()
 
 			finally:
-				# print "processed a thred command!s"
 				myQ.task_done()
 
-			# if error:
-			# gv.exceptions.append(( error[1], traceback.format_tb(error[2]) ))
+
 			item += 1
 
 
@@ -411,7 +397,6 @@ def main(debugBreak=False):
 	time1 = time.time()
 
 	start()
-	# backgroundworker()
 	gv.ThreadCommandQueue.join()
 	gv.CheckInQueue.join()
 	print("Types determined. Took %s seconds. Begininng main loop. Press CTRL C to %s" % (
@@ -425,22 +410,7 @@ def main(debugBreak=False):
 	print("Starting dispatch")
 	gv.threads[gv.dispatcherThread].start()
 
-	"""
-	for i in range(5):
-	time1 = time.time()
-	
-	
-	#backgroundworker()
-	gv.ThreadCommandQueue.join()
-	print "Took %s seconds. "% (time.time() - time1)
-	print "Starting Dispatcher"
-	gv.threads[gv.dispatcherThread].start()
-	
-	
-	for k in gv.equipmentDict.keys():
-		print gv.equipmentDict[k].updatesql()
-		print gv.equipmentDict[k].getChannel()
-	"""
+
 	loopcounter = 0
 	while gv.threadTerminationFlag.value == False:
 		try:
