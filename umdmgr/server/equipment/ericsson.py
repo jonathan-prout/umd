@@ -4,9 +4,11 @@ from __future__ import absolute_import
 from builtins import hex
 from builtins import range
 from past.utils import old_div
+
+from helpers.logging import log
 from server.equipment.generic import IRD
 from server import gv
-from helpers import snmp
+from helpers import alarm, snmp
 
 snmp.gv = gv  # in theory we don't want to import explictly the server's version of gv
 
@@ -25,24 +27,6 @@ class TT1260(IRD):
 		key = 'inSatModType'
 		d = {"5": "DVB-S2", "2": "DVB-S"}
 		return self.lookup_replace(key, d)
-
-	""" Done in IRD class
-	def getoids(self):
-		
-	dic =  self.oid_get.copy()
-	if self.getinSatSetupInputSelect() == 5:
-		for k, v in dic.items():
-		if "X" in v:
-			del dic[k]
-		
-	for k, v in dic.items():
-		v = v.replace('enterprises.','.1.3.6.1.4.1.')
-		v = v.replace('X', str(self.getinSatSetupInputSelect()))
-		dic[k] = v
-	#if self.getinSatSetupInputSelect() = 1:
-	#    print "%s is on imput %s"%(self.name, self.getinSatSetupInputSelect())
-		return dic
-	"""
 
 	def updatesql(self):
 		return "UPDATE status SET status = '%s' , servicename = '%s', aspectratio ='%s', ebno='%s', pol='%s', castatus='%s', videoresolution='%s', framerate='%s',videostate='%s',asioutencrypted='%s',frequency='%s',symbolrate='%s', updated= CURRENT_TIMESTAMP ,fec='%s',rolloff='%s',modulationtype='%s',muxbitrate='%s',muxstate='%s', asi='%s', sat_input='%i' WHERE id = %i; " % (
@@ -404,12 +388,12 @@ class RX8200(IRD):
 
 		# d = {'DeviceType':".1.3.6.1.4.1.1773.1.1.1.7.0"}
 		d = {'inputCardType': ".1.3.6.1.4.1.1773.1.3.208.2.1.1.0"}  #
-		# Integer32 {unknown(0); asi(1); sat_qpsk(2); ofdm(3); sat_16Qam(4); g057(5); sat_turbo_demod1(6); sat_hd(7);ip_input_g037(8); ipi_input(9); local_asi(10); atm_e3(11); atm_ds3(12); ip_input_g036(13);vsbCard_g062(14); 
+		# Integer32 {unknown(0); asi(1); sat_qpsk(2); ofdm(3); sat_16Qam(4); g057(5); sat_turbo_demod1(6); sat_hd(7);ip_input_g037(8); ipi_input(9); local_asi(10); atm_e3(11); atm_ds3(12); ip_input_g036(13);vsbCard_g062(14);
 		subtypes = {
 			19: "RX8200-4RF",
 			21: "RX8200-2RF"
 		}
-		# resdict  = snmp.get({'DeviceType':".1.3.6.1.4.1.1773.1.1.1.7.0"}, self.ip)
+
 		try:
 			resdict = snmp.get(d, self.ip)
 			self.offline = False
@@ -424,12 +408,12 @@ class RX8200(IRD):
 				return "Rx8200"
 			except ValueError:
 				if gv.loud:
-					print(resdict)
+					log(resdict, self, alarm.level.Major)
 				self.offline = True
 				return "OFFLINE"
 		else:
 			if gv.loud:
-				print(resdict)
+				log(resdict, self, alarm.level.Major)
 			self.offline = True
 			return "OFFLINE"
 
