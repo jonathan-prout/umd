@@ -39,9 +39,7 @@ errors_in_stdout = False
 
 
 def retrivalList(_id=None):
-	# global gv.sql
 	globallist = []
-	# request = "select * FROM equipment"
 	if _id:
 		request = "select id, ip, labelnamestatic, model_id, subequipment FROM equipment WHERE id='%d'" % _id
 	else:
@@ -64,7 +62,7 @@ class myThread(threading.Thread):
 		return f"<self.name, self.threadID, self.counter>"
 
 	def run(self):
-		# print "Starting " + self.name
+
 		try:
 			self.running = True
 			backgroundworker(self.myQ)
@@ -80,7 +78,7 @@ class dbthread(myThread):
 	myQ = gv.dbQ
 
 	def run(self):
-		# print "Starting " + self.name
+
 		try:
 			self.running = True
 			dbworker(self.myQ)
@@ -108,7 +106,6 @@ def crashdump():
 		gv.threadJoinFlag = True
 		import pickle, time
 
-		# filepath = "/var/www/programming/server/"
 		filepath = ""
 		filename = filepath + "server-crashdump-%s.pickle" % time.strftime("%Y_%m_%d_%H_%M_%S")
 		cmd = "UPDATE `UMD`.`management` SET `value` = 'OFFLINE_ERROR' WHERE `management`.`key` = 'current_status';"
@@ -312,7 +309,6 @@ def backgroundworker(myQ, endFlag=None):
 	import traceback
 	import multiprocessing
 	myproc = "processs %s" % multiprocessing.current_process()
-
 	item = 1
 	log("Started", myproc, alarm.level.Info)
 	def getTerminated():
@@ -323,10 +319,6 @@ def backgroundworker(myQ, endFlag=None):
 
 	gotdata = True
 	while not getTerminated():
-		# while not gv.ThreadCommandQueue.empty():
-		# print "still in while"
-		# func, data = gv.ThreadCommandQueue.get()
-
 		try:
 			func, data = myQ.get(timeout=1)
 			gotdata = True
@@ -336,7 +328,7 @@ def backgroundworker(myQ, endFlag=None):
 			gotdata = False
 
 		if gotdata:
-			# print  "Processing Item %s" % item
+
 			error = None
 			try:
 				bgtask.funcs[func](data)
@@ -352,8 +344,11 @@ def backgroundworker(myQ, endFlag=None):
 					message = "no message"
 				log("Error in  ignored. error type is %s and message is %s\n" % (e, message), myproc, alarm.level.Warning)
 				sys.stderr.flush()
+
 			finally:
 				myQ.task_done()
+
+
 			item += 1
 
 
