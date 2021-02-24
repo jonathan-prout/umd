@@ -473,7 +473,7 @@ def main(debugBreak=False):
 							if float(jitter) > 30:
 								severity = alarm.level.Major
 							log("Refresh Jitter %s: %s" % (equipmentID, jitter), "main", severity)
-			
+
 
 
 					except:
@@ -520,14 +520,14 @@ def main(debugBreak=False):
 					except:
 						stoppedThreads += 1
 				if gv.loud:
-					print("Refresh statistics loop %s" % loopcounter)
-					print("Minimum refresh time %s seconds" % gv.min_refresh_time)
-					print("MAX: %s MIN: %s AVG:%s " % (
-					max(jitterlist) + gv.min_refresh_time, min(jitterlist) + gv.min_refresh_time,
-					avg(jitterlist) + gv.min_refresh_time))
-					print("%s stopped threads. %s running threads" % (stoppedThreads, runningThreads))
+					log("Refresh statistics loop %s" % loopcounter, "main", alarm.level.Debug)
+					log("Minimum refresh time %s seconds" % gv.min_refresh_time, "main", alarm.level.Debug)
+					log("MAX: %s MIN: %s AVG:%s " % (
+					log(jitterlist) + gv.min_refresh_time, min(jitterlist) + gv.min_refresh_time,
+					avg(jitterlist) + gv.min_refresh_time), "main", alarm.level.Debug)
+					log("%s stopped threads. %s running threads" % (stoppedThreads, runningThreads), "main", alarm.level.Debug)
 					for k, v in tallyDict.items():
-						print("%d in status %s" % (v, k))
+						log("%d in status %s" % (v, k), "main", alarm.level.Debug)
 					for k in list(statuses.values()):  # returns names
 						try:
 							v = tallyDict[k]
@@ -569,7 +569,7 @@ def main(debugBreak=False):
 				except:
 					pass
 				if gv.loud:
-					print("Min refresh time now %s" % gv.min_refresh_time)
+					log("Min refresh time now %s" % gv.min_refresh_time, "main", alarm.level.Debug)
 				possibleErrors = []
 				possibleErrors.append((oncount < offcount, "More equipment off than on. Most likely an error there"))
 				possibleErrors.append((len(gv.exceptions) > 20, "Program has errors"))
@@ -592,7 +592,7 @@ def main(debugBreak=False):
 				
 				"""
 				if debugBreak:
-					print("Leaving loop")
+					log("Leaving loop", "main", alarm.level.Info)
 					return
 
 				"""
@@ -604,44 +604,45 @@ def main(debugBreak=False):
 		except KeyboardInterrupt:
 			if gv.debug:
 				gv.threadJoinFlag = True
-				print("Pausing to debug")
+				log("Pausing to debug", "main", alarm.level.Debug)
 				debug.debug_breakpoint()
 			else:
-				print("Quitting")
+				log("Quitting due to Keyboard Interrupt", "main", alarm.level.Info)
 				cleanup()
 				break
 		except AssertionError as e:
+			logerr("main")
 			if gv.debug:
+
 				gv.threadJoinFlag = True
-				print("Pausing to debug because of %s" % e.message)
+				log("Pausing to debug because of %s" % e.message, "main", alarm.level.Debug)
 				debug.debug_breakpoint()
 			else:
-				print("Program Self Check has caused program to quit.")
-				print("")
-				print("%s Error." % str(e))
+				log("Program Self Check has caused program to quit.", "main", alarm.level.Critical)
 
-				print("Offline Equipment:")
+				log("Offline Equipment:", "main", alarm.level.Warning)
 				for equipmentID in list(gv.equipmentDict.keys()):
 					try:
 						if gv.equipmentDict[equipmentID].get_offline():
 							eq = gv.equipmentDict[equipmentID]
-							print(eq.name.ljust(10, " ") + eq.modelType.ljust(10, " ") + eq.ip)
+							log(eq.name.ljust(10, " ") + eq.modelType.ljust(10, " ") + eq.ip, "main", alarm.level.Critical)
 					except:
 						continue
-				print("errors:")
-				print(gv.exceptions)
+				log("errors:", "main", alarm.level.Critical)
+				log(gv.exceptions, "main", alarm.level.Debug)
 				crashdump()
 		except Exception as e:
-			print("Other error of type %s" % type(e))
+			logerr("main")
+			log("Other error of type %s" % type(e), "main", alarm.level.Critical)
 			gv.exceptions.append((e, traceback.format_tb(sys.exc_info()[2])))
 			try:
 				message = e.message
 			except:
 				message = ""
-			print("%s: %s." % (e, message))
+
 			if gv.debug:
 				gv.threadJoinFlag = True
-				print("Pausing to debug")
+				log("Pausing to debug", "main", alarm.level.Debug)
 				debug.debug_breakpoint()
 			else:
 				crashdump()

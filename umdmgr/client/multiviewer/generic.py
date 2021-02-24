@@ -9,6 +9,8 @@ from future import standard_library
 
 import client.status
 from client.status import inputStrategies
+import helpers.alarm
+from helpers.logging import log
 
 standard_library.install_aliases()
 from builtins import zip
@@ -49,11 +51,12 @@ class multiviewer(ABC):
 		self.previousLabel = {}
 		self.lookuptable = {}
 		self.qtruncate()
+		
 	def start(self):
 		pass
 
 	def shout(self, stuff):
-		print("%s" % stuff)
+		log("%s" % stuff, self, helpers.alarm.level.Info)
 
 	def qtruncate(self):
 		self.fullref = False
@@ -76,15 +79,15 @@ class multiviewer(ABC):
 		self.offline = True
 		if reason:
 			self.set_status(reason)
-		self.shout("Problem with %s when %s Now offline" % (self.host, reason))
+		log("Problem  when %s Now offline" % (reason), self, helpers.alarm.level.Major )
 
 	def set_status(self, status):
 		self.status = status
-		print(f"{self.name} {status}")
+		log(status, self, helpers.alarm.level.Info)
 		gv.sql.qselect('UPDATE `Multiviewer` SET `status` = "%s" WHERE `id` = "%s";' % (status, self.id))
 
 	def errorHandler(self, signum, frame):
-		print(('Error handler called with signal', signum))
+		log(('Error handler called with signal', signum), self, helpers.alarm.level.Warning)
 
 	def matchesPrevious(self, addr, level, line):
 		""" Caches what the label is so it is not written next time """
@@ -125,8 +128,7 @@ class multiviewer(ABC):
 			sm = client.status.status_message()
 
 			res = get_mv_input_from_database(mv_id, mv_input)
-			# print cmd
-			# print res
+
 			try:
 				strategy = int(res["strategy"])
 			except (ValueError, TypeError):
@@ -259,13 +261,14 @@ class TestMultiviewer(multiviewer):
 		vi = {}
 		for v in list(self.lookuptable.values()):
 			v["new"] = "False"
-		print("refresh")
+		log("refresh", self, helpers.alarm.level.Debug)
 		while not self.q.empty():
 			if self.fullref:
 				break
 			sm = self.q.get()
 			if sm:
-				print(self.host + ": %s (%s) status %s//%s" % (sm.mv_input, sm.strategy, sm.topLabel, sm.bottomLabel))
+				log(self.host + ": %s (%s) status %s//%s" % (sm.mv_input, sm.strategy, sm.topLabel, sm.bottomLabel),
+					self, helpers.alarm.level.Debug)
 				for alarm in [sm.cnAlarm, sm.recAlarm]:
 					alarm = {True: "MAJOR", False: "DISABLE"}[alarm]
 
@@ -277,7 +280,7 @@ class TestMultiviewer(multiviewer):
 						vi[videoInput][level] = line
 					vi[videoInput]["strategy"] = sm.strategy
 					vi[videoInput]["new"] = "True"
-		print(vi)
+		log(vi, self, helpers.alarm.level.Debug)
 		for k, v in vi.items():
 			self.lookuptable[k] = v
 		if self.fullref:
