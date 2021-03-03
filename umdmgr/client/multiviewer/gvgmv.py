@@ -61,7 +61,7 @@ class GvMv(tsl.TslMultiviewer):
 				for level, line in [
 					["TOP", sm.topLabel],
 					["BOTTOM", sm.bottomLabel],
-					["C/N", alarmText]]:
+					["REC", alarmText]]:
 					if not line:  # Checks against None. Might not be necessary.
 						line = ""
 					if not self.get_offline() and not self.matchesPrevious(videoInput, level, line):
