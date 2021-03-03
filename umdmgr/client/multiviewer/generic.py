@@ -257,7 +257,8 @@ class TestMultiviewer(multiviewer):
 				"TOP": "0" + str(i),
 				"BOTTOM": 100 + i,
 				"C/N": 500 + i,
-				"REC": 600 + i
+				"REC": 600 + i,
+				"COMBINED": 200 + i
 			}
 			self.lookuptable[i] = d
 
