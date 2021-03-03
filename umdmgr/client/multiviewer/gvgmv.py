@@ -138,6 +138,7 @@ class GvMv(tsl.TslMultiviewer):
 				"TOP": i,
 				"BOTTOM": 100 + i,
 				"C/N": 200 + i,
-				"REC": 200 + i
+				"REC": 200 + i,
+				"COMBINED": 200 + i
 			}
 			self.lookuptable[i] = d

@@ -182,7 +182,8 @@ def getAddresses(ip):
 			"TOP": i,
 			"BOTTOM": 100 + i,
 			"C/N": 500 + i,
-			"REC": 600 + i
+			"REC": 600 + i,
+			"COMBINED": 200 + i
 		}
 		if labeladdr1:
 			d["TOP"] = int(labeladdr1)
