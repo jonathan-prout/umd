@@ -43,7 +43,7 @@ class virtualMatrix( mysql, matrix):
 
 	def refresh(self):
 		with self.lock:
-			self.dbclose() #MYSQL BUG!!
+			# self.close() #MYSQL BUG!!
 			self.dbConnect()
 			inout = ((self.input,"input"), (self.output,"output"))
 			for d, table in inout:

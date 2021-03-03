@@ -153,7 +153,7 @@ class mysql(generic.IInfoSourceMixIn):
 		return rows
 
 	def __del__(self):
-		self.dbclose()
+		self.close()
 
 	def close(self):
 		log("Closing database.....", self, alarm.level.Info)
