@@ -43,14 +43,11 @@ class GvMv(tsl.TslMultiviewer):
 			sm = self.q.get()
 			if isinstance(sm, status_message):
 				if sm.cnAlarm:
-
 					sm.cnAlarm = "Low C/N Margin"
 				else:
 					sm.cnAlarm = ""
-
 				if sm.recAlarm:
-
-					sm.recAlarm = "Low C/N Margin"
+					sm.recAlarm = "Rec Off"
 				else:
 					sm.recAlarm = ""
 
@@ -69,6 +66,8 @@ class GvMv(tsl.TslMultiviewer):
 						line = ""
 					if not self.get_offline() and not self.matchesPrevious(videoInput, level, line):
 						dmesg = self.writeline(videoInput, level, line, mode, colour=sm.colour)
+						if alarmText:
+							log(dmesg, self, alarm.level.OK)
 						packet.append(dmesg)
 						packet_commands += 1
 						if packet_commands <= 9:
