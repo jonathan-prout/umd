@@ -107,9 +107,6 @@ def determine_type(data):
 		elif subtype == "NS2000_SNMP":
 			current_equipment = server.equipment.novelsat.NS2000_SNMP(equipmentID, ip, name)
 			t = subtype
-	# current_equipment.lastRefreshTime = 0
-	# current_equipment.excpetedNextRefresh = float(random.randint(0,50)) /10
-	# gv.addEquipment(current_equipment)
 
 
 	elif equipTypeStr == "OFFLINE":

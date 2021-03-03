@@ -421,7 +421,10 @@ class Titan(IRD, DictKeyProxy):
 		sql += ["fec='%s'" % sat.getKey("fec", "")]
 		sql += ["rolloff='%s'" % sat.getKey("roll_off", "")]
 		sql += ["modulationtype='%s'" % sat.getKey("mode", "")]
-		sql += ["ebno='%s' " % sat.getKey("margin", "")]
+		try:
+			sql += ["ebno='%0.1f' " % sat.getKey("margin", 0)]
+		except (ValueError, TypeError):
+			sql += ["ebno='%s' " % str(sat.getKey("margin", "0"))[:4]]
 		sql += ["pol='%s' " % sat.getKey("polarization", "").upper()[0:1]]
 
 		# TODO: Ask Ateme why this is broken. Sat connector name shows as emptystring.
