@@ -60,7 +60,7 @@ class GvMv(tsl.TslMultiviewer):
 				videoInput = sm.mv_input
 
 				if alarmText:
-					log("Input {videoInput} alarm {alarmText}", self, alarm.level.Info)
+					log(f"Input {videoInput} alarm {alarmText}", self, alarm.level.Info)
 				for level, line in [
 					["TOP", sm.topLabel],
 					["BOTTOM", sm.bottomLabel],
