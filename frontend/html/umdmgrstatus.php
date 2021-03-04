@@ -265,6 +265,59 @@ if (ref != "") {land(loc,target);}
 	</tr>
 	
  </table>
+<br />
+<table border="1" bordercolor="grey" style="background-color:lightgrey"  cellpadding="3" cellspacing="3">
+    <tr>
+        <td>Matrix</td>
+        <td>Status</td>
+        <td>Address</td>
+        <td>Updated</td>
+        <td>Status Changed</td>
+    </tr>
+    <?php
+    $db = select_db("matrix");
+    $sql = 'SELECT * FROM `matrixes`';
+
+
+    //print $sql;
+
+
+    $result = query($sql);
+    $num=mysqli_num_rows($result);
+    //print $num;
+
+
+    $i=0;
+    while ($i < $num) {
+        $name=mysqli_result($result,$i,"mtxName");
+        $protocol=mysqli_result($result,$i,"address");
+        $status=mysqli_result($result,$i,"status");
+
+        $updated=mysqli_result($result,$i,"updated");
+        $status_changed=mysqli_result($result,$i,"status_changed");
+        if (!(strpos($status,  "Connected") === false))
+            $background = "lightgreen";
+        elseif (!(strpos($status,  "Online") === false))
+            $background = "lightgreen";
+        else
+            $background = "Red";
+
+        echo '<tr>';
+        echo '<td>'.$name.'</td>';
+        echo '<td bgcolor="'. $background .'">'. $status.'</td>' ;
+        echo '<td>'.$protocol.'</td>';
+        echo '<td>'.$updated.'</td>';
+        echo '<td>'.$status_changed.'</td>';
+        echo '</tr>';
+
+
+        $i++;
+    }
+
+    $db = select_db("UMD");
+
+    ?>
+</table>
   <br />
    <table border="1" bordercolor="grey" style="background-color:lightgrey"  cellpadding="3" cellspacing="3">
 	<tr>
