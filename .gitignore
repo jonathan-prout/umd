@@ -6,3 +6,7 @@ umdmgr/helpers/pysnmp/
 umdmgr/cache/*
 server-crashdump*
 *.pickle
+frontend/html/bower_components/
+frontend/html/node_modules/
+venv/
+.idea/
