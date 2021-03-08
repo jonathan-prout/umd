@@ -362,7 +362,7 @@ function satListSelect(selected, name, id, usesDiv){
     out += '<label for="sel1">' + name +'</label>';
     out +='<select class="form-control" onchange="formsubmit(editLineForm)" name="'+id+'">';
     var i;
-    var mtx_name_kv = makeKeyVal(mtx_names, "id", "mtxName");
+    var mtx_name_kv = makeKeyVal(matrix_names, "id", "mtxName");
     out += '<option value="">No Selection</option>';
     for(i = 0; i < satlist.length; i++) {
         if (satlist[i]["sat"] === selected) {
