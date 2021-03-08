@@ -232,7 +232,9 @@ class irdResult(object):
 	def getModScheme(self):
 		dvbmode = self.getKeyFromDemod("s.modulationtype")
 		dvbmode = dvbmode.replace("DVB-", "")
-		return dvbmode
+		dvbmode = dvbmode.replace("dvb", "")
+		dvbmode = dvbmode.replace("8psk", "S2")
+		return dvbmode.upper()
 
 	def getOnline(self):
 		return self.getKey("s.status") == "Online"
