@@ -242,14 +242,21 @@ class irdResult(object):
 	def getBitrate(self):
 		return self.getKey("s.muxbitrate")
 
-	def getFramerate(self):
+	def getFramerate(self) -> str:
+		""" Now returns the string represantation as 2 decimal places if float and 0 if integer
+		"""
 		framerate = self.getKey("s.framerate").replace(" ", "")
 		if self.remove_hz:
 			framerate = framerate.replace("Hz", "")
 		n = cast(float, framerate)
-		if n == int(n):  # return int if whole number float if not
-			n = int(n)
-		return n
+		try:
+			s = "%0.2f" % n
+			if n == int(n):  # return int if whole number float if not
+				n = int(n)
+				s = "%d" % n
+		except TypeError:
+			return str(n)
+		return s
 
 	def getca(self):
 		cas = self.getKey("s.castatus")
