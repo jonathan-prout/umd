@@ -105,8 +105,7 @@ class IPGridport(OmneonHelper, generic.serializableObj):
 		return "DO 0;" #DO NOTHING 
 	def getId(self):
 		return self.equipmentId 
-	def set_online(self):
-		self.offline = False			
+
 	def get_offline(self):
 		
 		#import httpcaller
@@ -122,8 +121,7 @@ class IPGridport(OmneonHelper, generic.serializableObj):
 		else:
 			self.offline = False
 		return self.offline
-	def set_offline(self):
-		self.offline = True
+
 		
 	def determine_type(self):
 		#import httpcaller
