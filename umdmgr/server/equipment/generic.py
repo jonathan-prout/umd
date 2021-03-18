@@ -151,6 +151,16 @@ class serializableObj(object):
 	def __repr__(self):
 		return f"<{self.__class__.__name__} {self.name} {self.ip}>"
 
+	def set_offline(self, excuse: str = "") -> None:
+		if not self.offline:
+			log("{}: Offline: {}".format(self.getId(), excuse), self, alarm.level.Major)
+		self.offline = True
+
+	def set_online(self, reason: str = "") -> None:
+		if gv.loud and not self.offline and reason:
+			log("{}: Online: {}".format(self.getId(), reason), self, alarm.level.Info)
+		self.offline = False
+		
 class equipment(serializableObj):
 	modelType = "Not Set"
 
@@ -358,15 +368,7 @@ class equipment(serializableObj):
 		except:
 			return "Unknown"
 
-	def set_offline(self, excuse: str = "") -> None:
-		if not self.offline:
-			log("{}: Offline: {}".format(self.getId(), excuse), self, alarm.level.Major)
-		self.offline = True
 
-	def set_online(self, reason: str = "") -> None:
-		if gv.loud and not self.offline and reason:
-			log("{}: Online: {}".format(self.getId(), reason), self, alarm.level.Info)
-		self.offline = False
 
 	def get_offline(self):
 		try:
