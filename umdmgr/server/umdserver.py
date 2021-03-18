@@ -517,9 +517,12 @@ def main(debugBreak=False):
 				if gv.loud:
 					log("Refresh statistics loop %s" % loopcounter, "main", alarm.level.Debug)
 					log("Minimum refresh time %s seconds" % gv.min_refresh_time, "main", alarm.level.Debug)
-					log("MAX: %s MIN: %s AVG:%s " % (
-					log(jitterlist) + gv.min_refresh_time, min(jitterlist) + gv.min_refresh_time,
-					avg(jitterlist) + gv.min_refresh_time), "main", alarm.level.Debug)
+					try:
+						log("MAX: %s MIN: %s AVG:%s " % (
+							log(jitterlist) + gv.min_refresh_time, min(jitterlist) + gv.min_refresh_time,
+							avg(jitterlist) + gv.min_refresh_time), "main", alarm.level.Debug)
+					except (ValueError, TypeError):
+						log("Could not get jitter", "main", alarm.level.Warning)
 					log("%s stopped threads. %s running threads" % (stoppedThreads, runningThreads), "main", alarm.level.Debug)
 					for k, v in tallyDict.items():
 						log("%d in status %s" % (v, k), "main", alarm.level.Debug)

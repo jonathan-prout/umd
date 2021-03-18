@@ -160,7 +160,7 @@ class serializableObj(object):
 		if gv.loud and not self.offline and reason:
 			log("{}: Online: {}".format(self.getId(), reason), self, alarm.level.Info)
 		self.offline = False
-		
+
 class equipment(serializableObj):
 	modelType = "Not Set"
 
