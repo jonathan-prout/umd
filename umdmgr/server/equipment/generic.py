@@ -4,9 +4,11 @@ from builtins import str
 from builtins import range
 from past.utils import old_div
 from builtins import object
+
+from helpers.logging import log
 from server import gv
 
-from helpers import httpcaller, snmp
+from helpers import alarm, httpcaller, snmp
 from helpers import static_parameters
 
 snmp.gv = gv  # in theory we don't want to import explictly the server's version of gv
@@ -149,6 +151,16 @@ class serializableObj(object):
 	def __repr__(self):
 		return f"<{self.__class__.__name__} {self.name} {self.ip}>"
 
+	def set_offline(self, excuse: str = "") -> None:
+		if not self.offline:
+			log("{}: Offline: {}".format(self.getId(), excuse), self, alarm.level.Major)
+		self.offline = True
+
+	def set_online(self, reason: str = "") -> None:
+		if gv.loud and not self.offline and reason:
+			log("{}: Online: {}".format(self.getId(), reason), self, alarm.level.Info)
+		self.offline = False
+
 class equipment(serializableObj):
 	modelType = "Not Set"
 
@@ -284,7 +296,6 @@ class equipment(serializableObj):
 			for test, blurb, setType in equipTypes:
 				ver_found = False
 				try:
-					# if gv.loud: print(blurb)
 					resdict = snmp.get(test, self.ip)
 					assert (resdict != {})
 					if setType != "":
@@ -335,7 +346,7 @@ class equipment(serializableObj):
 				return resdict['DeviceType']
 			else:
 				if gv.loud:
-					print(resdict)
+					log(resdict, self, alarm.level.Warning)
 				self.offline = True
 				return "OFFLINE"
 		else:
@@ -346,7 +357,7 @@ class equipment(serializableObj):
 				return resdict['DeviceType']
 			else:
 				if gv.loud:
-					print(resdict)
+					log(resdict, self, alarm.level.Warning)
 				self.offline = True
 				return "OFFLINE"
 
@@ -357,15 +368,7 @@ class equipment(serializableObj):
 		except:
 			return "Unknown"
 
-	def set_offline(self, excuse: str = "") -> None:
-		if not self.offline:
-			print("{}: Offline: {}".format(self.getId(), excuse))
-		self.offline = True
 
-	def set_online(self, reason: str = "") -> None:
-		if gv.loud and not self.offline and reason:
-			print("{}: Online: {}".format(self.getId(), reason))
-		self.offline = False
 
 	def get_offline(self):
 		try:
@@ -396,7 +399,8 @@ class IRD(equipment):
 		for key in list(self.oid_get.keys()):
 			if key not in self.snmp_res_dict:
 				if gv.loud:
-					print("%s at %s returned no such name for %s so masking" % (self.modelType, self.ip, key))
+					log("%s at %s returned no such name for %s so masking" % (self.modelType, self.ip, key),
+						self, alarm.level.Info)
 				masks.append(key)
 		self.masked_oids[self.getinSatSetupInputSelect()] = masks
 
@@ -423,8 +427,7 @@ class IRD(equipment):
 				except KeyError:
 					pass
 
-		# if self.getinSatSetupInputSelect() = 1:
-		#    print "%s is on imput %s"%(self.name, self.getinSatSetupInputSelect())
+
 		return dic
 
 	def bulkoids(self):
@@ -540,8 +543,7 @@ class IRD(equipment):
 
 	def getChannel(self):
 
-		result = ""
-		# print status[i][0]
+
 		if float(self.getinSatSetupSatelliteFreq()) < 2000:  # then it's lband
 			satfreq = float(self.getinSatSetupSatelliteFreq()) + float(self.get_lo_offset())
 			# C band
@@ -553,7 +555,6 @@ class IRD(equipment):
 		channel_request = "SELECT c.channel, c.modulationtype FROM channel_def c WHERE ((c.sat =\"" + self.getSat() + "\") AND (c.pol =\"" + self.getPol() + "\") AND (c.frequency LIKE \"" + \
 		                  satfreq.split(".")[0] + "%\") AND (c.symbolrate  LIKE \"" + \
 		                  self.getinSatSetupSymbolRate().split(".")[0] + "%\"))"
-		# print channel_request
 		result = gv.cachedSNMP(channel_request)
 		if (len(result) != 0):
 			channel = str(result[0][0])
@@ -566,10 +567,7 @@ class IRD(equipment):
 			channel = ""
 			modulation = ""
 
-		# print i + 1,
-		# print " = ",
-		# print channel + " " + modulation 
-		# return "UPDATE status SET channel ='%s', modtype ='%s' WHERE id ='%i'" %(channel,modulation,self.getId())
+
 		return "UPDATE status SET channel ='%s'WHERE id ='%i'" % (channel, self.getId())
 
 	def getVResol(self):
@@ -606,7 +604,7 @@ class IRD(equipment):
 			symbolRateFloat = 0
 		symbolRateFloat = (old_div(symbolRateFloat, 1000))
 		finalsymrate = str(symbolRateFloat)
-		##print finalsymrate
+
 		if (finalsymrate[(len(finalsymrate) - 2):] == ".0"):
 			finalsymrate = finalsymrate[:(len(finalsymrate) - 2)]
 		return finalsymrate
@@ -621,7 +619,7 @@ class IRD(equipment):
 
 		SatelliteFreqFloat = (old_div(SatelliteFreqFloat, 1000))
 		finalSatelliteFreq = str(SatelliteFreqFloat)
-		##print finalsymrate
+
 		# This code is to compensate for inconsistencies in the D2S frequency table where
 		# sometimes we have .0 at the end sometimes we don't
 		# services.py then uses LIKE ...% to get it to match
@@ -671,7 +669,7 @@ class IRD(equipment):
 
 	def set_offline(self, excuse: str = "") -> None:
 		if not self.offline:
-			print("{}: Offline: {}".format(self.getId(), excuse))
+			log("{}: Offline: {}".format(self.getId(), excuse), self, alarm.level.Major)
 		self.offline = True
 		try:
 			order = "UPDATE status SET status ='Offline' WHERE id ='%i';" % self.getId()

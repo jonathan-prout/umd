@@ -10,6 +10,7 @@ import server.equipment.ateme
 import server.equipment.ateme_titan
 import server.equipment.tvips
 import server.equipment.omneon
+from helpers.logging import log, logerr
 
 standard_library.install_aliases()
 from builtins import str
@@ -23,11 +24,12 @@ import gc
 from server import equipment
 from server import gv
 from server import bgtask
-from helpers import snmp
+from helpers import alarm, snmp
 from helpers import debug
 import traceback
 from pympler import muppy
 from pympler import summary
+import atexit
 snmp.gv = gv  # in theory we don't want to import explictly the server's version of gv
 
 from helpers import mysql
@@ -56,16 +58,20 @@ class myThread(threading.Thread):
 		self.counter = counter
 		self.running = False
 
+	def __repr__(self):
+		return f"<self.name, self.threadID, self.counter>"
+
 	def run(self):
 
 		try:
 			self.running = True
 			backgroundworker(self.myQ)
 		except Exception as e:
-			print(e)
+			logerr(callingInstance=self)
+			log(f"Error {e} in thread", self, alarm.level.Critical)
 		finally:
 			self.running = False
-		print("Exiting " + self.name)
+		log("Exiting " + self.name, self, alarm.level.Debug)
 
 
 class dbthread(myThread):
@@ -77,10 +83,11 @@ class dbthread(myThread):
 			self.running = True
 			dbworker(self.myQ)
 		except Exception as e:
-			print(e)
+			logerr(callingInstance=self)
+			log(f"Error {e} in thread", self, alarm.level.Critical)
 		finally:
 			self.running = False
-		print("Exiting " + self.name)
+		log("Exiting " + self.name, self, alarm.level.Debug)
 
 
 def getEquipmentDict():
@@ -93,7 +100,7 @@ def getEquipmentDict():
 
 
 def crashdump():
-	print("UMD MANAGER HAS MADE AN ERROR AND WILL NOW CLOSE")
+	log("UMD MANAGER HAS MADE AN ERROR AND WILL NOW CLOSE", "crashdump", alarm.level.Emergency)
 	try:
 		gv.threadTerminationFlag.value = True
 		gv.threadJoinFlag = True
@@ -119,11 +126,9 @@ def crashdump():
 			pickle.dump(objs, fobj)
 	# ecit with error status
 	except Exception as e:
-		print("crashdump failed, because of an error")
-		print(str(e))
-		if hasattr(e, "message"):
-			print(e.message)
-		traceback.print_exc(file=sys.stdout)
+		log("crashdump failed, because of an error", "crashdump", alarm.level.Critical)
+		logerr("crashdump")
+
 	finally:
 		cleanup(1)
 
@@ -131,13 +136,13 @@ def crashdump():
 def beginthreads():
 	gv.threads = []
 
-	print("Starting %s offline check subprocesses..." % gv.offlineCheckThreads)
+	log("Starting %s offline check subprocesses..." % gv.offlineCheckThreads, "beginthreads", alarm.level.Debug)
 	for t in range(gv.offlineCheckThreads):
 		bg = multiprocessing.Process(target=backgroundProcessWorker,
 		                             args=(gv.offlineQueue, gv.dbQ, gv.CheckInQueue, gv.threadTerminationFlag))
 		gv.threads.append(bg)
 		bg.start()
-	print("Starting %s worker subprocesses..." % gv.bg_worker_threads)
+	log("Starting %s worker subprocesses..." % gv.bg_worker_threads, "beginthreads", alarm.level.Debug)
 	for t in range(gv.offlineCheckThreads, gv.bg_worker_threads + gv.offlineCheckThreads):
 		bg = multiprocessing.Process(target=backgroundProcessWorker,
 		                             args=(gv.ThreadCommandQueue, gv.dbQ, gv.CheckInQueue, gv.threadTerminationFlag))
@@ -176,10 +181,8 @@ def start(_id=None):
 		"Titan": server.equipment.ateme_titan.Titan
 
 	}
-	if gv.loud:
-		print("Getting equipment")
+	log("Getting equipment", "start", alarm.level.OK)
 	for equipmentID, ip, name, model_id, subequipment in retrivalList(_id):
-		# print equipmentID, ip, name
 		query = "SELECT `id` from `status` WHERE `status`.`id` ='%d'" % equipmentID
 		if len(gv.sql.qselect(query)) == 0:
 			query = "REPLACE INTO `UMD`.`status` SET `id` ='%d'" % equipmentID
@@ -189,12 +192,11 @@ def start(_id=None):
 			if any(((key in model_id), (key in name))):
 				newird = simpleTypes[key](int(equipmentID), ip, name, subequipment)
 				break
+
 		else:
 			newird = equipment.generic.GenericIRD(int(equipmentID), ip, name, subequipment)
 		gv.addEquipment(newird)
-	# print gv.equipmentDict
-	if gv.loud:
-		print("Determining types")
+	log("Determining types", "start", alarm.level.OK)
 	for currentEquipment in list(gv.equipmentDict.values()):
 		gv.ThreadCommandQueue.put(("determine_type", currentEquipment.serialize()), block=True)
 
@@ -214,12 +216,10 @@ def dbworker(myQ):
 			gotdata = False
 
 		if gotdata:
-			# print  "Processing Item %s" % item
 			gv.sql.qselect(cmd)
 			myQ.task_done()
 
 
-# thread.exit()
 class dispatcher(myThread):
 	def run(self):
 		STAT_INIT = 0
@@ -254,6 +254,7 @@ class dispatcher(myThread):
 						continue
 			else:
 				time.sleep(0.1)
+		log("Exiting " + self.name, self, alarm.level.Debug)
 
 
 class checkin(myThread):
@@ -277,8 +278,7 @@ class checkin(myThread):
 
 				else:
 					gv.gotCheckedInData = False
-					print("checkin fail")
-					print(data)
+					log(f"checkin fail {data}", self, alarm.level.Critical)
 				del data
 			except queue.Empty:
 				gv.gotCheckedInData = False
@@ -288,7 +288,9 @@ class checkin(myThread):
 def backgroundProcessWorker(myQ, dbQ, checkInQueue, endFlag):
 	""" Entry point for sub process """
 	from . import gv
-	from helpers import mysql
+	from helpers import mysql, logging
+	myproc = multiprocessing.current_process()
+	logging.startlogging(f"/var/log/umd/umdserver_proc{myproc}.log")
 	gv.dbQ = dbQ
 	gv.CheckInQueue = checkInQueue
 	if not gv.sql:
@@ -306,8 +308,9 @@ def backgroundworker(myQ, endFlag=None):
 	import sys
 	import traceback
 	import multiprocessing
+	myproc = "processs %s" % multiprocessing.current_process()
 	item = 1
-
+	log("Started", myproc, alarm.level.Info)
 	def getTerminated():
 		try:
 			return endFlag.value
@@ -330,18 +333,16 @@ def backgroundworker(myQ, endFlag=None):
 			try:
 				bgtask.funcs[func](data)
 			except KeyboardInterrupt:
-				print("processs %s caught KeyboardInterrupt and is closing" % multiprocessing.current_process())
+				log("caught KeyboardInterrupt and is closing", myproc, alarm.level.Info)
 				return
 
 			except Exception as e:
+				logerr(myproc)
 				try:
 					message = e.message
 				except AttributeError:
 					message = "no message"
-
-				sys.stderr.write("Error in processs %s ignored. error type is %s and message is %s\n" % (
-				multiprocessing.current_process(), e, message))
-				traceback.print_exc(file=sys.stdout)
+				log("Error in  ignored. error type is %s and message is %s\n" % (e, message), myproc, alarm.level.Warning)
 				sys.stderr.flush()
 
 			finally:
@@ -351,7 +352,7 @@ def backgroundworker(myQ, endFlag=None):
 			item += 1
 
 
-import atexit
+
 
 
 @atexit.register
@@ -366,9 +367,9 @@ def cleanup(exit_status=0):
 		try:
 
 			gv.threadTerminationFlag.value = True
-			print("Set termination flag")
+			log("Set termination flag", "cleanup", alarm.level.Info)
 			time.sleep(1)
-			print("Joining threads and waiting for subprocesses")
+			log("Joining threads and waiting for subprocesses", "cleanup", alarm.level.Info)
 			for thread in gv.threads:
 				thread.join(1)
 				print(".", end=' ')
@@ -379,14 +380,15 @@ def cleanup(exit_status=0):
 			gv.sql.close()
 			gv.preexit = True
 		except Exception as e:
-			print("%s error during shutdown" % type(e))
+			logerr("cleanup")
+			log("%s error during shutdown" % type(e), "cleanup", alarm.level.Info)
 			exit_status = 1
 		finally:
 			sys.exit(exit_status)
 
 
 def main(debugBreak=False):
-	print("Started at " + time.strftime("%H:%M:%S"))
+	log("Started", "main", alarm.level.Ok)
 	finishedStarting = False
 	cmd = "UPDATE `UMD`.`management` SET `value` = 'STARTING' WHERE `management`.`key` = 'current_status';"
 	gv.sql.qselect(cmd)
@@ -397,17 +399,18 @@ def main(debugBreak=False):
 	time1 = time.time()
 
 	start()
+	# backgroundworker()
 	gv.ThreadCommandQueue.join()
 	gv.CheckInQueue.join()
-	print("Types determined. Took %s seconds. Begininng main loop. Press CTRL C to %s" % (
-	time.time() - time1, ["quit", "enter debug console"][gv.debug]))
+	log("Types determined. Took %s seconds. Begininng main loop. Press CTRL C to %s" % (
+	time.time() - time1, ["quit", "enter debug console"][gv.debug]), "main", alarm.level.Info)
 	if gv.debug:
 
 
 		all_objects = muppy.get_objects()
 		gv.mem_sum1 = summary.summarize(all_objects)
 
-	print("Starting dispatch")
+	log("Starting dispatch", "main", alarm.level.OK)
 	gv.threads[gv.dispatcherThread].start()
 
 
@@ -423,15 +426,13 @@ def main(debugBreak=False):
 			loopcounter += 1
 			if loopcounter > 10:  # Restart all threads every 10 minutes
 				loopcounter = 0
-				if gv.loud:
-					print("Stopping dispatcher")
+
+				log("Stopping dispatcher", "main", alarm.level.Debug)
 				gv.threadJoinFlag = True
 				gv.ThreadCommandQueue.join()
-				if gv.loud:
-					print("Garbage Collection")
+				log("Garbage Collection", "main", alarm.level.Debug)
 				collected = gc.collect()
-				if gv.loud:
-					print("collected %s objects. Resuming" % collected)
+				log("collected %s objects. Resuming" % collected, "main", alarm.level.Debug)
 				gv.threadJoinFlag = False
 			if loopcounter > 2:
 				oncount = 0
@@ -459,15 +460,15 @@ def main(debugBreak=False):
 							oncount += 1
 							jitter = gv.equipmentDict[equipmentID].checkout.jitter
 							jitterlist.append(jitter)
-							if gv.loud:
-								print("%s: %s" % (equipmentID, jitter))
-							"""
+							severity = alarm.level.OK
+							if float(jitter) > 5:
+								severity = alarm.level.Info
+							if float(jitter) > 10:
+								severity = alarm.level.Warning
 							if float(jitter) > 30:
-								gv.equipmentDict[equipmentID].set_offline()
-								offcount += 1
-							else:
-								oncount += 1
-							"""
+								severity = alarm.level.Major
+							log("Refresh Jitter %s: %s" % (equipmentID, jitter), "main", severity)
+
 
 
 					except:
@@ -514,14 +515,17 @@ def main(debugBreak=False):
 					except:
 						stoppedThreads += 1
 				if gv.loud:
-					print("Refresh statistics loop %s" % loopcounter)
-					print("Minimum refresh time %s seconds" % gv.min_refresh_time)
-					print("MAX: %s MIN: %s AVG:%s " % (
-					max(jitterlist) + gv.min_refresh_time, min(jitterlist) + gv.min_refresh_time,
-					avg(jitterlist) + gv.min_refresh_time))
-					print("%s stopped threads. %s running threads" % (stoppedThreads, runningThreads))
+					log("Refresh statistics loop %s" % loopcounter, "main", alarm.level.Debug)
+					log("Minimum refresh time %s seconds" % gv.min_refresh_time, "main", alarm.level.Debug)
+					try:
+						log("MAX: %s MIN: %s AVG:%s " % (
+							log(jitterlist) + gv.min_refresh_time, min(jitterlist) + gv.min_refresh_time,
+							avg(jitterlist) + gv.min_refresh_time), "main", alarm.level.Debug)
+					except (ValueError, TypeError):
+						log("Could not get jitter", "main", alarm.level.Warning)
+					log("%s stopped threads. %s running threads" % (stoppedThreads, runningThreads), "main", alarm.level.Debug)
 					for k, v in tallyDict.items():
-						print("%d in status %s" % (v, k))
+						log("%d in status %s" % (v, k), "main", alarm.level.Debug)
 					for k in list(statuses.values()):  # returns names
 						try:
 							v = tallyDict[k]
@@ -563,7 +567,7 @@ def main(debugBreak=False):
 				except:
 					pass
 				if gv.loud:
-					print("Min refresh time now %s" % gv.min_refresh_time)
+					log("Min refresh time now %s" % gv.min_refresh_time, "main", alarm.level.Debug)
 				possibleErrors = []
 				possibleErrors.append((oncount < offcount, "More equipment off than on. Most likely an error there"))
 				possibleErrors.append((len(gv.exceptions) > 20, "Program has errors"))
@@ -586,7 +590,7 @@ def main(debugBreak=False):
 				
 				"""
 				if debugBreak:
-					print("Leaving loop")
+					log("Leaving loop", "main", alarm.level.Info)
 					return
 
 				"""
@@ -598,44 +602,45 @@ def main(debugBreak=False):
 		except KeyboardInterrupt:
 			if gv.debug:
 				gv.threadJoinFlag = True
-				print("Pausing to debug")
+				log("Pausing to debug", "main", alarm.level.Debug)
 				debug.debug_breakpoint()
 			else:
-				print("Quitting")
+				log("Quitting due to Keyboard Interrupt", "main", alarm.level.Info)
 				cleanup()
 				break
 		except AssertionError as e:
+			logerr("main")
 			if gv.debug:
+
 				gv.threadJoinFlag = True
-				print("Pausing to debug because of %s" % e.message)
+				log("Pausing to debug because of %s" % e.message, "main", alarm.level.Debug)
 				debug.debug_breakpoint()
 			else:
-				print("Program Self Check has caused program to quit.")
-				print("")
-				print("%s Error." % str(e))
+				log("Program Self Check has caused program to quit.", "main", alarm.level.Critical)
 
-				print("Offline Equipment:")
+				log("Offline Equipment:", "main", alarm.level.Warning)
 				for equipmentID in list(gv.equipmentDict.keys()):
 					try:
 						if gv.equipmentDict[equipmentID].get_offline():
 							eq = gv.equipmentDict[equipmentID]
-							print(eq.name.ljust(10, " ") + eq.modelType.ljust(10, " ") + eq.ip)
+							log(eq.name.ljust(10, " ") + eq.modelType.ljust(10, " ") + eq.ip, "main", alarm.level.Critical)
 					except:
 						continue
-				print("errors:")
-				print(gv.exceptions)
+				log("errors:", "main", alarm.level.Critical)
+				log(gv.exceptions, "main", alarm.level.Debug)
 				crashdump()
 		except Exception as e:
-			print("Other error of type %s" % type(e))
+			logerr("main")
+			log("Other error of type %s" % type(e), "main", alarm.level.Critical)
 			gv.exceptions.append((e, traceback.format_tb(sys.exc_info()[2])))
 			try:
 				message = e.message
 			except:
 				message = ""
-			print("%s: %s." % (e, message))
+
 			if gv.debug:
 				gv.threadJoinFlag = True
-				print("Pausing to debug")
+				log("Pausing to debug", "main", alarm.level.Debug)
 				debug.debug_breakpoint()
 			else:
 				crashdump()

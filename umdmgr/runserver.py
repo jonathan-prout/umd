@@ -7,9 +7,10 @@ import sys
 import threading
 import multiprocessing
 # project imports
+from helpers.logging import startlogging
 from server import umdserver
 from server import gv
-from helpers import mysql
+from helpers import alarm, logging, mysql
 
 
 def usage():
@@ -23,7 +24,7 @@ def startdb():
 	gv.sql.mutex = multiprocessing.RLock()
 
 if __name__ == "__main__":
-
+	logging.startlogging("/var/log/umd/umdserver.log")
 	try:                                
 		opts, args = getopt.getopt(sys.argv[1:], "vlesnd", ["verbose", "loop", "errors", "suppress","snail","debug"]) 
 	except getopt.GetoptError as err:
@@ -50,7 +51,10 @@ if __name__ == "__main__":
 			usage() 
 			sys.exit(1)
 	if gv.loud:
-		print("Starting in verbose mode")
+		logging.MIN_SEVERITY = alarm.level.OK
+	else:
+		logging.MIN_SEVERITY = alarm.level.Cleared
+	logging.log("Starting in verbose mode", "__main__", alarm.level.Debug)
 		
 	startdb()
 	umdserver.main()

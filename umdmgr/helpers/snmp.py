@@ -2,7 +2,8 @@ from __future__ import print_function
 from __future__ import absolute_import
 from future import standard_library
 
-from helpers import processing
+from helpers import alarm, processing
+from helpers.logging import log
 
 standard_library.install_aliases()
 from builtins import str
@@ -91,7 +92,7 @@ def oidFromDict(n, invdict):
 		if "." + n in invdict:
 			n = "." + n
 		else:
-			# print invdict
+
 			for k, v in list(invdict.items()):
 				if n in k:
 					n = k
@@ -139,25 +140,21 @@ def get_pysnmp(commandDict, ip):
 	errorIndication, errorStatus, errorIndex, varBinds = get_pysnmp_instance().getCmd(
 		cmdgen.CommunityData('my-agent', 'public', 0), cmdgen.UdpTransportTarget((ip, 161)), *commands)
 	if errorStatus:
-		if gv.loudSNMP:
-			print("SNMP ERROR for %s" % ip)
-			print("errorIndication: %s" % errorIndication)
-			print("errorStatus: %s" % errorStatus)
-			print("errorIndex: %s" % errorIndex, end=' ')
+		log("SNMP ERROR for %s. errorIndication: %s errorStatus: %s errorIndex: %s"%(ip, errorIndication, errorStatus, errorIndex),
+			f"snmp.get_pysnmp on {ip}", alarm.level.Warining)
+
 		x = errorIndex - 1
-		if gv.loudSNMP:
-			print(" %s: %s" % (x + 1, varBinds[x]))
+
+		log(" %s: %s" % (x + 1, varBinds[x]))
 		try:
 			n = oidFromDict(str(varBinds[x][0]), invdict)
-		# print invdict[n]
-		except ValueError:
 
-			print("not in dict")
-			print(invdict)
+		except ValueError as e:
+			log(f"ValueError {e} when determining what to remove" f"snmp.get_pysnmp on {ip}", alarm.level.Major)
+
 		# try:
 		if invdict[n] in commandDict:
-			if gv.loudSNMP:
-				print("Removing %s and trying again" % invdict[n])
+			log("Removing %s for %s and trying again" % (k, ip), f"snmp.get_pysnmp on {ip}", alarm.level.Info)
 			del commandDict[invdict[n]]
 			return get(commandDict, ip)  # Call itself
 		else:
@@ -176,8 +173,7 @@ def get_pysnmp(commandDict, ip):
 				else:
 					returndict[invdict[n]] = str(item[1])
 			except KeyError:
-				print(invdict)
-				print(str(item[0]), str(item[1]))
+				log(f"KeyError in mapping dict {invdict}, {oid}={value}", f"snmp.get_pysnmp on {ip}", alarm.level.Warning)
 	del errorIndication
 	del errorStatus
 	del errorIndex
@@ -250,10 +246,9 @@ def get_subprocess(commandDict, ip):
 			if e.failedOid:
 				for k in list(commandDict.keys()):
 					if commandDict[k] == e.failedOid:
-						if gv.loudSNMP:
-							print("Removing %s for %s and trying again" % (k, ip))
-							del commandDict[k]
-							return get(commandDict, ip)  # Call itself
+						log("Removing %s for %s and trying again" % (k, ip), f"snmp.get_subprocesss on {ip}", alarm.level.Info)
+						del commandDict[k]
+						return get(commandDict, ip)  # Call itself
 
 	assert (
 				returncode == 0)  # Error if NET SNMP has an error. Fall back to PYSNMP which is slower but with better error handling
@@ -267,9 +262,8 @@ def get_subprocess(commandDict, ip):
 			# returndict[invdict[ n ] ] = str(value) #To be checked
 			returndict[invdict[n]] = value
 		except KeyError:
-			print("KeyError")
-			print(invdict)
-			print(str(oid), str(value))
+			log(f"KeyError in mapping dict {invdict}, {oid}={value}", f"snmp.get_subprocesss on {ip}", alarm.level.Warning)
+
 	return returndict
 
 
@@ -301,10 +295,9 @@ def getbulk(commandDict, ip, numItems):
 		if e.failedOid:
 			for k in list(commandDict.keys()):
 				if commandDict[k] == e.failedOid:
-					if gv.loudSNMP:
-						print("Removing %s for %s and trying again" % (k, ip))
-						del commandDict[k]
-						return getbulk(commandDict, ip, numItems)  # Call itself
+					log("Removing %s for %s and trying again" % (k, ip), f"snmp.getbulk on {ip}", alarm.level.Info)
+					del commandDict[k]
+					return getbulk(commandDict, ip, numItems)  # Call itself
 
 	except Exception as e:
 		"""
@@ -349,10 +342,9 @@ def getbulk_subprocess(commandDict, ip, numItems):
 			pass
 
 		if returncode != 0:
-			if gv.loudSNMP:
-				print(returncode)
-				print(sout)
-				print(serr)
+			log(f"returncode {returncode}", f"getbulk_subprocess {ip}", alarm.level.Warning)
+			log(f"stdout {sout}", f"getbulk_subprocess {ip}", alarm.level.Warning)
+			log(f"stderr {serr}", f"getbulk_subprocess {ip}", alarm.level.Warning)
 		del sub
 
 		if serr:
@@ -399,10 +391,9 @@ def walk_subprocess(commandDict, ip):
 		except (ValueError, TypeError):
 			pass
 		if returncode != 0:
-			if gv.loudSNMP:
-				print(returncode)
-				print(sout)
-				print(serr)
+			log(f"returncode {returncode}", f"walk_subprocess {ip}", alarm.level.Warning)
+			log(f"stdout {sout}", f"walk_subprocess {ip}", alarm.level.Warning)
+			log(f"stderr {serr}", f"walk_subprocess {ip}", alarm.level.Warning)
 		del sub
 		assert (
 					returncode == 0)  # Error if NET SNMP has an error. Fall back to PYSNMP which is slower but with better error handling
@@ -435,15 +426,14 @@ def walk_pysnmp(commandDict, ip):
 		results = []
 		if errorStatus:
 			for x in [errorIndication, errorStatus, errorIndex, varBindsTable]:
-				print(x)
-				print("")
+				log(x, f"walk_pysnmp {ip}", alarm.level.Warning)
+
 		else:
 			for item in varBindsTable:
 				try:
 					item = item[0][1]
 				except:
 					item = item[0]
-				# print len(item)
 				results.append(str(item))
 		n = oidFromDict(command, invdict)
 		returndict[invdict[n]] = results

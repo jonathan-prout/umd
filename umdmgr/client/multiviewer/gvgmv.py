@@ -2,6 +2,8 @@ import socket
 
 from client.multiviewer import tsl
 from client.status import status_message
+from helpers import alarm
+from helpers.logging import log
 
 
 class GvMv(tsl.TslMultiviewer):
@@ -40,19 +42,31 @@ class GvMv(tsl.TslMultiviewer):
 				break
 			sm = self.q.get()
 			if isinstance(sm, status_message):
-				sm.cnAlarm = {True: "Low C/N Margin", False: ""}[sm.cnAlarm]
-				sm.recAlarm = {True: "NO REC", False: ""}[sm.recAlarm]
+				if sm.cnAlarm:
+					sm.cnAlarm = "Low C/N Margin"
+				else:
+					sm.cnAlarm = ""
+				if sm.recAlarm:
+					sm.recAlarm = "Rec Off"
+				else:
+					sm.recAlarm = ""
+
 				alarmText = ", ".join([s for s in [sm.cnAlarm, sm.recAlarm] if s != ""])
+
 				mode = sm.textMode
 				videoInput = sm.mv_input
+
+				
 				for level, line in [
 					["TOP", sm.topLabel],
 					["BOTTOM", sm.bottomLabel],
-					["C/N", alarmText]]:
+					["COMBINED", alarmText]]:
 					if not line:  # Checks against None. Might not be necessary.
 						line = ""
 					if not self.get_offline() and not self.matchesPrevious(videoInput, level, line):
 						dmesg = self.writeline(videoInput, level, line, mode, colour=sm.colour)
+						if alarmText:
+							log(dmesg, self, alarm.level.OK)
 						packet.append(dmesg)
 						packet_commands += 1
 						if packet_commands <= 9:
@@ -123,6 +137,7 @@ class GvMv(tsl.TslMultiviewer):
 				"TOP": i,
 				"BOTTOM": 100 + i,
 				"C/N": 200 + i,
-				"REC": 200 + i
+				"REC": 200 + i,
+				"COMBINED": 200 + i
 			}
 			self.lookuptable[i] = d

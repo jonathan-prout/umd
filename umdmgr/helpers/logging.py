@@ -113,8 +113,9 @@ def removeAllHandlers(logger):
 			return
 
 
-def addFileLogger(logger, logdir):
-	filelogger = logging.handlers.TimedRotatingFileHandler(logdir + os.sep +"matrix.log", when="midnight", backupCount=30)
+def addFileLogger(logger, filename):
+	filelogger = logging.handlers.TimedRotatingFileHandler(filename, when="midnight", backupCount=30)
+	logging.handlers.RotatingFileHandler.doRollover(filelogger)
 	filelogger.setLevel(logging.DEBUG)
 	formatter = logging.Formatter('%(asctime)s;%(levelname)s;%(callingInstance)s;%(message)s')
 	filelogger.setFormatter(formatter)
@@ -241,3 +242,11 @@ def logerr(callingInstance = "", severity = helpers.alarm.level.Critical, logger
 		",".join(_list[:-1], ), _list[-1] )
 	
 	logger(body, callingInstance, severity)
+
+
+def startlogging(filename):
+	removeAllHandlers(helpers.logging.logger)
+	addColourLog(helpers.logging.logger)
+	addFileLogger(helpers.logging.logger, filename)
+	log("Started Logging", "Start", helpers.alarm.level.OK)
+
