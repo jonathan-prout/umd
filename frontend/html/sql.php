@@ -1,17 +1,23 @@
 <?php
- $dbhost = 'localhost';
+ $dbhost = '127.0.0.1';
+ $dbport = 3306;
  $dblogin= 'umd';
  $dbpass = 'umd';
  $dbname ='UMD';
  $t_bandwidths='';
  $connection='';
- 
+
+ function dbfail($message){
+     error_log($message);
+     header($_SERVER['SERVER_PROTOCOL'] . ' 500 Internal Server Error', true, 500);
+     die($message);
+ }
                                                                                                                                
  
  function dbstart(){
- 	global $dbhost,$dblogin,$dbpass,$dbname,$connection;
- 	
- 	$connection = mysqli_connect("$dbhost","$dblogin","$dbpass") or die ("Failure with the UMD manager database. Please restart machine.");
+ 	global $dbhost,$dblogin,$dbpass,$dbname, $dbport, $connection;
+ 	//echo($dbhost.$dblogin.$dbpass.$dbname.$dbport);
+ 	$connection = mysqli_connect("$dbhost","$dblogin","$dbpass", "UMD", 3306, ) or dbfail ("Failure with the UMD manager database. Please restart machine.");
  	$db = mysqli_select_db($connection, $dbname);
  }
 

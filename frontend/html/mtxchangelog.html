@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+    <title>Matrix Changelog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+<script>
+   function getUrlVars() {
+    var vars = {};
+    var parts = window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function(m,key,value) {
+        vars[key] = value;
+    });
+    return vars;
+}
+
+var SELECTED_MTX = 0;
+var SELECTED_IN = 0;
+var SELECTED_OUT = 0;
+var inputs = {};
+var outputs = {};
+
+
+function getScript(url, callback) {
+   var script = document.createElement('script');
+   script.type = 'text/javascript';
+   script.src = url;
+
+   script.onreadystatechange = callback;
+   script.onload = callback;
+
+   document.getElementsByTagName('head')[0].appendChild(script);
+}
+</script>
+</head>
+
+<body>
+ 
+
+    </div>
+   <div class="page-header">
+   <h2>Eurovision UMD Manager
+      <small>Matrix Changelog</small>
+   </h2>
+</div>
+<div id="id01"></div>
+<div class="container">
+<div class = "row">
+    <div class="col-sm-4"><form id="put_matrix_here"></form></div>
+    <div class="col-sm-4"><form id="put_inputs_here"></form></div>
+    <div class="col-sm-4"><form id="put_outputs_here"></form></div>
+</div>
+</div>
+<div class="container" id="put_result_table_here">
+  
+  </div>
+</div>
+
+<div class="container-fluid" id="mvTable"></div>
+
+
+
+
+<script>
+    var getParams = getUrlVars();
+    if ("mv" in getParams) {
+        var mv = getParams["mv"];
+    }else{
+        var mv = "None"
+    }
+//document.getElementById("id01").innerHTML = "<h1>" +mv + "</h1>";
+
+function onMvButton(index) {
+    mv = index
+    //document.getElementById("id01").innerHTML = "<h1>" +mv + "</h1>";
+    populateListbox(multiviewers )
+populateTable(irds)
+}
+//getScript('static_parameters.php?mode=json&doc=matrix_in');
+//getScript('static_parameters.php?mode=json&doc=matrix_out');
+//getScript('static_parameters.php?mode=json&doc=matrix_names', function(){
+ getScript('static_parameters.php', function(){
+ //populateListbox(multiviewers )
+ //populateTable(irds)
+ var arr = matrix_names;
+ 
+ var out = '<div class="form-group"><label for="sel1">Select Matrix</label>';
+    out +='<select class="form-control" onchange="selectmatrix()" name="mtx_picker" id="mtx_picker">';
+    var i;
+    var key = "id";
+    var val = "mtxName";
+    out += '<option value="0">No Selection</option>';
+    for(i = 0; i < arr.length; i++) {
+        if (arr[i][key] === SELECTED_MTX) {
+            out += '<option selected value="'+ arr[i][key] +'">'+ arr[i][val] +'</option>';
+        }else{
+            out += '<option value="'+ arr[i][key] +'">'+ arr[i][val] +'</option>';
+            }
+        
+        
+    }
+    out += '  </select></div>';
+    
+ document.getElementById("put_matrix_here").innerHTML = out;;
+ 
+});
+
+function selectmatrix(){
+    var e = document.getElementById("mtx_picker");
+
+    
+    SELECTED_MTX = e.options[e.selectedIndex].value;
+    buildin();
+    buildout();
+    
+}
+
+function buildin(){
+    var arr = mtx_in;
+    var h = '<div class="form-group"><label for="sel1">Select input</label>';
+    h +='<select class="form-control" onchange="selectin()" name="in_picker" id="in_picker">';
+    var i;
+    var key = "port";
+    var val = "name";
+    inputs = {};
+    h += '<option value="0">No Selection</option>';
+    for(i = 0; i < arr.length; i++) {
+        if (arr[i]["matrixid"] === SELECTED_MTX) {
+            inputs[arr[i][key]] = arr[i][val];
+            if (arr[i][key] === SELECTED_IN) {
+                h += '<option selected value="'+ arr[i][key] +'">'+ arr[i][val] +'</option>';
+            }else{
+                h += '<option value="'+ arr[i][key] +'">'+ arr[i][val] +'</option>';
+                }
+        }
+        
+    }
+    h += '  </select></div>';
+    
+ document.getElementById("put_inputs_here").innerHTML = h;
+}
+
+function buildout(){
+    var arr = mtx_out;
+    var out = '<div class="form-group"><label for="sel1">Select Output</label>';
+    out +='<select class="form-control" onchange="selectout()" name="out_picker" id="out_picker">';
+    var i;
+    outputs = {};
+    
+    var key = "port";
+    var val = "name";
+    out += '<option value="0">No Selection</option>';
+    for(i = 0; i < arr.length; i++) {
+        if (arr[i]["matrixid"] === SELECTED_MTX) {
+            outputs[arr[i][key]] = arr[i][val];
+            if (arr[i][key] === SELECTED_OUT) {
+                out += '<option selected value="'+ arr[i][key] +'">'+ arr[i][val] +'</option>';
+            }else{
+                out += '<option value="'+ arr[i][key] +'">'+ arr[i][val] +'</option>';
+                }
+        }
+        
+    }
+    out += '  </select></div>';
+    
+ document.getElementById("put_outputs_here").innerHTML = out;
+}
+
+function selectin(){
+    var e = document.getElementById("in_picker");
+
+    
+    SELECTED_IN = e.options[e.selectedIndex].value;
+    $.getJSON("changelog.php",data={"mtx":SELECTED_MTX, "in":SELECTED_IN}, function(data){buildtable(data);});
+}
+function selectout(){
+    var e = document.getElementById("out_picker");
+
+    
+    SELECTED_OUT = e.options[e.selectedIndex].value;
+    $.getJSON("changelog.php",data={"mtx":SELECTED_MTX, "out":SELECTED_OUT}, function(data){buildtable(data);});
+}
+
+function buildtable(arr){
+ var out = "<table class='table table-striped' ><thead><th>in</th><th>time</th><th>out</th></thead><tbody>\n";
+    var i;
+    for(i = 0; i < arr.length; i++) {
+    out += "<tr><td>"+inputs[arr[i]['input']]+ "</td><td>"+arr[i]['time']+ "</td><td>"+outputs[arr[i]['output']]+ "</td></tr>\n"
+    }
+    out +="</tbody></table>\n";
+    document.getElementById("put_result_table_here").innerHTML = out;
+}
+//document.getElementById("id01").innerHTML = mv;
+//var mvxml = new XMLHttpRequest();
+//mvxml.onreadystatechange = function() {
+//    if (mvxml.readyState == 4 && mvxml.status == 200) {
+//        var myArr = JSON.parse(mvxml.responseText);
+//        populateListbox(myArr);
+//    }
+//}
+//mvxml.open("GET", "static_parameters.php?mode=json&doc=multiviewer", true);
+//mvxml.send();
+
+//var mvcontent = new XMLHttpRequest();
+//mvcontent.onreadystatechange = function() {
+//    if (mvcontent.readyState == 4 && mvcontent.status == 200) {
+//        var myArr = JSON.parse(mvcontent.responseText);
+//        populateTable(myArr);
+//    }
+//}
+//mvcontent.open("GET", "static_parameters.php?mode=json&doc=mv_input", true);
+//mvcontent.send();
+
+      
+        
+
+</script>
+
+
+<script src="changelog.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+<script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+
+        
+</body>
+</html>

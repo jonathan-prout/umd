@@ -22,6 +22,7 @@ $doc = $_GET['doc'];
 
 if ($mode == "json")
 {
+    header('Content-type: application/json');
  if ($doc == "multiviewer")
  {
   $sql = 'SELECT `id`,`Name` FROM `Multiviewer` WHERE 1';  
@@ -51,15 +52,23 @@ if ($mode == "json")
  $sql = 'SELECT * FROM `inputStrategies`';
  $inpuutStrategies = query($sql);
  echo json_encode(array_from_sql($inpuutStrategies));
- 
- }elseif  ($doc == "matrix_in")
+ }elseif  ($doc == "matrix_names") {
+     $db = select_db("matrix");
+     $sql = 'SELECT * FROM `matrixes`';
+     $mtx_in = query($sql);
+     $db = select_db("UMD");
+     echo json_encode(array_from_sql($mtx_in));
+ }elseif  ($doc == "matrix_in") {
+     $db = select_db("matrix");
+     $sql = 'SELECT * FROM `input`';
+     $mtx_in = query($sql);
+     $db = select_db("UMD");
+     echo json_encode(array_from_sql($mtx_in));
+ }elseif  ($doc == "equipment")
  {
- $db = select_db("matrix");
- $sql = 'SELECT * FROM `input`';
- $mtx_in = query($sql);
- $db = select_db("UMD");
- echo json_encode(array_from_sql($mtx_in));
- 
+    $sql = 'SELECT * FROM `equipment` WHERE 1';
+    $irds = query($sql);
+     echo json_encode(array_from_sql($irds));
  }elseif  ($doc == "matrix_out")
  {
  $db = select_db("matrix");
@@ -73,6 +82,7 @@ if ($mode == "json")
  }
 }else
 {
+    header('Content-type: text/javascript');
  $sql = 'SELECT `id`,`Name` FROM `Multiviewer` WHERE 1';  
  $multiviewers = query($sql);
  $sql = 'SELECT `PRIMARY`, `multiviewer`, `input` , `labeladdr1` , `labeladdr2` , `strategy` , `equipment` , `inputmtxid` , `inputmtxname` , `customlabel1`, `customlabel2` FROM `mv_input` WHERE 1';  
@@ -87,13 +97,14 @@ $satlist = query($sql);
 $sql = 'SELECT * FROM `inputStrategies`';
 $inpuutStrategies = query($sql);
 $db = select_db("matrix");
-//$sql = 'SELECT * FROM `input`';
-//$mtx_in = query($sql);
+$sql = 'SELECT * FROM `input`';
+$mtx_in = query($sql);
 $mtx_in_sdi = query('SELECT * FROM `input` WHERE `matrixid` IN (SELECT `id` FROM `matrixes` where `capability` LIKE "%SDI%") AND `name` NOT LIKE "#%"');
 $mtx_in_asi = query('SELECT * FROM `input` WHERE `matrixid` IN (SELECT `id` FROM `matrixes` where `capability` LIKE "%ASI%") AND `name`  LIKE "#%"');
 $mtx_in_lband = query('SELECT * FROM `input` WHERE `matrixid` IN (SELECT `id` FROM `matrixes` where `capability` LIKE "%LBAND%")');
-$db = select_db("UMD");
-$db = select_db("matrix");
+
+$sql = 'SELECT * FROM `output`';
+$mtx_out = query($sql);
 
 $mtx_out_sdi = query('SELECT * FROM `output` WHERE `matrixid` IN (SELECT `id` FROM `matrixes` where `capability` LIKE "%SDI%") AND `name` NOT LIKE "#%"');
 $mtx_out_asi = query('SELECT * FROM `output` WHERE `matrixid` IN (SELECT `id` FROM `matrixes` where `capability` LIKE "%ASI%") AND `name`  LIKE "#%"');
@@ -110,13 +121,17 @@ echo 'var mv_input = JSON.parse('."'".str_replace($search, $replace,json_encode(
 echo 'var demods = JSON.parse('."'".str_replace($search, $replace,json_encode(array_from_sql($demods)))."');\r\n";
 echo 'var irds = JSON.parse('."'".str_replace($search, $replace,json_encode(array_from_sql($irds)))."');\r\n";
 echo 'var inputStrategies = JSON.parse('."'".str_replace($search, $replace,json_encode(array_from_sql($inpuutStrategies)))."');\r\n";
+echo 'var mtx_in = JSON.parse('."'".str_replace($search, $replace,json_encode(array_from_sql($mtx_in)))."');\r\n";
 echo 'var mtx_in_sdi = JSON.parse('."'".str_replace($search, $replace,json_encode(array_from_sql($mtx_in_sdi)))."');\r\n";
 echo 'var mtx_in_asi = JSON.parse('."'".str_replace($search, $replace,json_encode(array_from_sql($mtx_in_asi)))."');\r\n";
 echo 'var mtx_in_lband = JSON.parse('."'".str_replace($search, $replace,json_encode(array_from_sql($mtx_in_lband)))."');\r\n";
+echo 'var mtx_out = JSON.parse('."'".str_replace($search, $replace,json_encode(array_from_sql($mtx_out)))."');\r\n";
 echo 'var mtx_out_sdi = JSON.parse('."'".str_replace($search, $replace,json_encode(array_from_sql($mtx_out_sdi)))."');\r\n";
 echo 'var mtx_out_asi = JSON.parse('."'".str_replace($search, $replace,json_encode(array_from_sql($mtx_out_asi)))."');\r\n";
 echo 'var mtx_out_lband = JSON.parse('."'".str_replace($search, $replace,json_encode(array_from_sql($mtx_out_lband)))."');\r\n";
-echo 'var mtx_names = JSON.parse('."'".str_replace($search, $replace,json_encode(array_from_sql($mtx_names)))."');\r\n";
+echo 'var matrix_names = JSON.parse('."'".str_replace($search, $replace,json_encode(array_from_sql($mtx_names)))."');\r\n";
+
+
 echo 'var satlist = JSON.parse('."'".str_replace($search, $replace,json_encode(array_from_sql($satlist)))."');\r\n";
 }
 
