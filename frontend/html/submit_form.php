@@ -34,13 +34,17 @@ if ($_POST["formName"] == "updateMVInput"){
    
     if ($_POST["equipment"] == "Null"){
         $sql = $sql." `equipment` = NULL,";
+    }elseif  ($_POST["equipment"] == ""){
+          $sql = $sql." `equipment` = NULL,";
     }else
     {
         $sql = $sql." `equipment` = '".$_POST["equipment"]."',";
     }
      if ($_POST["mtx_out_sdi"] == "null"){
         $sql = $sql." `inputmtxname` = NULL,";
-    }else
+     }elseif  ($_POST["mtx_out_sdi"] == ""){
+         $sql = $sql." `inputmtxname` = NULL,";
+     }else
     {
             
         
@@ -118,11 +122,17 @@ if ($_POST["formName"] == "updateMVInput"){
         if($_POST[$key] == "null")
         {
             $args[] =" `$key` = NULL";
+        }elseif($_POST[$key] == "")
+        {
+            $args[] =" `$key` = NULL";
         }else
         {
             $args[] =" `$key` = '".str_replace($search, $replace,$_POST[$key])."'";
         }
-       
+
+
+
+
     }
     
     $ressource = select_db("matrix");
@@ -294,6 +304,9 @@ if ($_POST["formName"] == "updateMVInput"){
     $args = array();
     foreach($keys as $key){
         if($_POST[$key] == "null")
+        {
+            $args[] ="NULL";
+        }elseif($_POST[$key] == "")
         {
             $args[] ="NULL";
         }else
