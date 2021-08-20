@@ -156,8 +156,9 @@ class mysql(generic.IInfoSourceMixIn):
 		self.close()
 
 	def close(self):
-		log("Closing database.....", self, alarm.level.Info)
+
 		try:
+			log("Closing database.....", self, alarm.level.Info)
 			self.db.close()
 		except (AttributeError,
 				MySQLdb._exceptions.OperationalError):  # Hey bossy IDE it's not my fault they organize their packages like that

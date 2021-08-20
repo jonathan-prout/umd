@@ -195,8 +195,9 @@ def getAddresses(ip):
 
 def getdb():
 	with gv.equipDBLock:
+		gv.sql.db.commit()  #Wasn't updating without commit
 		colourd = {}
-		colours = gv.sql.qselect('SELECT name, colour FROM UMD.colours;')
+		colours = gv.sql.qselect('SELECT name, colour FROM UMD.colours')
 		for name, colour in colours:
 			colourd[name] = colour
 		gv.colours = colourd
