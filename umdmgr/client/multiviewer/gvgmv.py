@@ -8,7 +8,7 @@ from helpers.logging import log
 
 class GvMv(tsl.TslMultiviewer):
 	size = 48
-	MAX_LABEL_LEN = 24
+	MAX_LABEL_LEN = 56
 
 	def __init__(self, url: str, mvid: int, name: str):
 		super(GvMv, self).__init__(url, mvid, name)
