@@ -195,7 +195,13 @@ def getAddresses(ip):
 
 def getdb():
 	with gv.equipDBLock:
-		gv.sql.db.commit()  #Wasn't updating without commit
+		try:
+			gv.sql.db.commit()  #Wasn't updating without commit
+		except MySQLdb._exceptions.ProgrammingError:
+			log("Resetting db", self, alarm.level.Info)
+			gv.sql.db.close()
+			gv.sql.connect()
+
 		colourd = {}
 		colours = gv.sql.qselect('SELECT name, colour FROM UMD.colours')
 		for name, colour in colours:
