@@ -195,7 +195,11 @@ def getAddresses(ip):
 
 def getdb():
 	with gv.equipDBLock:
-
+		colourd = {}
+		colours = gv.sql.qselect('SELECT name, colour FROM UMD.colours;')
+		for name, colour in colours:
+			colourd[name] = colour
+		gv.colours = colourd
 		request = "SELECT "
 		commands = labelmodel.irdResult.commands
 
