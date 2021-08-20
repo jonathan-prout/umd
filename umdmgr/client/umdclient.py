@@ -6,16 +6,19 @@ import datetime
 
 import time
 
+import MySQLdb
+
 import client
 import client.multiviewer.miranda
 import client.multiviewer.harris
 import client.multiviewer.gvgmv
 
 import client.status
-from helpers import virtualmatrix
+from helpers import alarm, virtualmatrix
 from client import multiviewer
 from client import gv
 from client import labelmodel
+from helpers.logging import log
 
 gv.display_server_status = "Starting"
 ASI_MODE_TEXT = "ASI"
@@ -197,8 +200,8 @@ def getdb():
 	with gv.equipDBLock:
 		try:
 			gv.sql.db.commit()  #Wasn't updating without commit
-		except MySQLdb._exceptions.ProgrammingError:
-			log("Resetting db", self, alarm.level.Info)
+		except MySQLdb.ProgrammingError:
+			log("Resetting db", "update thread", alarm.level.Info)
 			gv.sql.db.close()
 			gv.sql.connect()
 
