@@ -1,3 +1,53 @@
+
+
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>UMD Manager Edit Colours</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.min.css">
+    <script src="base.js"></script>
+    <link href = "bower_components/eonasdan-bootstrap-datetimepicker/build/css/bootstrap-datetimepicker.css" rel="stylesheet">
+    <!-- Select -->
+    <link href = "bower_components/bootstrap-select/dist/css/bootstrap-select.css" rel="stylesheet">
+    <!-- Custom styles for this template -->
+
+    <link href="bower_components/bootstrap-combobox/css/bootstrap-combobox.css" rel="stylesheet"/>
+    <!-- Required Javascript -->
+    <script src="bower_components/jquery/dist/jquery.min.js"></script>
+    <script src="bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+    <script src="bower_components/bootstrap-treeview/src/js/bootstrap-treeview.js"></script>
+    <script src="bower_components/progressbar.js/dist/progressbar.min.js"></script>
+    <script src="bower_components/d3/d3.js"></script>
+    <script src="bower_components/moment/moment.js"></script>
+    <script src="bower_components/moment-timezone/builds/moment-timezone-with-data.js"></script>
+    <script src="bower_components/eonasdan-bootstrap-datetimepicker/src/js/bootstrap-datetimepicker.js"></script>
+    <script src="bower_components/bootstrap-select/dist/js/bootstrap-select.js"></script>
+    <script src="bower_components/bootstrap-combobox/js/bootstrap-combobox.js"></script>
+    <script src="bower_components/bootstrap-toggle/js/bootstrap-toggle.js"></script>
+    <script src="bower_components/bootstrap-table/dist/bootstrap-table.js"></script>
+    <script src="node_modules/@json-editor/json-editor/dist/jsoneditor.min.js"></script>
+</head>
+
+<body>
+
+<ul class="nav nav-tabs" role="tablist">
+    <li ><a href="editmv.html">Multiviewer</a></li>
+    <li><a href="editird.html">IRD</a></li>
+    <li class="active"><a href="editcolour.php">Colours</a></li>
+</ul>
+
+
+<div class="page-header">
+    <h2>Eurovision UMD Manager
+        <small>Edit Colours</small>
+    </h2>
+</div>
+
+
 <?php
 error_reporting(E_ALL);
 ini_set( 'display_errors','1');
@@ -22,6 +72,12 @@ if ($_SERVER['REQUEST_METHOD']=="POST") {
             $stmt->bind_param('i', $id);
             $stmt->execute();
             $stmt->close();
+            echo '<div class="alert alert-success alert-dismissible fade show" role="alert">
+              Deleted colour '.$id.'
+              <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>';
         }else{
 
             $id = $_POST['id'];
@@ -31,17 +87,32 @@ if ($_SERVER['REQUEST_METHOD']=="POST") {
             $stmt->bind_param('ssi',$name, $colour, $id);
             $stmt->execute();
             $stmt->close();
+
+            echo '<div class="alert alert-success alert-dismissible fade show" role="alert">
+              Updated colour '.$id.'
+              <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>';
         }
     }else{
 
 
 
-            $name = $_POST['name'];
-            $colour = $_POST['colour'];
-            $stmt = $conn->prepare('insert into colours set name = ?, colour = ?');
-            $stmt->bind_param('ss',$name, $colour);
-            $stmt->execute();
-            $stmt->close();
+        $name = $_POST['name'];
+        $colour = $_POST['colour'];
+        $stmt = $conn->prepare('insert into colours set name = ?, colour = ?');
+        $stmt->bind_param('ss',$name, $colour);
+        $stmt->execute();
+        $stmt->close();
+
+        echo '<div class="alert alert-success alert-dismissible fade show" role="alert">
+              Added new colour.
+              <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>';
+
     }
 }
 
@@ -49,60 +120,12 @@ if ($_SERVER['REQUEST_METHOD']=="POST") {
 
 ?>
 
-
-<!DOCTYPE html>
-
-<html>
-<head>
-    <meta charset="UTF-8">
-    <title>UMD Manager Edit Colours</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.min.css">
-    <script src="base.js"></script>
-    <link href = "bower_components/eonasdan-bootstrap-datetimepicker/build/css/bootstrap-datetimepicker.css" rel="stylesheet">
-    <!-- Select -->
-    <link href = "bower_components/bootstrap-select/dist/css/bootstrap-select.css" rel="stylesheet">
-    <!-- Custom styles for this template -->
-
-    <link href="bower_components/bootstrap-combobox/css/bootstrap-combobox.css" rel="stylesheet"></link>
-    <!-- Required Javascript -->
-    <script src="bower_components/jquery/dist/jquery.min.js"></script>
-    <script src="bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
-    <script src="bower_components/bootstrap-treeview/src/js/bootstrap-treeview.js"></script>
-    <script src="bower_components/progressbar.js/dist/progressbar.min.js"></script>
-    <script src="bower_components/d3/d3.js"></script>
-    <script src="bower_components/moment/moment.js"></script>
-    <script src="bower_components/moment-timezone/builds/moment-timezone-with-data.js"></script>
-    <script src="bower_components/eonasdan-bootstrap-datetimepicker/src/js/bootstrap-datetimepicker.js"></script>
-    <script src="bower_components/bootstrap-select/dist/js/bootstrap-select.js"></script>
-    <script src="bower_components/bootstrap-combobox/js/bootstrap-combobox.js"></script>
-    <script src="bower_components/bootstrap-toggle/js/bootstrap-toggle.js"></script>
-    <script src="bower_components/bootstrap-table/dist/bootstrap-table.js"></script>
-    <script src="node_modules/@json-editor/json-editor/dist/jsoneditor.min.js"></script>
-</head>
-
-<body>
-
-<ul class="nav nav-tabs" role="tablist">
-    <li ><a href="#">Multiviewer</a></li>
-    <li><a href="editird.html">IRD</a></li>
-    <li class="active"><a href="editcolour.php">Colours</a></li>
-</ul>
-</div>
-
-<div class="page-header">
-    <h2>Eurovision UMD Manager
-        <small>Edit Colours</small>
-    </h2>
-</div>
-
-
 <table class = "table table-responsive">
     <thead><tr>
         <td>Remove</td>
         <td>ID</td>
         <td>Name</td>
-        <td>Form</td>
+        <td>Colour</td>
         <td>Sumbit</td>
     </tr></thead>
     <tbody>
