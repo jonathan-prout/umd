@@ -38,6 +38,8 @@
     <li ><a href="editmv.html">Multiviewer</a></li>
     <li><a href="editird.html">IRD</a></li>
     <li class="active"><a href="editcolour.php">Colours</a></li>
+    <li><a href="mtxchangelog.html">Matrix Changelog</a></li>
+
 </ul>
 
 
