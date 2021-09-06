@@ -208,7 +208,7 @@ class multiviewer(ABC):
 			if queued:
 				try:
 					self.put((klist[key], "BOTTOM", status, "TEXT"))
-				except:
+				except queue.Full:
 					pass
 			else:
 				try:

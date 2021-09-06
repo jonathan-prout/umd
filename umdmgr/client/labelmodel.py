@@ -76,7 +76,6 @@ class matrixResult(object):
 	def getBottomLabel(self):
 		return " "
 
-
 	def getColour(self) -> typing.Union[str, None]:
 		return gv.colours.get(self.name, None)
 

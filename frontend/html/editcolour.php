@@ -61,7 +61,7 @@ $ressource = select_db("umd");
 
 if ($_SERVER['REQUEST_METHOD']=="POST") {
     echo "<tr><td>";
-    echo implode("</td><td>", $_POST);
+    //echo implode("</td><td>", $_POST);
     echo "</td></tr>";
     global $conn;
     if (isset($_POST['id'])) {
@@ -72,7 +72,7 @@ if ($_SERVER['REQUEST_METHOD']=="POST") {
             $stmt->bind_param('i', $id);
             $stmt->execute();
             $stmt->close();
-            echo '<div class="alert alert-success alert-dismissible fade show" role="alert">
+            echo '<div class="alert alert-success alert-dismissible" role="alert">
               Deleted colour '.$id.'
               <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                 <span aria-hidden="true">&times;</span>
@@ -88,7 +88,7 @@ if ($_SERVER['REQUEST_METHOD']=="POST") {
             $stmt->execute();
             $stmt->close();
 
-            echo '<div class="alert alert-success alert-dismissible fade show" role="alert">
+            echo '<div class="alert alert-success alert-dismissible" role="alert">
               Updated colour '.$id.'
               <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                 <span aria-hidden="true">&times;</span>
@@ -106,7 +106,7 @@ if ($_SERVER['REQUEST_METHOD']=="POST") {
         $stmt->execute();
         $stmt->close();
 
-        echo '<div class="alert alert-success alert-dismissible fade show" role="alert">
+        echo '<div class="alert alert-success alert-dismissible" role="alert">
               Added new colour.
               <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                 <span aria-hidden="true">&times;</span>
