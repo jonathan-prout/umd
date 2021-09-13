@@ -198,19 +198,13 @@ def getAddresses(ip):
 
 def getdb():
 	with gv.equipDBLock:
+		log("heartbeat", "update thread", alarm.level.OK)
 
-		with gv.sql.mutex:
-			colourd = {}
-			colours = gv.sql.qselect('SELECT name, colour FROM UMD.colours;')
-			try:
-				gv.sql.db.commit()  #Wasn't updating without commit
-			except MySQLdb.ProgrammingError:
-				log("Resetting db", "update thread", alarm.level.Info)
-				gv.sql.db.close()
-				gv.sql.connect()
-			for name, colour in colours:
-				colourd[name] = colour
-			gv.colours = colourd
+		colourd = {}
+		colours = gv.sql.qselect('SELECT name, colour FROM UMD.colours;', commit=True)
+		for name, colour in colours:
+			colourd[name] = colour
+		gv.colours = colourd
 		request = "SELECT "
 		commands = labelmodel.irdResult.commands
 
