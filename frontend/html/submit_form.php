@@ -42,7 +42,9 @@ if ($_POST["formName"] == "updateMVInput"){
     }
      if ($_POST["mtx_out_sdi"] == "null"){
         $sql = $sql." `inputmtxname` = NULL,";
-    }else
+     }elseif  ($_POST["mtx_out_sdi"] == ""){
+         $sql = $sql." `inputmtxname` = NULL,";
+     }else
     {
             
         
@@ -128,7 +130,7 @@ if ($_POST["formName"] == "updateMVInput"){
         {
             $args[] =" `$key` = '".str_replace($search, $replace,$pk)."'";
         }
-       
+
     }
 
      $key= "MulticastIp";
@@ -313,6 +315,9 @@ if ($_POST["formName"] == "updateMVInput"){
     $args = array();
     foreach($keys as $key){
         if($_POST[$key] == "null")
+        {
+            $args[] ="NULL";
+        }elseif($_POST[$key] == "")
         {
             $args[] ="NULL";
         }else

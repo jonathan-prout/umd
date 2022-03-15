@@ -1,10 +1,33 @@
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
 <head>
-    <title>Matrix Changelog</title>
+    <title>UMD Manager Matrix Changelog</title>
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.min.css">
+
+    <link href = "bower_components/eonasdan-bootstrap-datetimepicker/build/css/bootstrap-datetimepicker.css" rel="stylesheet">
+    <!-- Select -->
+    <link href = "bower_components/bootstrap-select/dist/css/bootstrap-select.css" rel="stylesheet">
+    <!-- Custom styles for this template -->
+
+    <link href="bower_components/bootstrap-combobox/css/bootstrap-combobox.css" rel="stylesheet"></link>
+    <!-- Required Javascript -->
+    <script src="bower_components/jquery/dist/jquery.min.js"></script>
+    <script src="bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+    <script src="bower_components/bootstrap-treeview/src/js/bootstrap-treeview.js"></script>
+    <script src="bower_components/progressbar.js/dist/progressbar.min.js"></script>
+    <script src="bower_components/d3/d3.js"></script>
+    <script src="bower_components/moment/moment.js"></script>
+    <script src="bower_components/moment-timezone/builds/moment-timezone-with-data.js"></script>
+    <script src="bower_components/eonasdan-bootstrap-datetimepicker/src/js/bootstrap-datetimepicker.js"></script>
+    <script src="bower_components/bootstrap-select/dist/js/bootstrap-select.js"></script>
+    <script src="bower_components/bootstrap-combobox/js/bootstrap-combobox.js"></script>
+    <script src="bower_components/bootstrap-toggle/js/bootstrap-toggle.js"></script>
+    <script src="bower_components/bootstrap-table/dist/bootstrap-table.js"></script>
+    <script src="node_modules/@json-editor/json-editor/dist/jsoneditor.min.js"></script>
+    <script src="base.js"></script>
 <script>
    function getUrlVars() {
     var vars = {};
@@ -36,7 +59,12 @@ function getScript(url, callback) {
 
 <body>
  
-
+<ul class="nav nav-tabs" role="tablist">
+        <li ><a href="editmv.html">Multiviewer</a></li>
+        <li><a href="editird.html">IRD</a></li>
+        <li><a href="editcolour.php">Colours</a></li>
+    <li  class="active"><a href="mtxchangelog.html">Matrix Changelog</a></li>
+      </ul>
     </div>
    <div class="page-header">
    <h2>Eurovision UMD Manager
@@ -63,10 +91,11 @@ function getScript(url, callback) {
 
 <script>
     var getParams = getUrlVars();
+    var mv;
     if ("mv" in getParams) {
-        var mv = getParams["mv"];
+         mv = getParams["mv"];
     }else{
-        var mv = "None"
+         mv = "None"
     }
 //document.getElementById("id01").innerHTML = "<h1>" +mv + "</h1>";
 
@@ -76,33 +105,33 @@ function onMvButton(index) {
     populateListbox(multiviewers )
 populateTable(irds)
 }
-//getScript('static_parameters.php?mode=json&doc=matrix_in');
-//getScript('static_parameters.php?mode=json&doc=matrix_out');
-//getScript('static_parameters.php?mode=json&doc=matrix_names', function(){
- getScript('static_parameters.php', function(){
- //populateListbox(multiviewers )
- //populateTable(irds)
- var arr = matrix_names;
- 
- var out = '<div class="form-group"><label for="sel1">Select Matrix</label>';
+$(document).ready(function () {
+     getScript('static_parameters.php', function(){
+
+     var arr = matrix_names;
+
+     var out = '<div class="form-group"><label for="sel1">Select Matrix</label>';
     out +='<select class="form-control" onchange="selectmatrix()" name="mtx_picker" id="mtx_picker">';
     var i;
     var key = "id";
     var val = "mtxName";
-    out += '<option value="0">No Selection</option>';
-    for(i = 0; i < arr.length; i++) {
-        if (arr[i][key] === SELECTED_MTX) {
+     out += '<option value="0">No Selection</option>';
+     for(i = 0; i < arr.length; i++) {
+         if (arr[i][key] === SELECTED_MTX) {
             out += '<option selected value="'+ arr[i][key] +'">'+ arr[i][val] +'</option>';
-        }else{
+         }else{
             out += '<option value="'+ arr[i][key] +'">'+ arr[i][val] +'</option>';
-            }
-        
-        
-    }
-    out += '  </select></div>';
-    
- document.getElementById("put_matrix_here").innerHTML = out;;
- 
+           }
+
+
+     }
+     out += '  </select></div>';
+    //out = build_combobox(arr, key, val,SELECTED_MTX, "Select Matrix", "mtx_picker",true, "combobox","" );
+     document.getElementById("put_matrix_here").innerHTML = out;
+     $("#mtx_picker").on("change", selectmatrix);
+
+     //$('.combobox').combobox({bsVersion: '3'});
+    });
 });
 
 function selectmatrix(){
@@ -112,16 +141,17 @@ function selectmatrix(){
     SELECTED_MTX = e.options[e.selectedIndex].value;
     buildin();
     buildout();
-    
+    $('.combobox').combobox({bsVersion: '3'});
 }
 
 function buildin(){
-    var arr = mtx_in;
-    var h = '<div class="form-group"><label for="sel1">Select input</label>';
-    h +='<select class="form-control" onchange="selectin()" name="in_picker" id="in_picker">';
-    var i;
-    var key = "port";
-    var val = "name";
+    let arr = mtx_in;
+
+    let h = '<div class="form-group"><label for="sel1">Select input</label>';
+    h +='<select class="form-control combobox" onchange="selectin()" name="in_picker" id="in_picker">';
+    let i;
+    const key = "port";
+    const val = "name";
     inputs = {};
     h += '<option value="0">No Selection</option>';
     for(i = 0; i < arr.length; i++) {
@@ -141,14 +171,14 @@ function buildin(){
 }
 
 function buildout(){
-    var arr = mtx_out;
-    var out = '<div class="form-group"><label for="sel1">Select Output</label>';
-    out +='<select class="form-control" onchange="selectout()" name="out_picker" id="out_picker">';
-    var i;
+    const arr = mtx_out;
+    let out = '<div class="form-group"><label for="sel1">Select Output</label>';
+    out +='<select class="form-control combobox" onchange="selectout()" name="out_picker" id="out_picker">';
+    let i;
     outputs = {};
     
-    var key = "port";
-    var val = "name";
+    const key = "port";
+    const val = "name";
     out += '<option value="0">No Selection</option>';
     for(i = 0; i < arr.length; i++) {
         if (arr[i]["matrixid"] === SELECTED_MTX) {
@@ -218,8 +248,7 @@ function buildtable(arr){
 
 
 <script src="changelog.js"></script>
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
-<script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+
 
         
 </body>

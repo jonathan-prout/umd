@@ -64,12 +64,16 @@ class mysql(object):
 
 		
 
-	def qselect(self,sql):
+	def qselect(self,sql, require_lock = True, commit = None):
 		""" semaphore & mutex lock to access share database takes sql command as string. Returns list"""
-		if self.semaphore:
-			self.semaphore.acquire()
-		if self.mutex:
-			self.mutex.acquire()
+		if require_lock:
+			if commit is None:
+				commit = self.autocommit
+
+			if self.semaphore:
+				self.semaphore.acquire()
+			if self.mutex:
+				self.mutex.acquire()
 		rows = []
 		e = None
 		
@@ -99,7 +103,7 @@ class mysql(object):
 						rows += data.fetch_row(maxrows=0)
 					except:
 						pass
-					if self.autocommit:
+					if commit:
 						self.db.commit()
 
 		except Exception as e:
@@ -110,10 +114,11 @@ class mysql(object):
 
 		finally:
 			""" semaphore & mutex lock to release locked share database """
-			if self.mutex:
-				self.mutex.release()
-			if self.semaphore:
-				self.semaphore.release()
+			if require_lock:
+				if self.mutex:
+					self.mutex.release()
+				if self.semaphore:
+					self.semaphore.release()
 		
 		"""
 		if e != None:

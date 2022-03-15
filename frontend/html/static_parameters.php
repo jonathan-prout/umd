@@ -85,7 +85,12 @@ if ($mode == "json")
     header('Content-type: text/javascript');
  $sql = 'SELECT `id`,`Name` FROM `Multiviewer` WHERE 1';  
  $multiviewers = query($sql);
- $sql = 'SELECT `PRIMARY`, `multiviewer`, `input` , `labeladdr1` , `labeladdr2` , `strategy` , `equipment` , `inputmtxid` , `inputmtxname` , `customlabel1`, `customlabel2` FROM `mv_input` WHERE 1';  
+ $sql = 'SELECT `PRIMARY`, `multiviewer`, `input` , `labeladdr1` , `labeladdr2` , 
+       `strategy` , `equipment` , `inputmtxid` , `inputmtxname` , `customlabel1`, 
+       `customlabel2` 
+        FROM `mv_input` WHERE 1 
+        order BY `input` ASC';
+
  $mv_input = query($sql);
  $sql = 'SELECT `id`,`labelnamestatic` FROM `equipment` WHERE `isDemod`=1';
 $demods = query($sql);

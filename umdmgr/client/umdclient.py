@@ -6,16 +6,19 @@ import datetime
 
 import time
 
+import MySQLdb
+
 import client
 import client.multiviewer.miranda
 import client.multiviewer.harris
 import client.multiviewer.gvgmv
 
 import client.status
-from helpers import virtualmatrix
+from helpers import alarm, virtualmatrix
 from client import multiviewer
 from client import gv
 from client import labelmodel
+from helpers.logging import log
 
 gv.display_server_status = "Starting"
 ASI_MODE_TEXT = "ASI"
@@ -195,7 +198,13 @@ def getAddresses(ip):
 
 def getdb():
 	with gv.equipDBLock:
+		log("heartbeat", "update thread", alarm.level.OK)
 
+		colourd = {}
+		colours = gv.sql.qselect('SELECT name, colour FROM UMD.colours;', commit=True)
+		for name, colour in colours:
+			colourd[name] = colour
+		gv.colours = colourd
 		request = "SELECT "
 		commands = labelmodel.irdResult.commands
 

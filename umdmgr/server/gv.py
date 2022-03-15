@@ -152,6 +152,8 @@ def get_inactive():
 		
 	return list_of_timeouts
 
+colours = {}
+
 snmp_res = {}
 def cachedSNMP(command):
 	if command not in snmp_res:

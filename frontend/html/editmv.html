@@ -1,13 +1,33 @@
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
 <head>
      <meta charset="UTF-8">
     <title>UMD Manager Edit Multiviewer</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
-<script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.min.css">
+
+    <link href = "bower_components/eonasdan-bootstrap-datetimepicker/build/css/bootstrap-datetimepicker.css" rel="stylesheet">
+    <!-- Select -->
+    <link href = "bower_components/bootstrap-select/dist/css/bootstrap-select.css" rel="stylesheet">
+    <!-- Custom styles for this template -->
+
+    <link href="bower_components/bootstrap-combobox/css/bootstrap-combobox.css" rel="stylesheet"/>
+    <!-- Required Javascript -->
+    <script src="bower_components/jquery/dist/jquery.min.js"></script>
+    <script src="bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+    <script src="bower_components/bootstrap-treeview/src/js/bootstrap-treeview.js"></script>
+    <script src="bower_components/progressbar.js/dist/progressbar.min.js"></script>
+    <script src="bower_components/d3/d3.js"></script>
+    <script src="bower_components/moment/moment.js"></script>
+    <script src="bower_components/moment-timezone/builds/moment-timezone-with-data.js"></script>
+    <script src="bower_components/eonasdan-bootstrap-datetimepicker/src/js/bootstrap-datetimepicker.js"></script>
+    <script src="bower_components/bootstrap-select/dist/js/bootstrap-select.js"></script>
+    <script src="bower_components/bootstrap-combobox/js/bootstrap-combobox.js"></script>
+    <script src="bower_components/bootstrap-toggle/js/bootstrap-toggle.js"></script>
+    <script src="bower_components/bootstrap-table/dist/bootstrap-table.js"></script>
+    <script src="node_modules/@json-editor/json-editor/dist/jsoneditor.min.js"></script>
+    <script src="base.js"></script>
 <script>
    function getUrlVars() {
     var vars = {};
@@ -53,11 +73,12 @@ $(document).ready(function () {
 </head>
 
 <body>
-
+<div id=nav">
 <ul class="nav nav-tabs" role="tablist">
         <li class="active"><a href="#">Multiviewer</a></li>
         <li><a href="editird.html">IRD</a></li>
-        
+        <li><a href="editcolour.php">Colours</a></li>
+     <li><a href="mtxchangelog.html">Matrix Changelog</a></li>
       </ul>
     </div>
     
@@ -87,9 +108,9 @@ $(document).ready(function () {
     </div>
     <div class="modal-body">
         <form class="form-horizontal" name="addMVForm" id="addMVForm">
-            <input type="hidden" name="formName", value = "addMV">
-            <label class="control-label" for="name">Multiviewer Name</label><br>
-            <input type="text" name="name" class="input-xlarge" required ><br>
+            <input type="hidden" name="formName" value = "addMV">
+            <label class="control-label" for="mvname">Multiviewer Name</label><br>
+            <input type="text" name="mvname" class="input-xlarge" required ><br>
             <label class="control-label" id = "ipLabelText" for="ip">IP Address</label><br>
             <input type="text" required  name="ip" class="input-xlarge"><span id="ipHelpText"></span><br>
             <label class ="control-label" for="protocolSelect">Select Protocol</label>
@@ -165,6 +186,8 @@ function onProtocolSelect() {
     </div>
   </div>
 </div>
+
+
 
 <div class="container" id="mvTable"></div>
 
@@ -250,6 +273,7 @@ function formsubmit(formName)
             alert(data);
             }
             });
+    return false;
 }
 function populateTable(arr) {
     var out = '<div class="row"><div class="col-sm-10">';
@@ -314,6 +338,9 @@ function build_select(arr, key,val, selected, name, id){
     out += '  </select></div>';
     return out;
 }
+
+
+
 function cancelEdit(){
     populateTable(mv_input);
 }
@@ -327,20 +354,31 @@ function editLine(line){
         if ( arr[i].PRIMARY ==  line) {
             out += '<div class="col-sm-2"><a href="#" class="btn btn-default"  onclick="cancelEdit()" role="button">Cancel</a> </div>';
             out += '<div class="col-sm-10">Input '+ arr[i].input+'<form id="editLineForm" action ="editmv.html?mv='+mv+'" method="post" onsubmit=formsubmit(editLineForm) class="form-inline" role="form"><div class="form-group">';
-            out += '<input type="hidden" name="formName", value = "updateMVInput"><input type="hidden" name="mvIn", value = "'+arr[i].input+'"><input type="hidden" name="multiviewerID", value = "'+mv+'"><input type="hidden" name="PRIMARY", value = "'+ arr[i].PRIMARY+'"></div>';
+            out += '<input type="hidden" name="formName", value = "updateMVInput"><input type="hidden" name="mvIn" value = "'+arr[i].input+'"><input type="hidden" name="multiviewerID" value = "'+mv+'"><input type="hidden" name="PRIMARY" value = "'+ arr[i].PRIMARY+'"></div>';
             out += build_select(inputStrategies, "PRIMARY", "description",arr[i].strategy, "Input Strategy", "inputStrategy" );
-            out += build_select(irds, "id", "labelnamestatic",arr[i].equipment, "Equipment", "equipment" );
-            out += build_select(mtx_out_sdi, "PRIMARY", "name",mtx_out_sdikv[arr[i].inputmtxname], "Matrix Output", "mtx_out_sdi" );
+            out += build_combobox(irds, "id", "labelnamestatic",arr[i].equipment, "Equipment", "equipment" ,true, "combobox" );
+            out += build_combobox(mtx_out_sdi, "PRIMARY", "name",mtx_out_sdikv[arr[i].inputmtxname], "Matrix Output", "mtx_out_sdi",true, "combobox" );
             out += '<div class="form-group"><label for="customlabel1">Top Label</label><input type="text" class="form-control" name="customlabel1" onchange="formsubmit(editLineForm)" value="'+arr[i].customlabel1+'"></div>';
             out += '<div class="form-group"><label for="customlabel2">Bottom Label</label><input type="text" class="form-control" name="customlabel2" onchange="formsubmit(editLineForm)" value="'+arr[i].customlabel2+'"></div>';
-            out += '<button type="submit"   class="btn btn-default">Submit</button></form></div>';
+            out += '<button type="submit"   id="EditLineSubmit" class="btn btn-default">Submit</button></form></div>';
            
            
             document.getElementById("mv" + arr[i].PRIMARY).innerHTML = out;
+
             var h = "mv" + arr[i].PRIMARY;
+            $("#EditLineSubmit").on("click", function(event) {
+                event.preventDefault();
+                event.stopImmediatePropagation();
+                formsubmit("#editLineForm");
+                getScript('static_parameters.php', function(){
+                    populateListbox(multiviewers )
+                    populateTable(mv_input)
+                });
+            });
         }
     }
     jump(h);
+    $('.combobox').combobox({bsVersion: '3'});
     return false;
 }
 
