@@ -523,7 +523,8 @@ def main(debugBreak=False):
 							avg(jitterlist) + gv.min_refresh_time), "main", alarm.level.Debug)
 					except (ValueError, TypeError):
 						log("Could not get jitter", "main", alarm.level.Warning)
-					log("%s stopped threads. %s running threads" % (stoppedThreads, runningThreads), "main", alarm.level.Debug)
+					log("%s stopped threads. %s running threads" % (stoppedThreads, runningThreads), "main",
+					    [alarm.level.Debug, alarm.level.Warning][stoppedThreads>0])
 					for k, v in tallyDict.items():
 						log("%d in status %s" % (v, k), "main", alarm.level.Debug)
 					for k in list(statuses.values()):  # returns names
