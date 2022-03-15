@@ -34,7 +34,9 @@ if ($_POST["formName"] == "updateMVInput"){
    
     if ($_POST["equipment"] == "Null"){
         $sql = $sql." `equipment` = NULL,";
-    }else
+    }elseif ($_POST["equipment"] == ""){
+      $sql = $sql." `equipment` = NULL,";
+  }else
     {
         $sql = $sql." `equipment` = '".$_POST["equipment"]."',";
     }
@@ -112,18 +114,35 @@ if ($_POST["formName"] == "updateMVInput"){
     $sql = "UPDATE `UMD`.`equipment` SET ";
     $search = array("\n", "\r", "\u", "\\t", "\t", "\f", "\b", "/", '\\',  ";", "null");
     $replace = array("", "", "", "", "","", "", "", "", "", "");
-    $keys = array("Demod", "subequipment", "MulticastIp");
+    $keys = array("Demod", "subequipment");
     $args = array();
     foreach($keys as $key){
-        if($_POST[$key] == "null")
+        $pk = $_POST[$key];
+        if($pk == "null")
         {
-            $args[] =" `$key` = NULL";
+            $args[] =" `$key` = '0'";
+        }else if(empty($pk))
+        {
+            $args[] =" `$key` = '0'";
         }else
         {
-            $args[] =" `$key` = '".str_replace($search, $replace,$_POST[$key])."'";
+            $args[] =" `$key` = '".str_replace($search, $replace,$pk)."'";
         }
        
     }
+
+     $key= "MulticastIp";
+
+
+     if($_POST[$key] == "null")
+     {
+         $args[] =" `$key` = NULL";
+     }else
+     {
+         $args[] =" `$key` = '".str_replace($search, $replace,$_POST[$key])."'";
+     }
+
+
     
     $ressource = select_db("matrix");
         
@@ -177,8 +196,8 @@ if ($_POST["formName"] == "updateMVInput"){
     $err = FALSE;
     $errCause = "I'm not going to tell you";
     
-    if (isset($_POST['name'])) {
-        $name = strip_tags($_POST['name']);
+    if (isset($_POST['mvname'])) {
+        $name = strip_tags($_POST['mvname']);
     }else{
         $err = True;
         $errCause = "You didn't give the Multiviewer a name";
