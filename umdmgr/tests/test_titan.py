@@ -75,8 +75,8 @@ class TestTitan(unittest.TestCase):
 		decoder = titan.getInterface("decoder")
 		self.assertEqual(decoder.getKey("frame_rate"), 25.0)
 		self.assertEqual(decoder.getKey("aspect_ratio"), "16_9")
-		self.assertEqual(decoder.getKey("service_id"), 1)
+		self.assertEqual(decoder.getKey("service_id"), 2910)
 
-		
+
 if __name__ == '__main__':
 	unittest.main()
