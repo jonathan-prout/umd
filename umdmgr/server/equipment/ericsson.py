@@ -79,8 +79,10 @@ class RX1290(IRD):
 		if len(self.snmp_res_dict) == 0:
 			self.set_offline("Empty SNMP Res Dict")
 		if len(self.oid_getBulk) != 0:
-			self.snmp_res_dict.update(snmp.walk(self.bulkoids(), self.ip))
-
+			try:
+				self.snmp_res_dict.update(snmp.walk(self.bulkoids(), self.ip))
+			except subprocess.CalledProcessError:
+				self.set_offline("Error with SNMP Get Bulk")
 		try:
 			self.refreshCounter += 1
 		except AttributeError:

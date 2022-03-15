@@ -395,8 +395,10 @@ def walk_subprocess(commandDict, ip):
 			log(f"stdout {sout}", f"walk_subprocess {ip}", alarm.level.Warning)
 			log(f"stderr {serr}", f"walk_subprocess {ip}", alarm.level.Warning)
 		del sub
-		assert (
-					returncode == 0)  # Error if NET SNMP has an error. Fall back to PYSNMP which is slower but with better error handling
+		# Error if NET SNMP has an error. Fall back to PYSNMP which is slower but with better error handling
+		if returncode != 0:
+			raise subprocess.CalledProcessError(returncode)
+
 		results = []
 		for outputLine in sout.split("\n"):
 			try:
