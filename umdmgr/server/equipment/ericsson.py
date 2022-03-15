@@ -1,6 +1,8 @@
 from __future__ import division
 from __future__ import print_function
 from __future__ import absolute_import
+
+import subprocess
 from builtins import hex
 from builtins import range
 from past.utils import old_div
