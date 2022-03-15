@@ -5,9 +5,29 @@
     <title>UMD Manager Edit IRD</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
-<script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.min.css">
+
+    <link href = "bower_components/eonasdan-bootstrap-datetimepicker/build/css/bootstrap-datetimepicker.css" rel="stylesheet">
+    <!-- Select -->
+    <link href = "bower_components/bootstrap-select/dist/css/bootstrap-select.css" rel="stylesheet">
+    <!-- Custom styles for this template -->
+
+    <link href="bower_components/bootstrap-combobox/css/bootstrap-combobox.css" rel="stylesheet"></link>
+    <!-- Required Javascript -->
+    <script src="bower_components/jquery/dist/jquery.min.js"></script>
+    <script src="bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+    <script src="bower_components/bootstrap-treeview/src/js/bootstrap-treeview.js"></script>
+    <script src="bower_components/progressbar.js/dist/progressbar.min.js"></script>
+    <script src="bower_components/d3/d3.js"></script>
+    <script src="bower_components/moment/moment.js"></script>
+    <script src="bower_components/moment-timezone/builds/moment-timezone-with-data.js"></script>
+    <script src="bower_components/eonasdan-bootstrap-datetimepicker/src/js/bootstrap-datetimepicker.js"></script>
+    <script src="bower_components/bootstrap-select/dist/js/bootstrap-select.js"></script>
+    <script src="bower_components/bootstrap-combobox/js/bootstrap-combobox.js"></script>
+    <script src="bower_components/bootstrap-toggle/js/bootstrap-toggle.js"></script>
+    <script src="bower_components/bootstrap-table/dist/bootstrap-table.js"></script>
+    <script src="node_modules/@json-editor/json-editor/dist/jsoneditor.min.js"></script>
+    <script src="base.js"></script>
 <script>
    function getUrlVars() {
     var vars = {};
@@ -56,7 +76,8 @@ $(document).ready(function () {
 <ul class="nav nav-tabs" role="tablist">
         <li ><a href="editmv.html">Multiviewer</a></li>
         <li class="active"><a href="#">IRD</a></li>
-        
+        <li><a href="editcolour.php">Colours</a></li>
+    <li><a href="mtxchangelog.html">Matrix Changelog</a></li>
       </ul>
     </div>
    <div class="page-header">
@@ -191,9 +212,9 @@ function populateNewIRDDrops() {
     // Assuming the equipment is ASI in SDI out
     out +=     build_select([{"v":"1"},{"v":"2"},{"v":"3"},{"v":"4"},], "v", "v","", "Sub Equipment", "subequipment", "null" );
     out +=     "<br>"
-    out +=     build_select(mtx_out_asi, "PRIMARY", "name","", "ASI Input", "InMTXName", "null" );
+    out +=     build_combobox(mtx_out_asi, "PRIMARY", "name","", "ASI Input", "InMTXName",true, "combobox" );
     out +=     "<br>"
-    out +=     build_select(mtx_in_sdi, "PRIMARY", "name","", "SDI Output", "OutMTXName", "null" );
+    out +=     build_combobox(mtx_in_sdi, "PRIMARY", "name","", "SDI Output", "OutMTXName", true, "combobox" );
     out +=     "<br>"
     out +=     satListSelect("", "SAT1", "SAT1")
     out +=     "<br>"
@@ -205,13 +226,14 @@ function populateNewIRDDrops() {
     out +=     "<br>"
     out +=     makecheckbox("Does not use TVIPS Gateway", "doesNotUseGateway", 0)
     out +=     "<br>"
-    out +=     build_select(demods, "id", "labelnamestatic","", "Demod", "Demod",0 );
+    out +=     build_combobox(demods, "id", "labelnamestatic","", "Demod", "Demod", true, "combobox", 0 );
     out +=     "<br>"
     out +=     makecheckbox("Equipment is a demod", "Isdemod", 0);
     out +=     "<br>"
     //document.getElementById("NewIRDDrops").innerHTML = out;
     //out = '<label for="MulticastIp">New element</label><input type="text" class="form-control" name="blah" value="" id="blah">';
     $('#addMVForm').append(out);
+    $('.combobox').combobox({bsVersion: '3'});
 }
 
 function populateListbox(arr) {
@@ -420,7 +442,7 @@ function editLine(line){
     var mtx_in_sdi_kv = makeKeyVal(mtx_in_sdi, "name", "PRIMARY");
     var mtx_out_asi_kv = makeKeyVal(mtx_out_asi, "name", "PRIMARY");
     var mtx_in_asi_kv = makeKeyVal(mtx_in_asi, "name", "PRIMARY");
-    var equipmentkv = makeKeyVal(irds, "id", "labelnamestatic");
+    const equipmentkv = makeKeyVal(irds, "id", "labelnamestatic");
 
     for(i = 0; i < arr.length; i++) {
         if ( arr[i].id ==  line) {
@@ -432,22 +454,22 @@ function editLine(line){
             out += '<div class="form-group"><label for="labelnamestatic">Label</label><input type="text" class="form-control" name="labelnamestatic" onchange="formsubmit(editLineForm)" value="'+ arr[i].labelnamestatic+'"></div>';
             out += '<div class="form-group"><label for="MulticastIp">MulticastIp</label><input type="text" class="form-control" name="MulticastIp" onchange="formsubmit(editLineForm)" value="'+ arr[i].MulticastIp+'"></div>';
             // Assuming the equipment is ASI in SDI out
-            out +=     build_select([{"v":"1"},{"v":"2"},{"v":"3"},{"v":"4"},], "v", "v","", "Sub Equipment", "subequipment", "null" );
+            out +=     build_select([{"v":"1"},{"v":"2"},{"v":"3"},{"v":"4"},], "v", "v",arr[i].subequipment, "Sub Equipment", "subequipment", "null" );
             out +=     "<br>"
-            out += build_select(mtx_out_asi, "PRIMARY", "name",mtx_out_asi_kv[arr[i].InMTXName], "ASI Input", "InMTXName", "null" , true);
-            out += build_select(mtx_in_sdi, "PRIMARY", "name",mtx_in_sdi_kv[arr[i].OutMTXName], "SDI Output", "OutMTXName", "null", true );
+            out += build_combobox(mtx_out_asi, "PRIMARY", "name",mtx_out_asi_kv[arr[i].InMTXName], "ASI Input", "InMTXName",  true, "combobox" );
+            out += build_combobox(mtx_in_sdi, "PRIMARY", "name",mtx_in_sdi_kv[arr[i].OutMTXName], "SDI Output", "OutMTXName", true, "combobox" );
             out += satListSelect(arr[i].SAT1, "SAT1", "SAT1", true);
             out += satListSelect(arr[i].SAT2, "SAT2", "SAT2", true);
             out += satListSelect(arr[i].SAT3, "SAT3", "SAT3", true);
             out += satListSelect(arr[i].SAT4, "SAT4", "SAT4", true);
             out += makecheckbox("Does not use TVIPS Gateway", "doesNotUseGateway", (arr[i].doesNotUseGateway ==1), true)
-            out += build_select(demods, "id", "labelnamestatic",arr[i].Demod, "Demod", "Demod",0 , true);
+            out += build_combobox(demods, "id", "labelnamestatic",arr[i].Demod, "Demod", "Demod",0 ,  "combobox", 0 );
             out += makecheckbox("Equipment is a demod", "Isdemod", (arr[i].Isdemod ==1), true)
             out += '</form><button onclick="formsubmitThenReload(editLineForm)"  class="btn btn-default">Submit</button></div>';
            
            
             document.getElementById("equip" + arr[i].id).innerHTML = out;
-            
+            $('.combobox').combobox({bsVersion: '3'});
         }
     }
     

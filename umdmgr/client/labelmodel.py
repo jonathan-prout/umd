@@ -1,4 +1,7 @@
 from __future__ import absolute_import
+
+import typing
+
 from client import gv
 from client.status import status_message
 from helpers import CA
@@ -73,6 +76,9 @@ class matrixResult(object):
 	def getBottomLabel(self):
 		return " "
 
+	def getColour(self) -> typing.Union[str, None]:
+		return gv.colours.get(self.name, None)
+
 	def getStatusMessage(self):
 		sm = status_message()
 
@@ -80,6 +86,9 @@ class matrixResult(object):
 		sm.recAlarm = False
 		sm.topLabel = self.getTopLabel()
 		sm.bottomLabel = self.getBottomLabel()
+		colour = self.getColour()
+		if colour not in ["", None]:
+			sm.colour = colour
 		return sm
 
 
@@ -354,6 +363,11 @@ class irdResult(object):
 			bottomumd = "OFFLINE"
 		return bottomumd.replace("\n", "")
 
+	def getColour(self) -> typing.Union[str, None]:
+		model = self.getKey("e.model_id")
+		return gv.colours.get(model, None)
+
+
 	def getStatusMessage(self):
 		sm = status_message()
 		d = {True: "MAJOR", False: "DISABLE"}
@@ -365,7 +379,9 @@ class irdResult(object):
 				all((cast(bool, self.getKey("s.OmneonRec")), cast(bool, self.getKey("e.doesNotUseGateway"))))
 			)
 		)
-
+		colour = self.getColour()
+		if colour not in ["", None]:
+			sm.colour = colour
 		sm.setTopLabel(self.getTopLabel())
 		assert (self.getBottomLabel() not in [None, ""])
 		sm.setBottomLabel(self.getBottomLabel())

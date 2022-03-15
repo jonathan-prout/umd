@@ -15,8 +15,9 @@
                                                                                                                                
  
  function dbstart(){
- 	global $dbhost,$dblogin,$dbpass,$dbname, $dbport, $connection;
+ 	global $dbhost,$dblogin,$dbpass,$dbname, $dbport, $connection, $conn;
  	//echo($dbhost.$dblogin.$dbpass.$dbname.$dbport);
+     $conn = new mysqli("$dbhost","$dblogin","$dbpass", "UMD", 3306,);
  	$connection = mysqli_connect("$dbhost","$dblogin","$dbpass", "UMD", 3306, ) or dbfail ("Failure with the UMD manager database. Please restart machine.");
  	$db = mysqli_select_db($connection, $dbname);
  }
