@@ -1,32 +1,40 @@
 #!/usr/bin/env python
 
-#standard imports
+# standard imports
+from __future__ import print_function
 import getopt	
 import sys
 import threading
 import multiprocessing
+# project imports
+from helpers.logging import startlogging
+from server import umdserver
+from server import gv
+from helpers import alarm, logging, mysql
+
 
 def usage():
-	print "v, verbose logs everything"
-	#print "l, loop, loops every 10s"
-	print "e, errors, print errors"
-		
+	print("v, verbose logs everything")
+	print("e, errors, print errors")
+
+def startdb():
+	gv.sql = mysql.mysql()
+	gv.sql.gv = gv
+	gv.sql.autocommit = True
+	gv.sql.mutex = multiprocessing.RLock()
+
 if __name__ == "__main__":
-	#project imports
-	from server import umdserver
-	from server import gv
-	from helpers import mysql
+	logging.startlogging("/var/log/umd/umdserver.log")
 	try:                                
 		opts, args = getopt.getopt(sys.argv[1:], "vlesnd", ["verbose", "loop", "errors", "suppress","snail","debug"]) 
-	except getopt.GetoptError, err:
-		print str(err)	
-		print "error in arguments"
+	except getopt.GetoptError as err:
+		print(str(err))	
+		print("error in arguments")
 		usage()                          
-		sys.exit(2) 
-	#verbose = False
+		sys.exit(2)
 	loop = False
 	
-	for opt, arg in  opts:
+	for opt, arg in opts:
 	
 		if opt in ("-v", "--verbose"):
 			gv.loud = True
@@ -39,16 +47,14 @@ if __name__ == "__main__":
 		elif opt in ("-d", "--debug"):
 			gv.debug = True
 		else:
-			print "option '%s' not recognised"%opt
-			#assert False, 'option not recognised'
+			print("option '%s' not recognised"%opt)
 			usage() 
 			sys.exit(1)
 	if gv.loud:
-		print "Starting in verbose mode"
+		logging.MIN_SEVERITY = alarm.level.OK
+	else:
+		logging.MIN_SEVERITY = alarm.level.Cleared
+	logging.log("Starting in verbose mode", "__main__", alarm.level.Debug)
 		
-	gv.sql = mysql.mysql()
-	gv.sql.gv = gv
-	gv.sql.autocommit = True
-	#gv.sql.semaphore = threading.BoundedSemaphore(value=10)
-	gv.sql.mutex = multiprocessing.RLock()
+	startdb()
 	umdserver.main()

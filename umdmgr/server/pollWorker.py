@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+from __future__ import print_function
+from __future__ import absolute_import
 import pika
 import time
 try:
@@ -7,19 +9,19 @@ try:
 except ValueError:
 	from  helpers import mysql
 	from  helpers import httpcaller
-import equipment
-import bgtask
+from . import equipment
+from . import bgtask
 gv.sql = mysql.mysql()
 
 # Step #1: Connect to RabbitMQ
 connection = pika.BlockingConnection( pika.ConnectionParameters(host='localhost') )
 channel = connection.channel()
 channel.queue_declare(queue='task_queue', durable=True)
-print ' [*] Waiting for messages. To exit press CTRL+C'
+print(' [*] Waiting for messages. To exit press CTRL+C')
 def callback(ch, method, properties, body):
-		print " [x] Received %r" % (body,)
+		print(" [x] Received %r" % (body,))
 		time.sleep( body.count('.') )
-		print " [x] Done"
+		print(" [x] Done")
 		
 		
 ch.basic_ack(delivery_tag = method.delivery_tag)

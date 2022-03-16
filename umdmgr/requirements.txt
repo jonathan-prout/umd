@@ -1,0 +1,6 @@
+httplib2
+pysnmp
+pympler
+colorlog
+python-json-logger
+pytest

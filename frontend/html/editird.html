@@ -1,10 +1,33 @@
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
 <head>
     <title>UMD Manager Edit IRD</title>
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.min.css">
+
+    <link href = "bower_components/eonasdan-bootstrap-datetimepicker/build/css/bootstrap-datetimepicker.css" rel="stylesheet">
+    <!-- Select -->
+    <link href = "bower_components/bootstrap-select/dist/css/bootstrap-select.css" rel="stylesheet">
+    <!-- Custom styles for this template -->
+
+    <link href="bower_components/bootstrap-combobox/css/bootstrap-combobox.css" rel="stylesheet"></link>
+    <!-- Required Javascript -->
+    <script src="bower_components/jquery/dist/jquery.min.js"></script>
+    <script src="bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+    <script src="bower_components/bootstrap-treeview/src/js/bootstrap-treeview.js"></script>
+    <script src="bower_components/progressbar.js/dist/progressbar.min.js"></script>
+    <script src="bower_components/d3/d3.js"></script>
+    <script src="bower_components/moment/moment.js"></script>
+    <script src="bower_components/moment-timezone/builds/moment-timezone-with-data.js"></script>
+    <script src="bower_components/eonasdan-bootstrap-datetimepicker/src/js/bootstrap-datetimepicker.js"></script>
+    <script src="bower_components/bootstrap-select/dist/js/bootstrap-select.js"></script>
+    <script src="bower_components/bootstrap-combobox/js/bootstrap-combobox.js"></script>
+    <script src="bower_components/bootstrap-toggle/js/bootstrap-toggle.js"></script>
+    <script src="bower_components/bootstrap-table/dist/bootstrap-table.js"></script>
+    <script src="node_modules/@json-editor/json-editor/dist/jsoneditor.min.js"></script>
+    <script src="base.js"></script>
 <script>
    function getUrlVars() {
     var vars = {};
@@ -24,6 +47,27 @@ function getScript(url, callback) {
 
    document.getElementsByTagName('head')[0].appendChild(script);
 }
+
+$(document).ready(function () {
+    $("input#AddMVsubmit").click(function(){
+        $.ajax({
+            type: "POST",
+            url: "submit_form.php", //process to mail
+            data: $('#addMVForm').serialize(),
+            success: function(msg){
+                $("#thanks").append(msg) //hide button and show thank you
+                $("#form-addmv").modal('hide'); //hide popup
+                getScript('static_parameters.php', function(){
+                   // populateListbox(multiviewers )
+                   filter();
+                   });
+            },
+            error: function(){
+                alert("failure");
+            }
+        });
+    });
+});
 </script>
 </head>
 
@@ -32,7 +76,8 @@ function getScript(url, callback) {
 <ul class="nav nav-tabs" role="tablist">
         <li ><a href="editmv.html">Multiviewer</a></li>
         <li class="active"><a href="#">IRD</a></li>
-        
+        <li><a href="editcolour.php">Colours</a></li>
+    <li><a href="mtxchangelog.html">Matrix Changelog</a></li>
       </ul>
     </div>
    <div class="page-header">
@@ -49,6 +94,40 @@ function getScript(url, callback) {
 <button onclick="filter()"  class="btn btn-default">Filter</button>
 </div><div id="filtertext"></div>
 </div>
+<!-- Add IRD-->
+<div id="form-addmv" class="modal  fade" role="dialog" style="display: none;">
+    <div class="modal-dialog">
+    <div class="modal-content">
+    <div class="modal-header">
+        
+        <a class="close" data-dismiss="modal">×</a>
+        <h3>Add Equipment</h3>
+    </div>
+    <div class="modal-body">
+        
+            <form class="form-horizontal" name="addMVForm" id="addMVForm">
+       <input type="hidden" name="formName", value = "newIRD">
+       <label for="name">Name</label><input type="text" class="form-control" name="name"  value="">
+       <label for="ip">IP</label><input type="text" class="form-control" name="ip" value="">
+       <label for="model_id">Type</label><input type="text" class="form-control" name="model_id" value="Automatic">
+       <label for="labelnamestatic">Label</label><input type="text" class="form-control" name="labelnamestatic"  value="">
+       <label for="MulticastIp">MulticastIp</label><input type="text" class="form-control" name="MulticastIp" value="" id="MulticastIp">
+
+
+        </form>
+        
+        
+    
+    
+    </div>
+    <div class="modal-footer">
+        <input class="btn btn-success" type="submit" value="Send!" id="AddMVsubmit">
+        <a href="#" class="btn" data-dismiss="modal">Nah.</a>
+    </div>
+    </div>
+    </div>
+</div>
+<div class="container" id="thanks"><p><a data-toggle="modal" href="#form-addmv" class="btn  btn-info btn-large">Add New IRD</a></p></div>
 <div class="container-fluid">
   <div class="col-sm-12">
     
@@ -60,7 +139,8 @@ function getScript(url, callback) {
         </td><td width=5%>name
         </td><td width=5%>model_id
         </td><td width=5%>ip
-        </td><td width=5%>labelnamestatic
+        </td><td width=5%>subequipment
+        </td><td width=5%>Label
         </td><td width=5%>MulticastIp
         </td><td width=5%>InMTXName
         </td><td width=5%>OutMTXName
@@ -103,6 +183,7 @@ getScript('static_parameters.php', function(){
  //populateTable(irds)
  filter();
  document.getElementById("filterbox").focus();
+ populateNewIRDDrops();
 });
 
 //document.getElementById("id01").innerHTML = mv;
@@ -125,6 +206,35 @@ getScript('static_parameters.php', function(){
 //}
 //mvcontent.open("GET", "static_parameters.php?mode=json&doc=mv_input", true);
 //mvcontent.send();
+
+function populateNewIRDDrops() {
+    var out = "";
+    // Assuming the equipment is ASI in SDI out
+    out +=     build_select([{"v":"1"},{"v":"2"},{"v":"3"},{"v":"4"},], "v", "v","", "Sub Equipment", "subequipment", "null" );
+    out +=     "<br>"
+    out +=     build_combobox(mtx_out_asi, "PRIMARY", "name","", "ASI Input", "InMTXName",true, "combobox" );
+    out +=     "<br>"
+    out +=     build_combobox(mtx_in_sdi, "PRIMARY", "name","", "SDI Output", "OutMTXName", true, "combobox" );
+    out +=     "<br>"
+    out +=     satListSelect("", "SAT1", "SAT1")
+    out +=     "<br>"
+    out +=     satListSelect("", "SAT2", "SAT2")
+    out +=     "<br>"
+    out +=     satListSelect("", "SAT3", "SAT3")
+    out +=     "<br>"
+    out +=     satListSelect("", "SAT4", "SAT4")
+    out +=     "<br>"
+    out +=     makecheckbox("Does not use TVIPS Gateway", "doesNotUseGateway", 0)
+    out +=     "<br>"
+    out +=     build_combobox(demods, "id", "labelnamestatic","", "Demod", "Demod", true, "combobox", 0 );
+    out +=     "<br>"
+    out +=     makecheckbox("Equipment is a demod", "Isdemod", 0);
+    out +=     "<br>"
+    //document.getElementById("NewIRDDrops").innerHTML = out;
+    //out = '<label for="MulticastIp">New element</label><input type="text" class="form-control" name="blah" value="" id="blah">';
+    $('#addMVForm').append(out);
+    $('.combobox').combobox({bsVersion: '3'});
+}
 
 function populateListbox(arr) {
     var out = "";
@@ -179,6 +289,7 @@ function filter(){
     populateTable(irds, criteria);
 }
 function populateTable(arr, criteria) {
+    criteria = criteria || "";
     var out = '<div class="row"><div class="col-sm-12">';
     var i;
     var strategies = makeKeyVal(inputStrategies, "PRIMARY", "description");
@@ -209,6 +320,7 @@ function populateTable(arr, criteria) {
             out += '<td width=5%>' + arr[i].name+'</td>';
             out += '<td width=5%>' + arr[i].model_id+'</td>';
             out += '<td width=5%>' + arr[i].ip+'</td>';
+            out += '<td width=5%>' + arr[i].subequipment+'</td>';
             out += '<td width=5%>' + arr[i].labelnamestatic+'</td>';
             out += '<td width=5%>' + arr[i].MulticastIp+'</td>';
             out += '<td width=5%>' + arr[i].InMTXName+'</td>';
@@ -234,9 +346,17 @@ function populateTable(arr, criteria) {
     document.getElementById("mvTable").innerHTML = out;
 }
 
-function build_select(arr, key,val, selected, name, id, nullval){
-    out = '<div class="form-group"><label for="sel1">' + name +'</label>';
-    out +='<select class="form-control" onchange="formsubmit(editLineForm)" name="'+id+'">';
+function build_select(arr, key,val, selected, name, id, nullval, usesDiv){
+    usesDiv = usesDiv || 0;
+    out = "";
+    if (usesDiv) {
+        out +='<div class="form-group">';
+    }
+    
+    out +='<label for="sel1">' + name +'</label>';
+    //  out +='<select class="form-control" onchange="formsubmit(editLineForm)" name="'+id+'">';
+    //  Todo: onchange
+    out +='<select class="form-control"  name="'+id+'">';
     var i;
     out += '<option value="'+nullval+'">No Selection</option>';
     for(i = 0; i < arr.length; i++) {
@@ -248,14 +368,23 @@ function build_select(arr, key,val, selected, name, id, nullval){
         
         
     }
-    out += '  </select></div>';
+    out += '  </select>';
+    if (usesDiv) {
+        out +='</div>';
+    }
+    
     return out;
 }
-function satListSelect(selected, name, id){
-    out = '<div class="form-group"><label for="sel1">' + name +'</label>';
+function satListSelect(selected, name, id, usesDiv){
+    usesDiv = usesDiv || 0;
+    out = "";
+    if (usesDiv) {
+        out +='<div class="form-group">';
+    }
+    out += '<label for="sel1">' + name +'</label>';
     out +='<select class="form-control" onchange="formsubmit(editLineForm)" name="'+id+'">';
     var i;
-    var mtx_name_kv = makeKeyVal(mtx_names, "id", "mtxName");
+    var mtx_name_kv = makeKeyVal(matrix_names, "id", "mtxName");
     out += '<option value="">No Selection</option>';
     for(i = 0; i < satlist.length; i++) {
         if (satlist[i]["sat"] === selected) {
@@ -277,15 +406,27 @@ function satListSelect(selected, name, id){
         
         
     }
-    out += '  </select></div>';
+    out += '  </select>';
+    if (usesDiv) {
+        out +='</div>';
+    }
     return out;
 }
-function makecheckbox(label, name, checked){
-    var out = '<div class="checkbox"><label><input type="checkbox"';
+function makecheckbox(label, name, checked, usesDiv){
+    usesDiv = usesDiv || 0;
+    out = "";
+    if (usesDiv) {
+        out +='<div class="checkbox">';
+    }
+    
+    out +='<label><input type="checkbox"';
     if(checked){
         out += ' Checked ';
     }
-    out += ' name="'+name+'">'+label+'</label></div>';
+    out += ' name="'+name+'">'+label+'</label>';
+    if (usesDiv) {
+        out +='</div>';
+    }
     return out;
 }
 function cancelEdit(){
@@ -301,7 +442,7 @@ function editLine(line){
     var mtx_in_sdi_kv = makeKeyVal(mtx_in_sdi, "name", "PRIMARY");
     var mtx_out_asi_kv = makeKeyVal(mtx_out_asi, "name", "PRIMARY");
     var mtx_in_asi_kv = makeKeyVal(mtx_in_asi, "name", "PRIMARY");
-    var equipmentkv = makeKeyVal(irds, "id", "labelnamestatic");
+    const equipmentkv = makeKeyVal(irds, "id", "labelnamestatic");
 
     for(i = 0; i < arr.length; i++) {
         if ( arr[i].id ==  line) {
@@ -310,23 +451,25 @@ function editLine(line){
             out += '<input type="hidden" name="formName", value = "updateIRD"><input type="hidden" name="equipmentID", value = "'+ arr[i].id+'"></div>';
             out += '<div class="form-group"><label for="name">Name</label><input type="text" class="form-control" name="name" onchange="formsubmit(editLineForm)" value="'+ arr[i].name+'"></div>';
             out += '<div class="form-group"><label for="ip">IP</label><input type="text" class="form-control" name="ip" onchange="formsubmit(editLineForm)" value="'+ arr[i].ip+'"></div>';
-            out += '<div class="form-group"><label for="labelnamestatic">labelnamestatic</label><input type="text" class="form-control" name="labelnamestatic" onchange="formsubmit(editLineForm)" value="'+ arr[i].labelnamestatic+'"></div>';
+            out += '<div class="form-group"><label for="labelnamestatic">Label</label><input type="text" class="form-control" name="labelnamestatic" onchange="formsubmit(editLineForm)" value="'+ arr[i].labelnamestatic+'"></div>';
             out += '<div class="form-group"><label for="MulticastIp">MulticastIp</label><input type="text" class="form-control" name="MulticastIp" onchange="formsubmit(editLineForm)" value="'+ arr[i].MulticastIp+'"></div>';
             // Assuming the equipment is ASI in SDI out
-            out += build_select(mtx_out_asi, "PRIMARY", "name",mtx_out_asi_kv[arr[i].InMTXName], "ASI Input", "InMTXName", "null" );
-            out += build_select(mtx_in_sdi, "PRIMARY", "name",mtx_in_sdi_kv[arr[i].OutMTXName], "SDI Output", "OutMTXName", "null" );
-            out += satListSelect(arr[i].SAT1, "SAT1", "SAT1");
-            out += satListSelect(arr[i].SAT2, "SAT2", "SAT2");
-            out += satListSelect(arr[i].SAT3, "SAT3", "SAT3");
-            out += satListSelect(arr[i].SAT4, "SAT4", "SAT4");
-            out += makecheckbox("Does not use TVIPS Gateway", "doesNotUseGateway", (arr[i].doesNotUseGateway ==1))
-            out += build_select(demods, "id", "labelnamestatic",arr[i].Demod, "Demod", "Demod",0 );
-            out += makecheckbox("Equipment is a demod", "Isdemod", (arr[i].Isdemod ==1))
+            out +=     build_select([{"v":"1"},{"v":"2"},{"v":"3"},{"v":"4"},], "v", "v",arr[i].subequipment, "Sub Equipment", "subequipment", "null" );
+            out +=     "<br>"
+            out += build_combobox(mtx_out_asi, "PRIMARY", "name",mtx_out_asi_kv[arr[i].InMTXName], "ASI Input", "InMTXName",  true, "combobox" );
+            out += build_combobox(mtx_in_sdi, "PRIMARY", "name",mtx_in_sdi_kv[arr[i].OutMTXName], "SDI Output", "OutMTXName", true, "combobox" );
+            out += satListSelect(arr[i].SAT1, "SAT1", "SAT1", true);
+            out += satListSelect(arr[i].SAT2, "SAT2", "SAT2", true);
+            out += satListSelect(arr[i].SAT3, "SAT3", "SAT3", true);
+            out += satListSelect(arr[i].SAT4, "SAT4", "SAT4", true);
+            out += makecheckbox("Does not use TVIPS Gateway", "doesNotUseGateway", (arr[i].doesNotUseGateway ==1), true)
+            out += build_combobox(demods, "id", "labelnamestatic",arr[i].Demod, "Demod", "Demod",0 ,  "combobox", 0 );
+            out += makecheckbox("Equipment is a demod", "Isdemod", (arr[i].Isdemod ==1), true)
             out += '</form><button onclick="formsubmitThenReload(editLineForm)"  class="btn btn-default">Submit</button></div>';
            
            
             document.getElementById("equip" + arr[i].id).innerHTML = out;
-            
+            $('.combobox').combobox({bsVersion: '3'});
         }
     }
     
@@ -339,8 +482,7 @@ function editLine(line){
 
 </script>
 
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
-<script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+
 
         
 </body>

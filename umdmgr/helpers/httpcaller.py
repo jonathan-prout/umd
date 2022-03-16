@@ -1,6 +1,11 @@
 #!/usr/bin/env python
 
-import urllib
+from __future__ import print_function
+from __future__ import absolute_import
+from future import standard_library
+standard_library.install_aliases()
+from builtins import str
+import urllib.request, urllib.parse, urllib.error
 import httplib2
 import sys
 #from taskscript import debug, die
@@ -9,7 +14,7 @@ def debug(stuff):
 	gv.log(stuff)
 
 def die(stuff):
-	print "\n".join(stuff)
+	print("\n".join(stuff))
 	import sys
 	sys.exit(1)
 
@@ -207,8 +212,8 @@ def put( ip, port, addr, body):
 	
 	url = 'http://' + ip + ':' + port + '/' + addr;
 	if debug == 'true':
-		print url
-		print body
+		print(url)
+		print(body)
 	headers = {'Content-Type': 'application/vnd.ipgp+xml'}
 
 
@@ -264,7 +269,7 @@ def replace( location, body):
 	headers = {'Content-Type': 'application/vnd.ipgp+xml'}
 	
 	delresponse, delcontent = http.request(url, 'DELETE', headers=headers)
-	if delresponse.has_key('status'):
+	if 'status' in delresponse:
 		if (delresponse['status'] == '404'):
 			debug("Could not delete, the file as the server says it doesn't exist. Maybe the file finished playing?")
 			response = delresponse
@@ -329,7 +334,7 @@ if __name__ == '__main__':
 	elif method == 'DELETE':
 		body = str(sys.argv[5])
 		response, content = put( ip, port, addr, body)
-	print content		
+	print(content)		
 	"""
 	if response.has_key('status'):
 		if (response['status'] == '200'):

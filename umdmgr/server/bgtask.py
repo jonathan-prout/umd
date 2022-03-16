@@ -1,152 +1,167 @@
-import equipment
-import gv
+from __future__ import print_function
+from __future__ import absolute_import
+from builtins import str
+
+from helpers.logging import log
+from server import gv
 import random
 
-def deserialize(data, keepData = True):
-	""" Instanciates equip with data. Beware of keyerrors and Typeerrors"""
+import server.equipment.generic
+import server.equipment.ericsson
+import server.equipment.ateme
+import server.equipment.tvips
+import server.equipment.omneon
+import server.equipment.novelsat
+import server.equipment.ateme_titan
+
+from helpers import logging
+from helpers import alarm
+
+def deserialize(data, keepData=True):
+	""" Instantiates equip with data. Beware of KeyError and TypeError"""
 	equipTypes = {
-		"GenericIRD":equipment.generic.GenericIRD,
-		"TT1260":equipment.ericsson.TT1260,
-		"RX1290":equipment.ericsson.RX1290,
-		"DR5000":equipment.ateme.DR5000,
-		"TVG420":equipment.tvips.TVG420,
-		"IP GRIDPORT":equipment.omneon.IPGridport,
-		"IP Gridport":equipment.omneon.IPGridport,
-		"NS2000":equipment.novelsat.NS2000,
-		"NS2000_WEB":equipment.novelsat.NS2000_WEB,
-		"NS2000_SNMP":equipment.novelsat.NS2000_SNMP,
-		"RX8200":equipment.ericsson.RX8200,
-		"RX8200-4RF":equipment.ericsson.RX8200_4RF,
-		"RX8200-2RF":equipment.ericsson.RX8200_2RF,
+		"GenericIRD": server.equipment.generic.GenericIRD,
+		"TT1260": server.equipment.ericsson.TT1260,
+		"RX1290": server.equipment.ericsson.RX1290,
+		"DR5000": server.equipment.ateme.DR5000,
+		"TVG420": server.equipment.tvips.TVG420,
+		"IP GRIDPORT": server.equipment.omneon.IPGridport,
+		"IP Gridport": server.equipment.omneon.IPGridport,
+		"NS2000": server.equipment.novelsat.NS2000,
+		"NS2000_WEB": server.equipment.novelsat.NS2000_WEB,
+		"NS2000_SNMP": server.equipment.novelsat.NS2000_SNMP,
+		"RX8200": server.equipment.ericsson.RX8200,
+		"RX8200-4RF": server.equipment.ericsson.RX8200_4RF,
+		"RX8200-2RF": server.equipment.ericsson.RX8200_2RF,
+		"Titan": server.equipment.ateme_titan.Titan
 	}
-	equip = equipTypes[data["modelType"] ](data["equipmentId"], data["ip"], data["name"])
+	equip = equipTypes[data["modelType"]](data["equipmentId"], data["ip"], data["name"], data.get("subequipment"))
 	if keepData:
 		equip.deserialize(data)
 	return equip
 
+
 def checkin(data):
 	gv.CheckInQueue.put(data)
+
 
 def sendToSQL(query):
 	gv.dbQ.put(query)
 
 
-
 def determine_type(data):
 	t = "ERROR"
 	equipTypeStr = "OFFLINE"
-	currentEquipment = deserialize(data)
-	
+	current_equipment = deserialize(data)
 
-	if not all( (gv.suppressEquipCheck, (not isinstance(currentEquipment, equipment.generic.GenericIRD ) ) ) ):
+	if not all((gv.suppressEquipCheck, (not isinstance(current_equipment, server.equipment.generic.GenericIRD)))):
 		try:
-			equipTypeStr = currentEquipment.determine_type()
+			equipTypeStr = current_equipment.determine_type()
 		except:
 			equipTypeStr = "OFFLINE"
-	equipmentID = currentEquipment.equipmentId
-	ip = currentEquipment.ip
-	
-	name = currentEquipment.name
+	equipmentID = current_equipment.equipmentId
+	ip = current_equipment.ip
+
+	name = current_equipment.name
+	subequipment = getattr(current_equipment, "subequipment", None)
 	# Equipment equipTypeStrs without subtype
 	simpleTypes = {
-		"TT1260":equipment.ericsson.TT1260,
-		"RX1290":equipment.ericsson.RX1290,
-		"DR5000":equipment.ateme.DR5000,
-		"TVG420":equipment.tvips.TVG420,
-		"IP GRIDPORT":equipment.omneon.IPGridport,
-		"IP Gridport":equipment.omneon.IPGridport
-
+		"TT1260": server.equipment.ericsson.TT1260,
+		"RX1290": server.equipment.ericsson.RX1290,
+		"DR5000": server.equipment.ateme.DR5000,
+		"TVG420": server.equipment.tvips.TVG420,
+		"IP GRIDPORT": server.equipment.omneon.IPGridport,
+		"IP Gridport": server.equipment.omneon.IPGridport,
+		"Titan": server.equipment.ateme_titan.Titan
 	}
-	
-	
-	for key in simpleTypes.keys():
-		if  any( ( (key in equipTypeStr), isinstance(currentEquipment, simpleTypes[key]) ) ):
-			currentEquipment = simpleTypes[key](equipmentID, ip, name)
-			#gv.addEquipment(currentEquipment)
+
+	for key in list(simpleTypes.keys()):
+		if any(((key in equipTypeStr), isinstance(current_equipment, simpleTypes[key]))):
+			current_equipment = simpleTypes[key](equipmentID, ip, name, subequipment)
+			# gv.addEquipment(current_equipment)
 			t = key
 			break
-		
+
 	# Equipment equipTypeStr with subtype
-	if any( ( ("Rx8000"in equipTypeStr), isinstance(currentEquipment, equipment.ericsson.RX8200) ) ):
+	if any((("Rx8000" in equipTypeStr), isinstance(current_equipment, server.equipment.ericsson.RX8200))):
 		t = "Rx8200"
-		currentEquipment = equipment.ericsson.RX8200(equipmentID, ip, name)
-		subtype = currentEquipment.determine_subtype()
+		current_equipment = server.equipment.ericsson.RX8200(equipmentID, ip, name)
+		subtype = current_equipment.determine_subtype()
 		if subtype == "RX8200-4RF":
 			t = "Rx8200-4RF"
-			currentEquipment = equipment.ericsson.RX8200_4RF(equipmentID, ip, name)
+			current_equipment = server.equipment.ericsson.RX8200_4RF(equipmentID, ip, name)
 		elif subtype == "RX8200-2RF":
 			t = "Rx8200-2RF"
-			currentEquipment = equipment.ericsson.RX8200_2RF(equipmentID, ip, name)
+			current_equipment = server.equipment.ericsson.RX8200_2RF(equipmentID, ip, name)
 		else:
-			print "WARNING: id %d at %s not subtyped"%(equipmentID, ip)
-		#gv.addEquipment(currentEquipment)
-		
-		
-	elif  any( ( ("NS2000"in equipTypeStr), isinstance(currentEquipment, equipment.novelsat.NS2000) ) ):
-		currentEquipment = equipment.novelsat.NS2000(equipmentID, ip, name)
+			log("id %d at %s not subtyped" % (equipmentID, ip), "determine_type", alarm.level.Warning)
+	# gv.addEquipment(current_equipment)
+
+
+	elif any((("NS2000" in equipTypeStr), isinstance(current_equipment, server.equipment.novelsat.NS2000))):
+		current_equipment = server.equipment.novelsat.NS2000(equipmentID, ip, name)
 		t = "NS2000"
-		subtype = currentEquipment.determine_subtype()
+		subtype = current_equipment.determine_subtype()
 		if subtype == "NS2000_WEB":
 			t = subtype
-			currentEquipment = equipment.novelsat.NS2000_WEB(equipmentID, ip, name)
+			current_equipment = server.equipment.novelsat.NS2000_WEB(equipmentID, ip, name)
 		elif subtype == "NS2000_SNMP":
-			currentEquipment = equipment.novelsat.NS2000_SNMP(equipmentID, ip, name)
+			current_equipment = server.equipment.novelsat.NS2000_SNMP(equipmentID, ip, name)
 			t = subtype
-		#currentEquipment.lastRefreshTime = 0
-		#currentEquipment.excpetedNextRefresh = float(random.randint(0,50)) /10
-		#gv.addEquipment(currentEquipment)
-		
-		
-	elif equipTypeStr == "OFFLINE":	
+
+
+	elif equipTypeStr == "OFFLINE":
 		t = "OFFLINE"
-		currentEquipment.offline = True
-	query = "UPDATE equipment SET model_id ='%s' WHERE id ='%i'"%(t, equipmentID)
-	
+		current_equipment.offline = True
+	query = "UPDATE equipment SET model_id ='%s' WHERE id ='%i'" % (t, equipmentID)
+
 	if gv.loud:
-		print "IRD " + str(equipmentID) + " is a " + t
+		log("IRD " + str(equipmentID) + " is a " + t, "determine_type", alarm.level.Debug)
 	sendToSQL(query)
 	u = 'Online'
 	if t == 'OFFLINE':
-	    u = 'Offline'
-	query = "UPDATE `UMD`.`status` SET `aspectratio` = '',`status` = '%s', `ebno` = '', `frequency` = '', `symbolrate` = '', `asi` = '', `sat_input` = '', `castatus` = '', `videoresolution` = '', `framerate` = '', `videostate` = '', `asioutencrypted` = '', `framerate` = '',`muxbitrate` = '', `muxstate` = '' WHERE `status`.`id` = '%i'"%(u, equipmentID)
+		u = 'Offline'
+	query = "UPDATE `UMD`.`status` SET `aspectratio` = '',`status` = '%s', `ebno` = '', `frequency` = '', `symbolrate` = '', `asi` = '', `sat_input` = '0', `castatus` = '', `videoresolution` = '', `framerate` = '', `videostate` = '', `asioutencrypted` = '', `framerate` = '',`muxbitrate` = '', `muxstate` = '' WHERE `status`.`id` = '%i'" % (
+	u, equipmentID)
 	sendToSQL(query)
-	checkin(currentEquipment.serialize())
+	checkin(current_equipment.serialize())
 
 
 def refresh(data):
-	currentEquipment = deserialize(data)
-	#print "refresh method"
-	#print "deserialized %s: %s"%(currentEquipment.equipmentId,currentEquipment.modelType )
+	current_equipment = deserialize(data)
+
 	try:
-		currentEquipment.refresh()
-	except:
-		currentEquipment.set_offline()
-	
-	if not currentEquipment.get_offline():		    
-		
-		updatesql = currentEquipment.updatesql()
+		current_equipment.refresh()
+	except Exception as e:
+		logging.logerr(current_equipment)
+		current_equipment.set_offline(f"Exception {e} caught in refresh")
+
+	if not current_equipment.get_offline():
+
+		updatesql = current_equipment.updatesql()
 		sendToSQL(updatesql)
 
-		updatechannel = currentEquipment.getChannel()
+		updatechannel = current_equipment.getChannel()
 		sendToSQL(updatechannel)
-		
-	
+
 		"""
 		try:
 			
-			currentEquipment.refreshjitter = time.time() - currentEquipment.excpetedNextRefresh 
+			current_equipment.refreshjitter = time.time() - current_equipment.excpetedNextRefresh 
 		except: pass
 		
 		
-		currentEquipment.excpetedNextRefresh = time.time() + currentEquipment.min_refresh_time()
+		current_equipment.excpetedNextRefresh = time.time() + current_equipment.min_refresh_time()
 		"""
 		# Add itself to end of queue
-		checkin(currentEquipment.serialize())
+		checkin(current_equipment.serialize())
 	else:
-		updatesql = "UPDATE `UMD`.`status` SET `aspectratio` = '',`status` = 'Offline', `ebno` = '', `frequency` = '', `symbolrate` = '', `asi` = '', `sat_input` = '', `castatus` = '', `videoresolution` = '', `framerate` = '', `videostate` = '', `asioutencrypted` = '', `framerate` = '',`muxbitrate` = '', `muxstate` = '' WHERE `status`.`id` = '%i'"%currentEquipment.equipmentId
+		updatesql = "UPDATE `UMD`.`status` SET `aspectratio` = '',`status` = 'Offline', `ebno` = '', `frequency` = '', `symbolrate` = '', `asi` = '', `sat_input` = '0', `castatus` = '', `videoresolution` = '', `framerate` = '', `videostate` = '', `asioutencrypted` = '', `framerate` = '',`muxbitrate` = '', `muxstate` = '' WHERE `status`.`id` = '%i'" % current_equipment.equipmentId
 		sendToSQL(updatesql)
-		checkin(currentEquipment.serialize())
-	#print "end refresh method"
-	
-funcs = {"determine_type":determine_type,
-		 "refresh":refresh}
+		checkin(current_equipment.serialize())
+
+
+
+
+funcs = {"determine_type": determine_type,
+         "refresh": refresh}

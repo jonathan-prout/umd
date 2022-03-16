@@ -1,12 +1,17 @@
 #!/usr/bin/env python
 
+from __future__ import print_function
+from __future__ import absolute_import
+from builtins import map
+from builtins import str
+from builtins import object
 from collections import namedtuple as NT
 from datetime import datetime
 import string
 import re
 
-from pysnmp.entity.rfc3413.oneliner import cmdgen
-from pysnmp.smi import builder, view, error
+from .pysnmp.entity.rfc3413.oneliner import cmdgen
+from .pysnmp.smi import builder, view, error
 from numpy import int64, float64
 
 class v2c(object):
@@ -56,9 +61,9 @@ class v2c(object):
                 tmp.append([ii.modName, datetime.now(), ii.symName, 
                     self._index[ii.index], ii.value])
 
-            return map(self.SNMPIndexed._make, tmp)
+            return list(map(self.SNMPIndexed._make, tmp))
         else:
-            raise ValueError, "Must populate with SNMP.v2c.index() first"
+            raise ValueError("Must populate with SNMP.v2c.index() first")
 
     def walk(self, oid=None):
         if isinstance(self._format(oid), tuple):
@@ -84,14 +89,14 @@ class v2c(object):
             return self._parse_resolve(errorIndication, errorStatus, 
                 errorIndex, varBindTable)
         else:
-            raise ValueError, "Unknown oid format: %s" % oid
+            raise ValueError("Unknown oid format: %s" % oid)
 
     def get_index(self, oid=None, index=None):
         """In this case, index should be similar to the values you indexed from... i.e. if you index with ifName, get_index('ifHCInOctets', 'eth0')"""
         if not (self._index is None) and isinstance(index, str):
             # Map the interface name provided in index to an ifName index...
             snmpvals = None
-            for idx, value in self._index.items():
+            for idx, value in list(self._index.items()):
                 if index == value:
                     # if there is an exact match between the text index and the
                     # snmp index value...
@@ -101,7 +106,7 @@ class v2c(object):
                 # TRY mapping the provided text index into an interface obj
                 _intfobj = self.device.find_match_intf(index)
                 if not (_intfobj is None):
-                    for key, val in self._intfobj.items():
+                    for key, val in list(self._intfobj.items()):
                         if (val==_intfobj):
                             snmpvals = self.get(oid=oid, index=key)
                             break
@@ -113,9 +118,9 @@ class v2c(object):
                 return self.SNMPIndexed._make(tmp)
 
         elif not isinstance(index, str):
-            raise ValueError, "index must be a string value"
+            raise ValueError("index must be a string value")
         else:
-            raise ValueError, "Must populate with SNMP.v2c.index() first"
+            raise ValueError("Must populate with SNMP.v2c.index() first")
 
     def get(self, oid=None, index=None):
         if isinstance(self._format(oid), tuple):
@@ -141,7 +146,7 @@ class v2c(object):
             return self._parse_resolve(errorIndication, errorStatus, 
                 errorIndex, [varBindTable])[0]
         else:
-            raise ValueError, "Unknown oid format: %s" % oid
+            raise ValueError("Unknown oid format: %s" % oid)
 
     def bulkwalk(self, oid=None):
         """SNMP bulkwalk a device.  NOTE: This often is faster, but does not work as well as a simple SNMP walk"""
@@ -170,20 +175,20 @@ class v2c(object):
             return self._parse_resolve(errorIndication, errorStatus, 
                 errorIndex, varBindTable)
         else:
-            raise ValueError, "Unknown oid format: %s" % oid
+            raise ValueError("Unknown oid format: %s" % oid)
 
     def _parse_resolve(self, errorIndication=None, errorStatus=None, 
         errorIndex=None, varBindTable=None):
         """Parse MIB walks and resolve into MIB names"""
         retval = list()
         if errorIndication:
-            print errorIndication
+            print(errorIndication)
         else:
             if errorStatus:
-                print '%s at %s\n' % (
+                print('%s at %s\n' % (
                     errorStatus.prettyPrint(),
                     varBindTable[-1][int(errorIndex)-1]
-                    )
+                    ))
             else:
                 for varBindTableRow in varBindTable:
                     for oid, val in varBindTableRow:
@@ -196,9 +201,9 @@ class v2c(object):
                         # Try to parse the index as an int first, 
                         # then as a string
                         try:
-                            index = int(string.join(map(lambda v: v.prettyPrint(), indices), '.'))
+                            index = int(string.join([v.prettyPrint() for v in indices], '.'))
                         except ValueError:
-                            index = str(string.join(map(lambda v: v.prettyPrint(), indices), '.'))
+                            index = str(string.join([v.prettyPrint() for v in indices], '.'))
 
                         # Re-format values as float or integer, if possible...
                         tmp = val.prettyPrint()
@@ -216,17 +221,17 @@ class v2c(object):
     def _parse(self, errorIndication, errorStatus, errorIndex, 
         varBindTable):
         if errorIndication:
-           print errorIndication
+           print(errorIndication)
         else:
             if errorStatus:
-                print '%s at %s\n' % (
+                print('%s at %s\n' % (
                     errorStatus.prettyPrint(),
                     errorIndex and varBindTable[-1][int(errorIndex)-1] or '?'
-                    )
+                    ))
             else:
                 for varBindTableRow in varBindTable:
                     for name, val in varBindTableRow:
-                        print '%s = %s' % (name.prettyPrint(), val.prettyPrint())
+                        print('%s = %s' % (name.prettyPrint(), val.prettyPrint()))
 
     def _format(self, oid):
         """Format a numerical OID in the form of 1.3.4.1.2.1 into a tuple"""

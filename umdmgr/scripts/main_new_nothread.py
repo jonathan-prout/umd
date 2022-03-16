@@ -1,7 +1,12 @@
 #!/usr/bin/python
 
+from __future__ import print_function
+from future import standard_library
+standard_library.install_aliases()
+from builtins import str
+from builtins import range
 import os, re, sys
-import string,threading,time, Queue
+import string,threading,time, queue
 import equipment_new
 import mysql, gv
 
@@ -35,7 +40,7 @@ def start():
 			newird = equipment_new.GenericIRD(int(equipmentID), ip, name)
 		gv.addEquipment(newird)
 	#print gv.equipmentDict
-	for equipmentID in gv.equipmentDict.keys():
+	for equipmentID in list(gv.equipmentDict.keys()):
 		gv.ThreadCommandQueue.put((determine_type, [equipmentID, False]))
     
 def determine_type(args):
@@ -78,7 +83,7 @@ def determine_type(args):
 	query = "UPDATE equipment SET model_id ='%s' WHERE id ='%i'"%(t, equipmentID)
 	gv.sql.qselect(query)
 	if gv.loud:
-		print "IRD " + str(equipmentID) + " is a " + t
+		print("IRD " + str(equipmentID) + " is a " + t)
 	if autostart:
 		if gv.threadJoinFlag == False:
 			if Type != "OFFLINE":
@@ -120,7 +125,7 @@ def backgroundworker():
 			func, data = gv.ThreadCommandQueue.get()
 			gotdata = True
 			
-		except Queue.Empty:
+		except queue.Empty:
 			time.sleep(0.1)
 			gotdata = False
 			
@@ -146,7 +151,7 @@ def main():
     start()
     backgroundworker()
     #gv.ThreadCommandQueue.join()
-    print "Types determined. Took %s seconds. Begininng main loop. Press CTRL C to quit"% (time.time() - time1)
+    print("Types determined. Took %s seconds. Begininng main loop. Press CTRL C to quit"% (time.time() - time1))
     
     #for k in gv.equipmentDict.keys():
     #	gv.ThreadCommandQueue.put((refresh, k))
@@ -154,12 +159,12 @@ def main():
     
     for i in range(4):
 	time1 = time.time()
-	for k in gv.equipmentDict.keys():
+	for k in list(gv.equipmentDict.keys()):
 	    gv.ThreadCommandQueue.put((refresh, k))
 
 	backgroundworker()
 	#gv.ThreadCommandQueue.join()
-	print "Took %s seconds. "% (time.time() - time1)
+	print("Took %s seconds. "% (time.time() - time1))
     
     """
     

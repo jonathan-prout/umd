@@ -1,6 +1,11 @@
 #!/usr/bin/env python
-from matrix.generic import matrix
-from infosource.sql import mysql
+from __future__ import print_function
+from __future__ import absolute_import
+
+from . import alarm
+from .logging import log
+from .matrix.generic import matrix
+from .infosource.sql import mysql
 import threading
 """ Matrix Interface """
 
@@ -32,10 +37,13 @@ class virtualMatrix( mysql, matrix):
 		self.openPrefs()
 		self.getSizeAndLevels()
 		self.refresh()
-		
+
+	def __repr__(self):
+		return self.name
+
 	def refresh(self):
 		with self.lock:
-			self.dbclose() #MYSQL BUG!!
+			# self.close() #MYSQL BUG!!
 			self.dbConnect()
 			inout = ((self.input,"input"), (self.output,"output"))
 			for d, table in inout:
@@ -48,7 +56,7 @@ class virtualMatrix( mysql, matrix):
 						level = int(level)
 					except ValueError:
 						continue
-					if level not in d.keys():
+					if level not in list(d.keys()):
 						d[level] = {}
 					d[level][port] = name
 			cmd = "SELECT `status`.`input`, `status`.`output`, `status`.`levels` FROM `status` WHERE (`status`.`matrixid` ={});".format(self.prefsDict["mtxId"])
@@ -67,40 +75,45 @@ class virtualMatrix( mysql, matrix):
 		
 		
 	def onXPointChange(self, dest, src, level):
-		if not self.xpointStatus.has_key(level):
+		if level not in self.xpointStatus:
 				self.xpointStatus[level] = {}
 		self.xpointStatus[level][dest - self.countFrom1] = src - self.countFrom1
 		try:
-			print self.name +" %s -> %s"%(self.input[level][src + self.countFrom1],self.output[level][dest + self.countFrom1] )
+			log(self.name +" %s -> %s"%(self.input[level][src + self.countFrom1],self.output[level][dest + self.countFrom1]),
+				self, alarm.level.OK)
 		except KeyError:
 			try:
-				print self.name +" %s -> %s"%(self.input[0][src + self.countFrom1],self.output[0][dest + self.countFrom1] )
+				log(self.name +" %s -> %s"%(self.input[0][src + self.countFrom1], self.output[0][dest + self.countFrom1]),
+					self, alarm.level.OK)
 			except:
-				print self.name +" %s -> %s"%(dest + self.countFrom1 ,src + self.countFrom1)
+				log(self.name +" %s -> %s"%(dest + self.countFrom1 ,src + self.countFrom1), self, alarm.level.OK)
 			
 	def sourceNameFromDestName(self, destName):
 		with self.lock:
 			srcNr = -1
 			srcName = ""
-			for level in self.output.keys():
-				for op,name in self.output[level].iteritems():
+			for level in list(self.output.keys()):
+				for op, name in self.output[level].items():
 					if name == destName:
 						#self.xpointStatus[level][dest][src]
-						if self.xpointStatus.has_key(level):
-							if self.xpointStatus[level].has_key(op):
+						if level in self.xpointStatus:
+							if op in self.xpointStatus[level]:
 								srcNr = self.xpointStatus[level][op]
 						if  srcNr == -1 :
-							for lvl, d in self.xpointStatus.iteritems():
-								if d.has_key(op):
+							for lvl, d in self.xpointStatus.items():
+								if op in d:
 									srcNr = d[op]
 									break
 						if srcNr > -1:
-							if self.input[level].has_key(srcNr):
+							if srcNr in self.input[level]:
 								return self.input[level][srcNr]
 							else:
-								for lvl, d in self.output:
-									if d.has_key(srcNr):
-										return  d[srcNr]
+								try:
+									for lvl, d in self.output.items():
+										if srcNr in d:
+											return d[srcNr]
+								except TypeError:
+									log(f"Warning outputs not set", self, alarm.level.Warining)
 		return srcName
 		
 		

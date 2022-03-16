@@ -2,6 +2,7 @@
 """
 
 
+from builtins import object
 class IInfoSourceMixIn(object):
 	""" Infosource Mixin interface """
 	#prefsDict = {} needed but must be created at runtime

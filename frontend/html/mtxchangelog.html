@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <title>UMD Manager Matrix Changelog</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.min.css">
+
+    <link href = "bower_components/eonasdan-bootstrap-datetimepicker/build/css/bootstrap-datetimepicker.css" rel="stylesheet">
+    <!-- Select -->
+    <link href = "bower_components/bootstrap-select/dist/css/bootstrap-select.css" rel="stylesheet">
+    <!-- Custom styles for this template -->
+
+    <link href="bower_components/bootstrap-combobox/css/bootstrap-combobox.css" rel="stylesheet"></link>
+    <!-- Required Javascript -->
+    <script src="bower_components/jquery/dist/jquery.min.js"></script>
+    <script src="bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+    <script src="bower_components/bootstrap-treeview/src/js/bootstrap-treeview.js"></script>
+    <script src="bower_components/progressbar.js/dist/progressbar.min.js"></script>
+    <script src="bower_components/d3/d3.js"></script>
+    <script src="bower_components/moment/moment.js"></script>
+    <script src="bower_components/moment-timezone/builds/moment-timezone-with-data.js"></script>
+    <script src="bower_components/eonasdan-bootstrap-datetimepicker/src/js/bootstrap-datetimepicker.js"></script>
+    <script src="bower_components/bootstrap-select/dist/js/bootstrap-select.js"></script>
+    <script src="bower_components/bootstrap-combobox/js/bootstrap-combobox.js"></script>
+    <script src="bower_components/bootstrap-toggle/js/bootstrap-toggle.js"></script>
+    <script src="bower_components/bootstrap-table/dist/bootstrap-table.js"></script>
+    <script src="node_modules/@json-editor/json-editor/dist/jsoneditor.min.js"></script>
+    <script src="base.js"></script>
+<script>
+   function getUrlVars() {
+    var vars = {};
+    var parts = window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function(m,key,value) {
+        vars[key] = value;
+    });
+    return vars;
+}
+
+var SELECTED_MTX = 0;
+var SELECTED_IN = 0;
+var SELECTED_OUT = 0;
+var inputs = {};
+var outputs = {};
+
+
+function getScript(url, callback) {
+   var script = document.createElement('script');
+   script.type = 'text/javascript';
+   script.src = url;
+
+   script.onreadystatechange = callback;
+   script.onload = callback;
+
+   document.getElementsByTagName('head')[0].appendChild(script);
+}
+</script>
+</head>
+
+<body>
+ 
+<ul class="nav nav-tabs" role="tablist">
+        <li ><a href="editmv.html">Multiviewer</a></li>
+        <li><a href="editird.html">IRD</a></li>
+        <li><a href="editcolour.php">Colours</a></li>
+    <li  class="active"><a href="mtxchangelog.html">Matrix Changelog</a></li>
+      </ul>
+    </div>
+   <div class="page-header">
+   <h2>Eurovision UMD Manager
+      <small>Matrix Changelog</small>
+   </h2>
+</div>
+<div id="id01"></div>
+<div class="container">
+<div class = "row">
+    <div class="col-sm-4"><form id="put_matrix_here"></form></div>
+    <div class="col-sm-4"><form id="put_inputs_here"></form></div>
+    <div class="col-sm-4"><form id="put_outputs_here"></form></div>
+</div>
+</div>
+<div class="container" id="put_result_table_here">
+  
+  </div>
+</div>
+
+<div class="container-fluid" id="mvTable"></div>
+
+
+
+
+<script>
+    var getParams = getUrlVars();
+    var mv;
+    if ("mv" in getParams) {
+         mv = getParams["mv"];
+    }else{
+         mv = "None"
+    }
+//document.getElementById("id01").innerHTML = "<h1>" +mv + "</h1>";
+
+function onMvButton(index) {
+    mv = index
+    //document.getElementById("id01").innerHTML = "<h1>" +mv + "</h1>";
+    populateListbox(multiviewers )
+populateTable(irds)
+}
+$(document).ready(function () {
+     getScript('static_parameters.php', function(){
+
+     var arr = matrix_names;
+
+     var out = '<div class="form-group"><label for="sel1">Select Matrix</label>';
+    out +='<select class="form-control" onchange="selectmatrix()" name="mtx_picker" id="mtx_picker">';
+    var i;
+    var key = "id";
+    var val = "mtxName";
+     out += '<option value="0">No Selection</option>';
+     for(i = 0; i < arr.length; i++) {
+         if (arr[i][key] === SELECTED_MTX) {
+            out += '<option selected value="'+ arr[i][key] +'">'+ arr[i][val] +'</option>';
+         }else{
+            out += '<option value="'+ arr[i][key] +'">'+ arr[i][val] +'</option>';
+           }
+
+
+     }
+     out += '  </select></div>';
+    //out = build_combobox(arr, key, val,SELECTED_MTX, "Select Matrix", "mtx_picker",true, "combobox","" );
+     document.getElementById("put_matrix_here").innerHTML = out;
+     $("#mtx_picker").on("change", selectmatrix);
+
+     //$('.combobox').combobox({bsVersion: '3'});
+    });
+});
+
+function selectmatrix(){
+    var e = document.getElementById("mtx_picker");
+
+    
+    SELECTED_MTX = e.options[e.selectedIndex].value;
+    buildin();
+    buildout();
+    $('.combobox').combobox({bsVersion: '3'});
+}
+
+function buildin(){
+    let arr = mtx_in;
+
+    let h = '<div class="form-group"><label for="sel1">Select input</label>';
+    h +='<select class="form-control combobox" onchange="selectin()" name="in_picker" id="in_picker">';
+    let i;
+    const key = "port";
+    const val = "name";
+    inputs = {};
+    h += '<option value="0">No Selection</option>';
+    for(i = 0; i < arr.length; i++) {
+        if (arr[i]["matrixid"] === SELECTED_MTX) {
+            inputs[arr[i][key]] = arr[i][val];
+            if (arr[i][key] === SELECTED_IN) {
+                h += '<option selected value="'+ arr[i][key] +'">'+ arr[i][val] +'</option>';
+            }else{
+                h += '<option value="'+ arr[i][key] +'">'+ arr[i][val] +'</option>';
+                }
+        }
+        
+    }
+    h += '  </select></div>';
+    
+ document.getElementById("put_inputs_here").innerHTML = h;
+}
+
+function buildout(){
+    const arr = mtx_out;
+    let out = '<div class="form-group"><label for="sel1">Select Output</label>';
+    out +='<select class="form-control combobox" onchange="selectout()" name="out_picker" id="out_picker">';
+    let i;
+    outputs = {};
+    
+    const key = "port";
+    const val = "name";
+    out += '<option value="0">No Selection</option>';
+    for(i = 0; i < arr.length; i++) {
+        if (arr[i]["matrixid"] === SELECTED_MTX) {
+            outputs[arr[i][key]] = arr[i][val];
+            if (arr[i][key] === SELECTED_OUT) {
+                out += '<option selected value="'+ arr[i][key] +'">'+ arr[i][val] +'</option>';
+            }else{
+                out += '<option value="'+ arr[i][key] +'">'+ arr[i][val] +'</option>';
+                }
+        }
+        
+    }
+    out += '  </select></div>';
+    
+ document.getElementById("put_outputs_here").innerHTML = out;
+}
+
+function selectin(){
+    var e = document.getElementById("in_picker");
+
+    
+    SELECTED_IN = e.options[e.selectedIndex].value;
+    $.getJSON("changelog.php",data={"mtx":SELECTED_MTX, "in":SELECTED_IN}, function(data){buildtable(data);});
+}
+function selectout(){
+    var e = document.getElementById("out_picker");
+
+    
+    SELECTED_OUT = e.options[e.selectedIndex].value;
+    $.getJSON("changelog.php",data={"mtx":SELECTED_MTX, "out":SELECTED_OUT}, function(data){buildtable(data);});
+}
+
+function buildtable(arr){
+ var out = "<table class='table table-striped' ><thead><th>in</th><th>time</th><th>out</th></thead><tbody>\n";
+    var i;
+    for(i = 0; i < arr.length; i++) {
+    out += "<tr><td>"+inputs[arr[i]['input']]+ "</td><td>"+arr[i]['time']+ "</td><td>"+outputs[arr[i]['output']]+ "</td></tr>\n"
+    }
+    out +="</tbody></table>\n";
+    document.getElementById("put_result_table_here").innerHTML = out;
+}
+//document.getElementById("id01").innerHTML = mv;
+//var mvxml = new XMLHttpRequest();
+//mvxml.onreadystatechange = function() {
+//    if (mvxml.readyState == 4 && mvxml.status == 200) {
+//        var myArr = JSON.parse(mvxml.responseText);
+//        populateListbox(myArr);
+//    }
+//}
+//mvxml.open("GET", "static_parameters.php?mode=json&doc=multiviewer", true);
+//mvxml.send();
+
+//var mvcontent = new XMLHttpRequest();
+//mvcontent.onreadystatechange = function() {
+//    if (mvcontent.readyState == 4 && mvcontent.status == 200) {
+//        var myArr = JSON.parse(mvcontent.responseText);
+//        populateTable(myArr);
+//    }
+//}
+//mvcontent.open("GET", "static_parameters.php?mode=json&doc=mv_input", true);
+//mvcontent.send();
+
+      
+        
+
+</script>
+
+
+<script src="changelog.js"></script>
+
+
+        
+</body>
+</html>

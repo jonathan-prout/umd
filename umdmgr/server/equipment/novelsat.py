@@ -1,14 +1,23 @@
-from generic import IRD, GenericIRD
+from __future__ import division
+from __future__ import print_function
+from __future__ import absolute_import
+from builtins import str
+from builtins import range
+from past.utils import old_div
+from .generic import IRD, GenericIRD
 from server import gv
 from helpers import snmp
 snmp.gv = gv #in theory we don't want to import explictly the server's version of gv
+
 class NS2000(IRD):
-	def __init__(self, equipmentId, ip, name):
+	modelType = "NS2000"
+	def __init__(self, equipmentId, ip, name, *args, **kwargs):
+		super(NS2000, self).__init__()
 		self.equipmentId = equipmentId
 		self.ip = ip
 		self.name = name
-		self.modelType = "NS2000"
-		super( NS2000, self ).__init__()
+
+
 	
 	
 	def determine_type(self):
@@ -26,7 +35,7 @@ class NS2000(IRD):
 		except:
 			self.offline = True
 			resdict = {'ver':"0.0"}
-		if resdict.has_key("ver"): #well it ought to
+		if "ver" in resdict: #well it ought to
 			#NS2000.5.7.0.1949 07-Dec-2016 19:44
 			ver = resdict["ver"].strip().split(" ")[0]
 			ver = ver.replace('"', '')
@@ -73,7 +82,7 @@ class NS2000(IRD):
 		d = {"0":"?","1":"Y","2":"Y","3":"X","4":"X"}
 		return self.lookup_replace('polarisation', d)
 class NS2000_WEB(NS2000):
-	def __init__(self, equipmentId, ip, name):
+	def __init__(self, equipmentId, ip, name, *args, **kwargs):
 		super( NS2000_WEB, self ).__init__(equipmentId, ip, name)
 		self.modelType = "NS2000_WEB"
 	
@@ -126,7 +135,7 @@ class NS2000_WEB(NS2000):
 			if len(res) < 33:
 				self.set_offline()
 			
-			for key in status_keys[i].keys():
+			for key in list(status_keys[i].keys()):
 				try:
 					self.snmp_res_dict[key] = res[status_keys[i][key]]
 				except IndexError:
@@ -201,9 +210,13 @@ class NS2000_WEB(NS2000):
 		
 
 class NS2000_SNMP(NS2000):
-	def __init__(self, equipmentId, ip, name):
-		super( NS2000_SNMP, self ).__init__(equipmentId, ip, name)
-		self.modelType = "NS2000_SNMP"
+	modelType = "NS2000"
+
+	def __init__(self, equipmentId, ip, name, *args, **kwargs):
+		super(NS2000_SNMP, self).__init__(equipmentId, ip, name, *args, **kwargs)
+		self.modelType = "NS2000"
+		self.getoid()
+
 	def getinSatSetupSatelliteFreq(self):
 		""" Take Hz Return MHz """
 		
@@ -212,7 +225,7 @@ class NS2000_SNMP(NS2000):
 		except ValueError: 
 			SatelliteFreqFloat = 0
 						
-		SatelliteFreqFloat = (SatelliteFreqFloat / 100000)
+		SatelliteFreqFloat = (old_div(SatelliteFreqFloat, 100000))
 		finalSatelliteFreq = str(SatelliteFreqFloat)
 						##print finalsymrate
 						# This code is to compensate for inconsistencies in the D2S frequency table where

@@ -23,11 +23,9 @@ mvID = {}
 
 def getEquipByName(name):
 	if name:
-		for k,v in equip.iteritems():
+		for k, v in equip.items():
 			if v.isCalled(name):
 				return k
-		
-	
 	return 0
 
 def mtxLookup(name, level = "SDI"):
@@ -42,4 +40,9 @@ def mtxLookup(name, level = "SDI"):
 		if srcName:
 			break
 	return srcName
-	
+
+
+def getPollStatus():
+	cmd = 'SELECT `value` FROM `management` where `key` = "current_status";'
+	pollstatus = sql.qselect(cmd)[0][0]
+	return pollstatus
