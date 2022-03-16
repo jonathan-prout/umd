@@ -96,10 +96,14 @@ bg_worker_threads = cpus * workers_per_proc
 
 
 """ Queues """
-ThreadCommandQueue = Queue(bg_worker_threads*4)
-offlineQueue = Queue(offlineCheckThreads)
-dbQ =  Queue(bg_worker_threads)
-CheckInQueue = Queue(bg_worker_threads)
+SIZE_ThreadCommandQueue = bg_worker_threads*2
+ThreadCommandQueue = Queue(SIZE_ThreadCommandQueue)
+SIZE_offlineQueue = offlineCheckThreads
+offlineQueue = Queue(SIZE_offlineQueue)
+SIZE_dbQ = bg_worker_threads
+dbQ = Queue(SIZE_dbQ)
+SIZE_CheckInQueue = bg_worker_threads
+CheckInQueue = Queue(SIZE_dbQ)
 
 
 gotCheckedInData = False

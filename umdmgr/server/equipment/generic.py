@@ -665,8 +665,6 @@ class IRD(equipment):
 		except:
 			return 0
 
-
-
 	def set_offline(self, excuse: str = "") -> None:
 		if not self.offline:
 			log("{}: Offline: {}".format(self.getId(), excuse), self, alarm.level.Major)
@@ -676,8 +674,20 @@ class IRD(equipment):
 			result = gv.sql.qselect(order)
 			order = "UPDATE equipment SET model_id ='OFFLINE' WHERE id ='%i';" % self.getId()
 			result = gv.sql.qselect(order)
-		except:
-			pass
+		except Exception as e:
+			log("{}: error when trying to set offline {}".format(self.getId(), e), self, alarm.level.Critical)
+
+	def set_online(self, excuse: str = "") -> None:
+		if self.offline:
+			log("{}: Online: {}".format(self.getId(), excuse), self, alarm.level.Info)
+		self.offline = False
+		try:
+			order = "UPDATE status SET status ='Online' WHERE id ='%i';" % self.getId()
+			result = gv.sql.qselect(order)
+			order = "UPDATE equipment SET model_id ='%s' WHERE id ='%i';" % (self.determine_subtype(), self.getId())
+			result = gv.sql.qselect(order)
+		except Exception as e:
+			log("{}: error when trying to set online {}".format(self.getId(), e), self, alarm.level.Critical)
 
 	def getRefreshType(self, criteria):
 		if not hasattr(self, "refreshType"):

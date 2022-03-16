@@ -251,7 +251,18 @@ class Titan(IRD, DictKeyProxy):
 		except ZeroDivisionError:
 			frame_rate = 0
 		decoder.setKey("frame_rate", frame_rate)
-		decoder.setKey("aspect_ratio", decoded.get("dar"))
+
+		aspect_ratios = decoded.get("dar")
+		if isinstance(aspect_ratios, dict):
+			try:
+
+				aspect_ratio_d = aspect_ratios  # because it is dict
+				aspect_ratio = "{}_{}".format(aspect_ratio_d["numerator"], aspect_ratio_d["denominator"])
+			except (json.JSONDecodeError, KeyError):
+				aspect_ratio = self.processServiceName(aspect_ratios).replace(" ", "_")
+		else:
+			aspect_ratio = self.processServiceName(aspect_ratios).replace(" ", "_")
+		decoder.setKey("aspect_ratio", aspect_ratio)
 
 	def set_status_source(self, content):
 		self.set_status_input(content.get("input"))

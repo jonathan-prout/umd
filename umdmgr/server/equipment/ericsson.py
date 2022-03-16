@@ -1,6 +1,8 @@
 from __future__ import division
 from __future__ import print_function
 from __future__ import absolute_import
+
+import subprocess
 from builtins import hex
 from builtins import range
 from past.utils import old_div
@@ -79,8 +81,10 @@ class RX1290(IRD):
 		if len(self.snmp_res_dict) == 0:
 			self.set_offline("Empty SNMP Res Dict")
 		if len(self.oid_getBulk) != 0:
-			self.snmp_res_dict.update(snmp.walk(self.bulkoids(), self.ip))
-
+			try:
+				self.snmp_res_dict.update(snmp.walk(self.bulkoids(), self.ip))
+			except subprocess.CalledProcessError:
+				self.set_offline("Error with SNMP Get Bulk")
 		try:
 			self.refreshCounter += 1
 		except AttributeError:
@@ -205,17 +209,20 @@ class RX8200(IRD):
 		self.set_refreshType(" ".join(refresh_params).lower())
 
 		try:
-			self.snmp_res_dict = snmp.get(self.getoids(), self.ip)
+			if not hasattr(self, "snmp_res_dict"):
+				self.snmp_res_dict = {}
+			self.snmp_res_dict.update(snmp.get(self.getoids(), self.ip))
 
 		except Exception as e:
 			self.set_offline(f"Error with SNMP Get {e}")
+			return
 		if len(list(self.snmp_res_dict.keys())) < len(list(self.getoids().keys())):
 			self.oid_mask()
 
 		if len(self.snmp_res_dict) == 0:
 			self.set_offline("Empty SNMP Res Dict")
 		else:
-			self.set_online()
+			self.set_online("Non Empty SNMP Res Dict")
 		if len(self.bulkoids()) != 0:
 			if self.getNumServices():
 				self.snmp_res_dict.update(snmp.getbulk(self.bulkoids(), self.ip, self.getNumServices() + 1))

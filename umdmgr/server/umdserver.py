@@ -523,7 +523,8 @@ def main(debugBreak=False):
 							avg(jitterlist) + gv.min_refresh_time), "main", alarm.level.Debug)
 					except (ValueError, TypeError):
 						log("Could not get jitter", "main", alarm.level.Warning)
-					log("%s stopped threads. %s running threads" % (stoppedThreads, runningThreads), "main", alarm.level.Debug)
+					log("%s stopped threads. %s running threads" % (stoppedThreads, runningThreads), "main",
+					    [alarm.level.Debug, alarm.level.Warning][stoppedThreads>0])
 					for k, v in tallyDict.items():
 						log("%d in status %s" % (v, k), "main", alarm.level.Debug)
 					for k in list(statuses.values()):  # returns names
@@ -535,6 +536,17 @@ def main(debugBreak=False):
 							"UPDATE `UMD`.`management` SET `value` = '%s' WHERE `management`.`key` = '%s';" % (v, k))
 					if gv.loud:
 						print("%d / %d late" % (lateCounter, lateCounter + onTimeCounter))
+				for qname in ["ThreadCommandQueue",	"offlineQueue",	"dbQ", "CheckInQueue"]:
+					q = getattr(gv, qname, None)
+					try:
+						qsize = q.qsize()
+					except AttributeError:
+						qsize = "ERROR"
+					qmaxsize =getattr(gv, f"SIZE_{qname}", None)
+					log(f"Queue {qname} size {qsize}/{qmaxsize}", "main", alarm.level.Debug)
+					sql = f"insert into `UMD`.`management`( `key`, `value`) values('{qname}', '{qsize}/{qmaxsize}') ON DUPLICATE KEY UPDATE  `value` = '{qsize}/{qmaxsize}';"
+					gv.dbQ.put(sql)
+
 				mj = float(min(jitterlist))
 				xj = float(max(jitterlist))
 				aj = float(avg(jitterlist))

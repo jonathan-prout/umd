@@ -1,16 +1,22 @@
 #!/usr/bin/python
 from __future__ import print_function
-import os, re, sys,time,datetime
-import threading
-import MySQLdb
-import MySQLdb._exceptions
 
-from helpers.logging import logerr, log
+import datetime
+import threading
+import time
+
+import MySQLdb
+
+
+import MySQLdb._exceptions # noqa
+
 from helpers import alarm
+from helpers.logging import log, logerr
 
 
 class mysql(object):
 	autocommit = False
+
 	def __init__(self, dhost="localhost", duser="umd", dpass="umd", dname="UMD"):
 		self.dhost=dhost
 		self.duser=duser
@@ -18,10 +24,10 @@ class mysql(object):
 		self.dname=dname
 		self.db = None
 		self.cursor= None
-		#self.semaphore = None
+
 		self.semaphore = threading.BoundedSemaphore(value=1)
 		self.mutex = threading.RLock()
-		#self.mutex = None
+
 		self.reconnectsLeft = 11
 		self.connected = False
 		self.connect()
@@ -37,8 +43,9 @@ class mysql(object):
 			time.sleep(1)
 		if self.reconnectsLeft < 0:
 			if hasattr(self, "gv"):
-				if hasattr(self.gv, programCrashed): # Applicable to server version
+				if hasattr(self.gv, "programCrashed"): # Applicable to server version
 					self.gv.sql.programCrashed = True
+					# noinspection PyUnresolvedReferences
 					gv.programCrashed = True
 			errorText = "Run out of database reconnects. Program should now close"		
 			print("%s %s"%(time.strftime("%d-%m-%Y %H:%M:%S"), errorText))
@@ -101,7 +108,7 @@ class mysql(object):
 					
 					try:
 						rows += data.fetch_row(maxrows=0)
-					except:
+					except Exception:
 						pass
 					if commit:
 						self.db.commit()
