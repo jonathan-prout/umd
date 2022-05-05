@@ -77,6 +77,34 @@ class TestTitan(unittest.TestCase):
 		self.assertEqual(decoder.getKey("aspect_ratio"), "16_9")
 		self.assertEqual(decoder.getKey("service_id"), 2910)
 
+	def test_titan_catype_1(self):
+		titan = ateme_titan.Titan(1, "10.88.203.21", "titan", 2)
+		fname = "get__gateway_api_channels_1_2.json"
+		with open(os.sep.join(["testdata", fname]), "r") as fobj:
+			jdata = json.load(fobj)
+		titan.set_get_gateway_api_channels_id_content(jdata)
+		fname = "get__decoder_api_channels_1_2.json"
+		with open(os.sep.join(["testdata", fname]), "r") as fobj:
+			jdata = json.load(fobj)
+		titan.set_get_decoder_api_channels_id_content(jdata)
+		decoder = titan.getInterface("decoder")
+
+		self.assertEqual(titan.getCAType(), "0x2610")
+
+
+	def test_titan_catype_2(self):
+		titan = ateme_titan.Titan(1, "10.88.203.21", "titan", 2)
+		fname = "get__gateway_api_channels_3_v286.json"
+		with open(os.sep.join(["testdata", fname]), "r") as fobj:
+			jdata = json.load(fobj)
+		titan.set_get_gateway_api_channels_id_content(jdata)
+		fname = "get__decoder_api_channels_3_v286.json"
+		with open(os.sep.join(["testdata", fname]), "r") as fobj:
+			jdata = json.load(fobj)
+		titan.set_get_decoder_api_channels_id_content(jdata)
+		decoder = titan.getInterface("decoder")
+
+		self.assertEqual(titan.getCAType(), "0x2610")
 
 if __name__ == '__main__':
 	unittest.main()
