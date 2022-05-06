@@ -56,6 +56,8 @@ class Titan(IRD, DictKeyProxy):
 
 		jdata = json.loads(stringfromserver)
 		self.set_get_gateway_api_channels_id_content(jdata)
+		if self.online:
+			self.set_online()
 
 	def set_get_gateway_api_channels_id_content(self, content):
 		self.setKey("updated", "OK")

@@ -106,5 +106,11 @@ class TestTitan(unittest.TestCase):
 
 		self.assertEqual(titan.getCAType(), "0x2610")
 
+	def test_titan_online_2(self):
+		titan = ateme_titan.Titan(1, "10.88.203.21", "titan", 2)
+
+
+		self.assertEqual(titan.determine_subtype(), "Titan")
+
 if __name__ == '__main__':
 	unittest.main()
