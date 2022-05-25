@@ -450,7 +450,7 @@ class Titan(IRD, DictKeyProxy):
 		services = decoder.getKey("services", {})
 		current_service = services.get(current_service_id, {})
 
-		sql += ["servicename = '%s' " % current_service.get("name", "")]
+		sql += ["servicename = '%s' " % self.processServiceName(current_service.get("name", ""))]
 		sql += ["aspectratio ='%s' " % decoder.getKey("aspect_ratio", "")]
 		sql += ["castatus='%s' " % self.getCAType()]
 		sql += ["videoresolution='%s' " % decoder.getKey("height", 0)]

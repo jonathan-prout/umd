@@ -15,7 +15,7 @@ snmp.gv = gv  # in theory we don't want to import explictly the server's version
 import threading
 import copy
 import time
-
+import re
 
 class HTTPError(Exception):
 	pass
@@ -449,31 +449,14 @@ class IRD(equipment):
 
 	def processServiceName(self, servicename):
 		servicename = servicename.strip()
-		servicename = servicename.replace(';', ' ')
-		servicename = servicename.replace('%', ' ')
-		servicename = servicename.replace('&', ' ')
-		servicename = servicename.replace('*', ' ')
-		servicename = servicename.replace(',', ' ')
-		servicename = servicename.replace('?', ' ')
-		servicename = servicename.replace('{', ' ')
-		servicename = servicename.replace('}', ' ')
-		servicename = servicename.replace('(', ' ')
-		servicename = servicename.replace(')', ' ')
-		servicename = servicename.replace('[', ' ')
-		servicename = servicename.replace(']', ' ')
-		servicename = servicename.replace('^', ' ')
-		servicename = servicename.replace('+', ' ')
-		servicename = servicename.replace('|', ' ')
-		servicename = servicename.replace('-', ' ')
-		servicename = servicename.replace('_', ' ')
-		servicename = servicename.replace('"', ' ')
-		servicename = servicename.replace('\'', ' ')
-		servicename = servicename.replace('#', ' ')
-		servicename = servicename.replace(':', ' ')
-		servicename = servicename.replace('!', ' ')
-		servicename = servicename.replace('`', ' ')
-		servicename = servicename.replace('.', ' ')
-		servicename = servicename.replace('\n', '')
+
+		servicename = re.sub(r"[^\w\d\s]", "", servicename)
+		# [ group
+		#  ^ not
+		#   \w word
+		#   \d digit
+		#    \s space
+
 		servicename = servicename.strip()
 
 		return servicename
