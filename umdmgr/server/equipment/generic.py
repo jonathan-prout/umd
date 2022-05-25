@@ -365,7 +365,7 @@ class equipment(serializableObj):
 		"""  Gets a unit's subtype if required. Override if the unit actually has a subtype"""
 		try:
 			return self.modelType
-		except:
+		except AttributeError:
 			return "Unknown"
 
 

@@ -56,6 +56,8 @@ class Titan(IRD, DictKeyProxy):
 
 		jdata = json.loads(stringfromserver)
 		self.set_get_gateway_api_channels_id_content(jdata)
+		if self.online:
+			self.set_online()
 
 	def set_get_gateway_api_channels_id_content(self, content):
 		self.setKey("updated", "OK")
@@ -367,9 +369,10 @@ class Titan(IRD, DictKeyProxy):
 	def getCAType(self):
 		decoder = self.getInterface("decoder")
 		current_service_id = decoder.getKey("service_id", 0)
-		services = decoder.getKey("services", {})
+		gateway = self.getInterface("gateway")
+		services = gateway.getKey("services", {})
 		current_service = services.get(current_service_id, {})
-		pcr = current_service.get("PCR", 0)
+
 
 		return current_service.get("caType", "")
 
