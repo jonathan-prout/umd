@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <title>UMD Manager Edit IRD</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.min.css">
+
+    <link href = "bower_components/eonasdan-bootstrap-datetimepicker/build/css/bootstrap-datetimepicker.css" rel="stylesheet">
+    <!-- Select -->
+    <link href = "bower_components/bootstrap-select/dist/css/bootstrap-select.css" rel="stylesheet">
+    <!-- Custom styles for this template -->
+
+    <link href="bower_components/bootstrap-combobox/css/bootstrap-combobox.css" rel="stylesheet"></link>
+    <!-- Required Javascript -->
+    <script src="bower_components/jquery/dist/jquery.min.js"></script>
+    <script src="bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+    <script src="bower_components/bootstrap-treeview/src/js/bootstrap-treeview.js"></script>
+    <script src="bower_components/progressbar.js/dist/progressbar.min.js"></script>
+    <script src="bower_components/d3/d3.js"></script>
+    <script src="bower_components/moment/moment.js"></script>
+    <script src="bower_components/moment-timezone/builds/moment-timezone-with-data.js"></script>
+    <script src="bower_components/eonasdan-bootstrap-datetimepicker/src/js/bootstrap-datetimepicker.js"></script>
+    <script src="bower_components/bootstrap-select/dist/js/bootstrap-select.js"></script>
+    <script src="bower_components/bootstrap-combobox/js/bootstrap-combobox.js"></script>
+    <script src="bower_components/bootstrap-toggle/js/bootstrap-toggle.js"></script>
+    <script src="bower_components/bootstrap-table/dist/bootstrap-table.js"></script>
+    <script src="node_modules/@json-editor/json-editor/dist/jsoneditor.min.js"></script>
+    <script src="base.js"></script>
+<script>
+   function getUrlVars() {
+    var vars = {};
+    var parts = window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function(m,key,value) {
+        vars[key] = value;
+    });
+    return vars;
+}
+
+function getScript(url, callback) {
+   var script = document.createElement('script');
+   script.type = 'text/javascript';
+   script.src = url;
+
+   script.onreadystatechange = callback;
+   script.onload = callback;
+
+   document.getElementsByTagName('head')[0].appendChild(script);
+}
+
+$(document).ready(function () {
+    $("input#AddMVsubmit").click(function(){
+        $.ajax({
+            type: "POST",
+            url: "submit_form.php", //process to mail
+            data: $('#addMVForm').serialize(),
+            success: function(msg){
+                $("#thanks").append(msg) //hide button and show thank you
+                $("#form-addmv").modal('hide'); //hide popup
+                getScript('static_parameters.php', function(){
+                   // populateListbox(multiviewers )
+                   filter();
+                   });
+            },
+            error: function(){
+                alert("failure");
+            }
+        });
+    });
+});
+</script>
+</head>
+
+<body>
+ 
+<ul class="nav nav-tabs" role="tablist">
+        <li ><a href="editmv.html">Multiviewer</a></li>
+        <li class="active"><a href="#">IRD</a></li>
+        <li><a href="editcolour.php">Colours</a></li>
+    <li><a href="mtxchangelog.html">Matrix Changelog</a></li>
+      </ul>
+    </div>
+   <div class="page-header">
+   <h2>Eurovision UMD Manager
+      <small>Edit Equipment</small>
+   </h2>
+</div>
+<div id="id01"></div>  
+<div class="container" id="fiilterformcontainer">
+<div class="form-group"><label for="lname">Filter: </label>
+<form id="frm_filter" action="#">
+<input type="text" class="form-control" id="filterbox" value="" onkeyup="filter()"><br><br>
+</form> 
+<button onclick="filter()"  class="btn btn-default">Filter</button>
+</div><div id="filtertext"></div>
+</div>
+<!-- Add IRD-->
+<div id="form-addmv" class="modal  fade" role="dialog" style="display: none;">
+    <div class="modal-dialog">
+    <div class="modal-content">
+    <div class="modal-header">
+        
+        <a class="close" data-dismiss="modal">×</a>
+        <h3>Add Equipment</h3>
+    </div>
+    <div class="modal-body">
+        
+            <form class="form-horizontal" name="addMVForm" id="addMVForm">
+       <input type="hidden" name="formName", value = "newIRD">
+       <label for="name">Name</label><input type="text" class="form-control" name="name"  value="">
+       <label for="ip">IP</label><input type="text" class="form-control" name="ip" value="">
+       <label for="model_id">Type</label><input type="text" class="form-control" name="model_id" value="Automatic">
+       <label for="labelnamestatic">Label</label><input type="text" class="form-control" name="labelnamestatic"  value="">
+       <label for="MulticastIp">MulticastIp</label><input type="text" class="form-control" name="MulticastIp" value="" id="MulticastIp">
+
+
+        </form>
+        
+        
+    
+    
+    </div>
+    <div class="modal-footer">
+        <input class="btn btn-success" type="submit" value="Send!" id="AddMVsubmit">
+        <a href="#" class="btn" data-dismiss="modal">Nah.</a>
+    </div>
+    </div>
+    </div>
+</div>
+<div class="container" id="thanks"><p><a data-toggle="modal" href="#form-addmv" class="btn  btn-info btn-large">Add New IRD</a></p></div>
+<div class="container-fluid">
+  <div class="col-sm-12">
+    
+    <div class="row" style="background-color:lavender;">
+    <div class="col-sm-1">Edit</div>
+        
+        <div class="col-sm-11"><table width=100%>
+        <tr> <td width=5%>id
+        </td><td width=5%>name
+        </td><td width=5%>model_id
+        </td><td width=5%>ip
+        </td><td width=5%>subequipment
+        </td><td width=5%>Label
+        </td><td width=5%>MulticastIp
+        </td><td width=5%>InMTXName
+        </td><td width=5%>OutMTXName
+        </td><td width=5%>SAT1
+        </td><td width=5%>SAT2
+        </td><td width=5%>SAT3
+        </td><td width=5%>SAT4
+        </td><td width=5%>doesNotUseGateway
+        </td><td width=5%>lo_offset
+        </td><td width=5%>Demod
+        </td><td width=5%>is Demod</td></tr></table>
+        </div>
+    </div>
+  </div>
+</div>
+
+<div class="container-fluid" id="mvTable"></div>
+
+
+
+
+
+
+
+
+        
+</body>
+</html>

@@ -50,7 +50,7 @@ if ($_POST["formName"] == "updateMVInput"){
         
         $ressource = select_db("matrix");
         
-        $mtx_out = query('SELECT `name` FROM `output` WHERE `PRIMARY` ="'.$_POST["mtx_out_sdi"].'";');
+        $mtx_out = query('SELECT `name`, `matrixid` FROM `output` WHERE `PRIMARY` ="'.$_POST["mtx_out_sdi"].'";');
         //echo('SELECT `name` FROM `output` WHERE `PRIMARY` ="'.$_POST["mtx_out"].'";');
         $ressource = select_db("umd");
         $numrows=mysqli_num_rows($mtx_out);
@@ -60,6 +60,7 @@ if ($_POST["formName"] == "updateMVInput"){
             $sql = $sql." `inputmtxname` = NULL,";
         }else{
             $sql = $sql." `inputmtxname` = '".mysqli_result($mtx_out,0,"name")."',";
+            $sql = $sql." `inputmtxid` = '".mysqli_result($mtx_out,0,"matrixid")."',";
         }
     
         
