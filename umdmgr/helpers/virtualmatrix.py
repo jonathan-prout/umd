@@ -38,6 +38,13 @@ class virtualMatrix( mysql, matrix):
 		self.getSizeAndLevels()
 		self.refresh()
 
+	@property
+	def id(self):
+		try:
+			return self.prefsDict["mtxId"]
+		except (KeyError, AttributeError):
+			return -1
+
 	def __repr__(self):
 		return self.name
 

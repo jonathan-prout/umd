@@ -28,8 +28,10 @@ def getEquipByName(name):
 				return k
 	return 0
 
-def mtxLookup(name, level = "SDI"):
+def mtxLookup(name, level = "SDI", matrixid = None):
 	"""Lookup source from destination. Returns equip ID int or None """
+	if matrixid is not None:
+		mxes = [mtx for mtx in matrixes if int(mtx.id) == int(matrixid)]
 	try:
 		mxes = matrixCapabilities[level]
 	except KeyError:
