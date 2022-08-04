@@ -35,6 +35,7 @@
 <body>
 
 <ul class="nav nav-tabs" role="tablist">
+<li ><a href="index.html">Status</a></li>
     <li ><a href="editmv.html">Multiviewer</a></li>
     <li><a href="editird.html">IRD</a></li>
     <li class="active"><a href="editcolour.php">Colours</a></li>
