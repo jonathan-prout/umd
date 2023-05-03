@@ -184,8 +184,13 @@ def start(_id=None):
 	log("Getting equipment", "start", alarm.level.OK)
 	for equipmentID, ip, name, model_id, subequipment in retrivalList(_id):
 		query = "SELECT `id` from `status` WHERE `status`.`id` ='%d'" % equipmentID
+		if model_id.upper() == "DISABLED":
+			continue
 		if len(gv.sql.qselect(query)) == 0:
 			query = "REPLACE INTO `UMD`.`status` SET `id` ='%d'" % equipmentID
+		gv.sql.qselect(query)
+		query = "UPDATE `UMD`.`status` SET `status` = 'Initializing' WHERE `status`.`id` = '%i'" % (
+			equipmentID)
 		gv.sql.qselect(query)
 		for key in list(simpleTypes.keys()):
 
@@ -399,8 +404,18 @@ def main(debugBreak=False):
 	time1 = time.time()
 
 	start()
+	log("Determining types", "main", alarm.level.Info)
+	cmd = "UPDATE `UMD`.`management` SET `value` = 'STARTING. Determining types' WHERE `management`.`key` = " \
+		"'current_status';"
+	gv.sql.qselect(cmd)
+
 	# backgroundworker()
 	gv.ThreadCommandQueue.join()
+	cmd = "UPDATE `UMD`.`management` SET `value` = 'STARTING. Finishing type determination' WHERE " \
+		"`management`.`key` = 'current_status';"
+	gv.sql.qselect(cmd)
+	log("Finishing type determination", "main", alarm.level.OK)
+
 	gv.CheckInQueue.join()
 	log("Types determined. Took %s seconds. Begininng main loop. Press CTRL C to %s" % (
 	time.time() - time1, ["quit", "enter debug console"][gv.debug]), "main", alarm.level.Info)
@@ -411,6 +426,9 @@ def main(debugBreak=False):
 		gv.mem_sum1 = summary.summarize(all_objects)
 
 	log("Starting dispatch", "main", alarm.level.OK)
+	cmd = "UPDATE `UMD`.`management` SET `value` = 'STARTING. Dispatch start' WHERE `management`.`key` = 'current_status';"
+	gv.sql.qselect(cmd)
+
 	gv.threads[gv.dispatcherThread].start()
 
 
