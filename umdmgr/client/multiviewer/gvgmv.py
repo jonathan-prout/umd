@@ -16,23 +16,28 @@ class GvMv(tsl.TslMultiviewer):
 		self.write_status("UMD MANAGER CONNECTED", queued=False)
 		self.clearalarms()
 
-	def clearalarms(self):
-		""" KX has alarms on on startup, so clear them """
-		if self.get_offline():
+	def writeline(self, videoInput, level, line, mode= None, colour="#e3642d", buffered=True):
+
+		try:
+			addr = self.lookup(videoInput, level)
+		except (KeyError, ValueError):
+			print("videoIn, %s, level %s not found" % (videoInput, level))
 			return
-		self.qtruncate()
-		for videoInput in self.lookuptable.keys():
-			sm = status_message()
-			sm.topLabel = ""
-			sm.bottomLabel = ""
-			sm.mv_input = videoInput
-			self.put(sm)
-		sm = status_message()
-		sm.topLabel = ""
-		sm.bottomLabel = "UMD Manager Connected"
-		sm.mv_input = 1
-		self.put(sm)
-		self.refresh()
+		if level in ["TOP", "BOTTOM"]:
+			line = line[:self.MAX_LABEL_LEN]
+			txt = f"{line};{colour}"
+		else:
+			txt = line
+		dmesg = tsl.Dmesg(addr, txt)
+		if not buffered:
+			packet = tsl.TslPacket()
+			packet.append(dmesg)
+			try:
+				self.sock.write(packet)
+				self.set_online("OK")
+			except (socket.error, TimeoutError) as e:
+				self.set_offline(str(e))
+		return dmesg
 
 	def refresh(self):
 		packet = tsl.TslPacket()
@@ -56,7 +61,6 @@ class GvMv(tsl.TslMultiviewer):
 				mode = sm.textMode
 				videoInput = sm.mv_input
 
-				
 				for level, line in [
 					["TOP", sm.topLabel],
 					["BOTTOM", sm.bottomLabel],
@@ -73,6 +77,7 @@ class GvMv(tsl.TslMultiviewer):
 							self.writepacket(packet)
 							packet = tsl.TslPacket()
 							packet_commands = 0
+
 			elif isinstance(sm, (list, tuple)):
 				try:
 					videoInput = sm[0]
@@ -95,40 +100,6 @@ class GvMv(tsl.TslMultiviewer):
 		if self.fullref:
 			self.qtruncate()
 
-
-	def writepacket(self, packet) -> int:
-		""" Write to socket return how many bytes writen"""
-		n = 0
-		try:
-			n = self.sock.write(packet)
-			self.set_online("OK")
-		except (socket.error, TimeoutError) as e:
-			self.set_offline(str(e))
-
-		return n
-
-	def writeline(self, videoInput, level, line, mode= None, colour="#e3642d", buffered=True):
-
-		try:
-			addr = self.lookup(videoInput, level)
-		except (KeyError, ValueError):
-			print("videoIn, %s, level %s not found" % (videoInput, level))
-			return
-		if level in ["TOP", "BOTTOM"]:
-			line = line[:self.MAX_LABEL_LEN]
-			txt = f"{line};{colour}"
-		else:
-			txt = line
-		dmesg = tsl.Dmesg(addr, txt)
-		if not buffered:
-			packet = tsl.TslPacket()
-			packet.append(dmesg)
-			try:
-				self.sock.write(packet)
-				self.set_online("OK")
-			except (socket.error, TimeoutError) as e:
-				self.set_offline(str(e))
-		return dmesg
 
 	def make_default_input_table(self):
 		self.lookuptable = {}
