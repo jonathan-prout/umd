@@ -181,7 +181,10 @@ def start(_id=None):
 		"OFFLINE":equipment.generic.GenericIRD
 	}
 	log("Getting equipment", "start", alarm.level.OK)
-	for equipmentID, ip, name, model_id, subequipment in retrivalList(_id):
+	list_of_equip = retrivalList(_id)
+	i = 0
+	le = len(list_of_equip)
+	for equipmentID, ip, name, model_id, subequipment in list_of_equip:
 		query = "SELECT `id` from `status` WHERE `status`.`id` ='%d'" % equipmentID
 		if model_id.upper() == "DISABLED":
 			continue
@@ -194,12 +197,17 @@ def start(_id=None):
 		for key in list(simpleTypes.keys()):
 
 			if any(((key in model_id), (key in name))):
+				log(f"Creating {key} {equipmentID}, {ip} {name}", "Start", alarm.level.Debug)
 				newird = simpleTypes[key](int(equipmentID), ip, name, subequipment)
+
 				break
 
 		else:
+			log(f"Creating {key} {equipmentID}, {ip} {name}", "Start", alarm.level.Debug)
 			newird = equipment.generic.GenericIRD(int(equipmentID), ip, name, subequipment)
+		log(f"Adding {newird} {i}/{le}", "Start", alarm.level.Debug)
 		gv.addEquipment(newird)
+		i += 1
 	log("Determining types", "start", alarm.level.OK)
 	for currentEquipment in list(gv.equipmentDict.values()):
 		gv.ThreadCommandQueue.put(("determine_type", currentEquipment.serialize()), block=True)
