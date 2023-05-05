@@ -18,13 +18,13 @@ def die(stuff):
 	import sys
 	sys.exit(1)
 
-def get( ip, port, addr, username="", password=""):
+def get( ip, port, addr, username="", password="", timeout = 10):
 	"""
 	ip as string, port as int addr string 
 	returns response as dictionary, content as string
 	# use when uri separate from address
 	"""
-	http = httplib2.Http()
+	http = httplib2.Http(timeout=timeout)
 	method = 'GET'
 	if password != "":
 		http.add_credentials(username, password)
@@ -48,7 +48,7 @@ def get( ip, port, addr, username="", password=""):
 
 	
 	
-def geturl(url, username="", password=""):
+def geturl(url, username="", password="", timeout=10):
 	"""
 	ip as string, port as int addr string do_not_call_machine_test_on_timeout boolean
 	returns response as dictionary, content as string
@@ -57,7 +57,7 @@ def geturl(url, username="", password=""):
 	
 	
 
-	http = httplib2.Http()
+	http = httplib2.Http(timeout = timeout)
 	method = 'GET'
 	
 	if password != "":
@@ -183,12 +183,12 @@ def getcache( ip, port, addr, cache_max_age='120'):
 		
 	return response, content
 
-def post(ip, port, addr, body="", username="", password=""):
+def post(ip, port, addr, body="", username="", password="", timeout = 10):
 	"""
 	ip as string, port as int addr body as string 
 	returns response as dictionary, content as string
 	"""
-	http = httplib2.Http()
+	http = httplib2.Http(timeout=timeout)
 	method = 'POST'
 	method = 'GET'
 	if password != "":
