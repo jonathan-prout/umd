@@ -68,7 +68,7 @@ class virtualMatrix( mysql, matrix):
 					try:
 						if self.xpointStatus[level][dest + self.countFrom1] == src + self.countFrom1:
 							xpc = False
-					except:
+					except (KeyError, IndexError):
 						pass
 					if xpc:
 						self.onXPointChange( dest, src, level)
@@ -85,8 +85,8 @@ class virtualMatrix( mysql, matrix):
 			try:
 				log(self.name +" %s -> %s"%(self.input[0][src + self.countFrom1], self.output[0][dest + self.countFrom1]),
 					self, alarm.level.OK)
-			except:
-				log(self.name +" %s -> %s"%(dest + self.countFrom1 ,src + self.countFrom1), self, alarm.level.OK)
+			except (IndexError, KeyError, AttributeError):
+				log(self.name + " %s -> %s" % (dest + self.countFrom1, src + self.countFrom1), self, alarm.level.OK)
 			
 	def sourceNameFromDestName(self, destName):
 		with self.lock:

@@ -47,7 +47,7 @@ class matrix(object):
 	def get_offline(self):
 			try:
 					return self.offline
-			except:
+			except AttributeError:
 					return True
 
 	def set_online(self):

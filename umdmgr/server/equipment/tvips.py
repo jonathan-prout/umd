@@ -48,7 +48,7 @@ class TVG420(plugin_tvips.TVG420, equipment):
 			if "port-" in key:
 				try:
 					ports[int(key.replace("port-", ""))] = data[key]
-				except:
+				except ValueError:
 					continue
 		self.ports = []
 		for key in sorted(ports):
@@ -57,7 +57,7 @@ class TVG420(plugin_tvips.TVG420, equipment):
 	def get_offline(self):
 		try:
 			return not self.online
-		except:
+		except AttributeError:
 			return True
 
 	def set_offline(self, excuse: str = ""):

@@ -53,7 +53,7 @@ def bitrateToStreamcode(muxbitrate):
 	try:
 		bitratefloat = float(muxbitrate)
 		bitratefloat = (bitratefloat / 1000000)  # bps to mbps
-	except:
+	except (ValueError, TypeError):
 		bitratefloat = 0
 
 	for name, streamBitrate in streamcodes:

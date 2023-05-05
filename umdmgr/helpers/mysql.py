@@ -62,9 +62,11 @@ class mysql(object):
 
 			log("Database error on connection", self, alarm.level.Critical)
 			logerr(str(self), alarm.level.Critical)
+
+			# noinspection PyBroadException
 			try:
 				self.close()
-			except:
+			except Exception:
 				pass
 			#sys.exit(1)
 			raise e

@@ -57,7 +57,7 @@ def handle_netSNMP_error(serr):
 			line = line.replace("iso", "")
 			failedOid = line.strip()
 
-		except:
+		except (TypeError, ValueError, IndexError):
 			pass
 		e = NetSNMPUnknownOID(serr)
 		e.failedOid = failedOid
@@ -70,8 +70,7 @@ def handle_netSNMP_error(serr):
 			line = line.replace("Failed object: ", "")
 			line = line.replace("iso", "")
 			failedOid = line.strip()
-
-		except:
+		except (TypeError, ValueError, IndexError):
 			pass
 		e = NetSNMPTooBig(serr)
 		e.failedOid = failedOid
@@ -201,7 +200,8 @@ def process_netsnmp_line(outputLine):
 			assert (len(s) == 3)
 			value = s[1]
 
-		except:
+
+		except (TypeError, ValueError, IndexError, AssertionError):
 			pass
 	return oid, valtype, value
 
@@ -434,7 +434,7 @@ def walk_pysnmp(commandDict, ip):
 			for item in varBindsTable:
 				try:
 					item = item[0][1]
-				except:
+				except (IndexError, TypeError, KeyError):
 					item = item[0]
 				results.append(str(item))
 		n = oidFromDict(command, invdict)

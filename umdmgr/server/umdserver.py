@@ -95,7 +95,7 @@ def getEquipmentDict():
 	for k, v in gv.equipmentDict.items():
 		try:
 			equipmentDict[k] = v.serialize()
-		except:
+		except (TypeError, ValueError, KeyError, AttributeError):
 			continue
 
 
@@ -171,15 +171,14 @@ def start(_id=None):
 	if not gv.threads:
 		beginthreads()
 	# Equipment Types 
-	simpleTypes = {
-		"TT1260": server.equipment.ericsson.TT1260,
+	simpleTypes = {"TT1260": server.equipment.ericsson.TT1260,
 		"RX1290": server.equipment.ericsson.RX1290,
 		"DR5000": server.equipment.ateme.DR5000,
 		"TVG420": server.equipment.tvips.TVG420,
 		"IP Gridport": server.equipment.omneon.IPGridport,
 		"Rx8200": server.equipment.ericsson.RX8200,
-		"Titan": server.equipment.ateme_titan.Titan
-
+		"Titan": server.equipment.ateme_titan.Titan,
+		"OFFLINE":equipment.generic.GenericIRD
 	}
 	log("Getting equipment", "start", alarm.level.OK)
 	for equipmentID, ip, name, model_id, subequipment in retrivalList(_id):
@@ -359,7 +358,7 @@ def backgroundworker(myQ, endFlag=None):
 def cleanup(exit_status=0):
 	try:
 		_prexit = gv.preexit
-	except:
+	except AttributeError:
 		gv.preexit = False
 		_prexit = False
 	if not _prexit:
@@ -471,7 +470,7 @@ def main(debugBreak=False):
 
 
 
-					except:
+					except (KeyError, AttributeError):
 						continue
 					statuses = {
 						0: "STAT_INIT",
@@ -504,7 +503,10 @@ def main(debugBreak=False):
 						tally("missing")
 
 				def avg(L):
-					return float(sum(L)) / len(L)
+					try:
+						return float(sum(L)) / len(L)
+					except ZeroDivisionError:
+						return 0
 
 				for t in gv.threads:
 					try:
@@ -512,7 +514,7 @@ def main(debugBreak=False):
 							runningThreads += 1
 						else:
 							stoppedThreads += 1
-					except:
+					except AttributeError:
 						stoppedThreads += 1
 				if gv.loud:
 					log("Refresh statistics loop %s" % loopcounter, "main", alarm.level.Debug)
@@ -576,7 +578,7 @@ def main(debugBreak=False):
 					fpoll_time = float(new_poll_time[0][1])
 					if fpoll_time > 0:
 						gv.min_refresh_time = fpoll_time
-				except:
+				except (IndexError, TypeError, ValueError):
 					pass
 				if gv.loud:
 					log("Min refresh time now %s" % gv.min_refresh_time, "main", alarm.level.Debug)
@@ -636,7 +638,7 @@ def main(debugBreak=False):
 						if gv.equipmentDict[equipmentID].get_offline():
 							eq = gv.equipmentDict[equipmentID]
 							log(eq.name.ljust(10, " ") + eq.modelType.ljust(10, " ") + eq.ip, "main", alarm.level.Critical)
-					except:
+					except (KeyError, AttributeError, TypeError, ValueError):
 						continue
 				log("errors:", "main", alarm.level.Critical)
 				log(gv.exceptions, "main", alarm.level.Debug)
@@ -647,8 +649,8 @@ def main(debugBreak=False):
 			gv.exceptions.append((e, traceback.format_tb(sys.exc_info()[2])))
 			try:
 				message = e.message
-			except:
-				message = ""
+			except AttributeError:
+				message = str(e)
 
 			if gv.debug:
 				gv.threadJoinFlag = True

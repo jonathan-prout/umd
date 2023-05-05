@@ -48,7 +48,7 @@ class DR5000(IRD):
 
 			serviceName = d[ServiceID]
 			return self.processServiceName(serviceName)
-		except:
+		except (KeyError, ValueError, TypeError):
 			return ""
 
 	def getServiceId(self):
@@ -246,7 +246,7 @@ class DR5000(IRD):
 		n = self.lookupstr("numServices")
 		try:
 			n = int(n)
-		except:
+		except (ValueError, TypeError):
 			n = 0
 		return n
 

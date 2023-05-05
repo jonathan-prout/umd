@@ -70,7 +70,7 @@ class multiviewer(ABC):
 	def get_offline(self):
 		try:
 			return self.offline
-		except:
+		except AttributeError:
 			return True
 
 	def set_online(self, status=""):
@@ -204,16 +204,16 @@ class multiviewer(ABC):
 		""" Write Errors to the multiviewer """
 
 		klist = sorted(self.lookuptable.keys())
-		for key in range(0, len(klist), 16):
+		for key_index in range(0, len(klist), 16):
 			if queued:
 				try:
-					self.put((klist[key], "BOTTOM", status, "TEXT"))
+					self.put((klist[key_index], "BOTTOM", status, "TEXT"))
 				except queue.Full:
 					pass
 			else:
 				try:
-					self.writeline(klist[key], "BOTTOM", status, "TEXT", buffered=False)
-				except:
+					self.writeline(klist[key_index], "BOTTOM", status, "TEXT", buffered=False)
+				except Exception: # TODO: Do we really want to mask this?
 					pass
 
 
@@ -228,7 +228,8 @@ class TelnetMultiviewer(multiviewer, metaclass=ABCMeta):
 		self.shout("Problem with %s when %s Now offline" % (self.host, reason))
 		try:
 			self.tel.close()
-		except:
+		except Exception: # NOQA: Pybroadexception
+			# Ignore exceptions. This may be called at interpreter shutdown so don't limit exceptions here.
 			pass
 
 	def close(self):

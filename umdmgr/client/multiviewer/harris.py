@@ -3,7 +3,8 @@
 	git note: moved from mukltiviewer.py
 	"""
 from __future__ import absolute_import
-	
+
+import socket
 import telnetlib, queue, signal, time
 
 from helpers import telnethelper
@@ -39,7 +40,7 @@ class zprotocol(TelnetMultiviewer):
 			self.tel.read_until(">", 1)
 			self.set_online()
 			self.last_cmd_sent = time.time()
-		except:
+		except (IOError, TimeoutError, socket.error, OSError):
 			self.set_offline("init")
 		finally:
 			#signal.alarm(0)          # Disable the alarm
@@ -50,7 +51,7 @@ class zprotocol(TelnetMultiviewer):
 			self.tel.write("\n")
 			self.tel.read_until(">", 1)
 			self.last_cmd_sent = time.time()
-		except:
+		except (IOError, TimeoutError, socket.error, OSError):
 			self.set_offline("keepalive")
 			
 	
@@ -68,7 +69,7 @@ class zprotocol(TelnetMultiviewer):
 			self.tel.write(cmd)
 			a = self.tel.read_until(">", 1)
 			self.last_cmd_sent = time.time()
-		except:
+		except (IOError, TimeoutError, socket.error, OSError):
 			self.set_offline("writeline, %s, %s "%(line,a) )
 		finally:
 			#signal.alarm(0)          # Disable the alarm
@@ -92,7 +93,8 @@ class zprotocol(TelnetMultiviewer):
 			
 		
 	def __del__(self):
+		# noinspection PyBroadException
 		try:
 			self.tel.close()
-		except:
+		except Exception:
 			pass

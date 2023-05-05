@@ -86,7 +86,7 @@ threadJoinFlag = False
 offlineCheckThreads = 8
 try:
 	cpus = multiprocessing.cpu_count()
-except:
+except Exception:  # noqa: pybroadexception
 	cpus = 1
 
 workers_per_proc = 4
@@ -128,7 +128,7 @@ def log(stuff):
 		try:
 			f = open(logfile, "a")
 			f.write(out)
-		except:
+		except (IOError, TypeError):
 			print("Could not log stuff!")
 			print(out)
 		finally:
@@ -151,7 +151,7 @@ def get_inactive():
 			if equipmentDict[k].get_offline():
 				list_of_timeouts.append(k)
 				
-		except:
+		except KeyError:
 			pass
 		
 	return list_of_timeouts

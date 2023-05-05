@@ -41,7 +41,7 @@ def getAttributesFromTags(tag, attribute, document):
 		try:
 			tagattr = tag.attributes[attribute]
 			returnlist.append(tagattr.value)
-		except:
+		except (AttributeError, KeyError, IndexError, TypeError):
 			pass
 
 		i = i + 1
@@ -62,7 +62,7 @@ def getAttributesFromTagsConditional(tag, attribute, document, condition, value)
 			tagcondition = tag.attributes[condition]
 			if tagcondition.value == value:
 				returnlist.append(tagattr.value)
-		except:
+		except (AttributeError, KeyError, IndexError, TypeError):
 			pass
 		i = i + 1
 	return returnlist
@@ -78,7 +78,7 @@ def getTextFromTag(tag, document):
 		tagiterator = taglist[i]
 		try:
 			returnlist.append(tagiterator.firstChild.data)
-		except:
+		except AttributeError:
 			pass
 		i += 1
 	return returnlist

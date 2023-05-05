@@ -1,6 +1,8 @@
 httplib2
-pysnmp
+pysnmp~=4.4.12
 pympler
-colorlog
+colorlog~=6.7.0
 python-json-logger
 pytest
+future~=0.18.3
+mysqlclient

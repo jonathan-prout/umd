@@ -2,6 +2,8 @@ from __future__ import absolute_import
 
 import typing
 
+import MySQLdb
+
 from client import gv
 from client.status import status_message
 from helpers import CA
@@ -29,9 +31,10 @@ def cast(func, obj):
 
 
 def _slice(sequence, index, default=""):
+
 	try:
 		return sequence[index]
-	except:
+	except (IndexError, TypeError):
 		return default
 
 
@@ -44,7 +47,7 @@ def bitrateToStreamcode(muxbitrate):
 	try:
 		bitratefloat = float(muxbitrate)
 		bitratefloat = (bitratefloat / 1000000)  # bps to mbps
-	except:
+	except (TypeError, ValueError, ZeroDivisionError):
 		bitratefloat = 0
 
 	for name, streamBitrate in gv.streamcodes:
@@ -124,7 +127,7 @@ class irdResult(object):
 			self.commands) + " FROM equipment e, status s WHERE e.id = s.id AND e.id = '%d'" % self.equipmentID
 		try:
 			self.res = dict(list(zip(self.commands, gv.sql.qselect(request)[0])))
-		except:
+		except (AttributeError, IndexError, TypeError, MySQLdb.Error):
 			self.res = {}
 
 	def getKey(self, k):
@@ -155,7 +158,7 @@ class irdResult(object):
 		res = self.getKey("s.videoresolution")
 		try:
 			res = int(res)
-		except:
+		except (ValueError, TypeError):
 			res = 0
 		if res == 480:
 			res = 525
@@ -218,7 +221,7 @@ class irdResult(object):
 	def getDemod(self):
 		try:
 			demod = cast(int, self.getKey("e.Demod"))
-		except:
+		except (TypeError, ValueError):
 			demod = 0  # NULL on db
 		if self.getInput() == "SAT":
 			return 0

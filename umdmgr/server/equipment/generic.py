@@ -17,6 +17,8 @@ import copy
 import time
 import re
 
+import MySQLdb
+
 class HTTPError(Exception):
 	pass
 
@@ -179,14 +181,14 @@ class equipment(serializableObj):
 			snmp_command = gv.cachedSNMP(comsel)
 			for i in range(len(snmp_command)):
 				self.oid_get[snmp_command[i][0]] = snmp_command[i][1]
-		except:
+		except MySQLdb.Error:
 			raise DBError('Get SNMP COMMANDS')
 		try:
 			snmp_command = gv.cachedSNMP(comsel_bulk)
 			for i in range(len(snmp_command)):
 				self.oid_getBulk[snmp_command[i][0]] = snmp_command[i][1]
 
-		except:
+		except MySQLdb.Error:
 			raise DBError('Get SNMP BULK COMMANDS')
 
 	# self.oid_get2 = self.oid_get #there is a bug that overwrites self.oid_get. I can't find it
@@ -198,7 +200,7 @@ class equipment(serializableObj):
 		try:
 			self.snmp_res_dict = snmp.get(self.getoids(), self.ip)
 
-		except:
+		except Exception: # NOQA PyBroadException
 			self.set_offline()
 		if len(list(self.snmp_res_dict.keys())) < len(list(self.getoids().keys())):
 			self.oid_mask()
@@ -306,7 +308,7 @@ class equipment(serializableObj):
 					ver_found = True
 					return resdict, ver_found
 
-				except:
+				except Exception:
 					pass
 
 			if not ver_found:
@@ -373,7 +375,7 @@ class equipment(serializableObj):
 	def get_offline(self):
 		try:
 			return self.offline
-		except:
+		except AttributeError:
 			return True
 
 	def min_refresh_time(self):
@@ -479,7 +481,7 @@ class IRD(equipment):
 		ebno = ebno.replace('"', '')
 		try:
 			final = ebno[0:len(ebno) - 2] + "." + ebno[:2] + "dB"
-		except:
+		except (IndexError, TypeError):
 			final = ""
 		if len(ebno) <= 1:
 			final = ""
@@ -504,7 +506,7 @@ class IRD(equipment):
 				res = res[0]  # 1 line
 				for x in range(len(res)):
 					self.sat_dict[x + 1] = res[x]
-			except:
+			except (IndexError, MySQLdb.Error):
 				pass
 		try:
 			return self.sat_dict[self.getinSatSetupInputSelect()]
@@ -514,12 +516,12 @@ class IRD(equipment):
 	def get_lo_offset(self):
 		try:
 			return self.lo_offset
-		except:
+		except AttributeError:
 			req = "SELECT lo_offset FROM equipment WHERE id = %i" % self.getId()
 			try:
 				res = gv.sql.qselect(req)
 				res = int(res[0][0])
-			except:
+			except (IndexError):
 				res = 0
 			self.lo_offset = res
 			return self.lo_offset
@@ -645,7 +647,7 @@ class IRD(equipment):
 		key = 'numServices'
 		try:
 			return int(self.lookup(key))
-		except:
+		except (TypeError, ValueError):
 			return 0
 
 	def set_offline(self, excuse: str = "") -> None:

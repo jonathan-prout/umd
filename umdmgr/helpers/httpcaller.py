@@ -68,9 +68,10 @@ def geturl(url, username="", password=""):
 
 	#response, content = http.request(url, method, headers=headers)
 
+	# noinspection PyBroadException
 	try:
 		response, content = http.request(url, method, headers=headers)
-	except:
+	except Exception:
 
 		die(["HTTP Error with " + url])
 	return response, content
@@ -137,7 +138,7 @@ def getcache( ip, port, addr, cache_max_age='120'):
 	url = 'http://' + ip + ':' + port + '/' + addr
 	try:
 		cachecreationtime = os.path.getmtime(cachefile)
-	except:
+	except (IOError, OSError):
 		cachecreationtime = 0
 	cacheFileRead = False
 	if cachecreationtime > (time.time() - int(cache_max_age)):
@@ -251,7 +252,7 @@ def replace( location, body):
 	baseaddr = urlstring[3]
 	try:
 		tailaddr = urlstring[4]
-	except:
+	except (IndexError, TypeError):
 		tailaddr = ""
 	 
 	# baseaddr and tailaddr ie "http://10.72.0.5:9998/players/SINK-2"
