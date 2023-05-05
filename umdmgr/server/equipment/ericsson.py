@@ -152,7 +152,7 @@ class RX1290(IRD):
 	def getCAStatus(self):
 		try:
 			castatus = int(self.lookup('castatus'))
-			except (ValueError, TypeError):
+		except (ValueError, TypeError):
 			castatus = 0
 		if self.getBissStatus() == "BISS":
 			return "0x2600"
