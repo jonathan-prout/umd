@@ -133,19 +133,23 @@ def crashdump():
 		cleanup(1)
 
 
+
+
 def beginthreads():
 	gv.threads = []
 
 	log("Starting %s offline check subprocesses..." % gv.offlineCheckThreads, "beginthreads", alarm.level.Debug)
 	for t in range(gv.offlineCheckThreads):
 		bg = multiprocessing.Process(target=backgroundProcessWorker,
-		                             args=(gv.offlineQueue, gv.dbQ, gv.CheckInQueue, gv.threadTerminationFlag))
+		                             args=(gv.offlineQueue, gv.dbQ, gv.CheckInQueue, gv.threadTerminationFlag),
+									 name=f"OfflineCheck-{t:02}")
 		gv.threads.append(bg)
 		bg.start()
 	log("Starting %s worker subprocesses..." % gv.bg_worker_threads, "beginthreads", alarm.level.Debug)
 	for t in range(gv.offlineCheckThreads, gv.bg_worker_threads + gv.offlineCheckThreads):
 		bg = multiprocessing.Process(target=backgroundProcessWorker,
-		                             args=(gv.ThreadCommandQueue, gv.dbQ, gv.CheckInQueue, gv.threadTerminationFlag))
+		                             args=(gv.ThreadCommandQueue, gv.dbQ, gv.CheckInQueue, gv.threadTerminationFlag),
+									 name=f"BackgroundWorker-{t:02}")
 		gv.threads.append(bg)
 		bg.start()
 
@@ -182,7 +186,7 @@ def start(_id=None):
 	}
 	log("Getting equipment", "start", alarm.level.OK)
 	list_of_equip = retrivalList(_id)
-	i = 0
+	i = 1
 	le = len(list_of_equip)
 	for equipmentID, ip, name, model_id, subequipment in list_of_equip:
 		query = "SELECT `id` from `status` WHERE `status`.`id` ='%d'" % equipmentID
@@ -301,7 +305,10 @@ def backgroundProcessWorker(myQ, dbQ, checkInQueue, endFlag):
 	""" Entry point for sub process """
 	from . import gv
 	from helpers import mysql, logging
-	myproc = multiprocessing.current_process()
+	try:
+		myproc = multiprocessing.current_process().name
+	except (ValueError, AttributeError):
+		myproc = multiprocessing.current_process()
 	logging.startlogging(f"/var/log/umd/umdserver_proc{myproc}.log")
 	gv.dbQ = dbQ
 	gv.CheckInQueue = checkInQueue
@@ -320,7 +327,10 @@ def backgroundworker(myQ, endFlag=None):
 	import sys
 	import traceback
 	import multiprocessing
-	myproc = "processs %s" % multiprocessing.current_process()
+	try:
+		myproc = multiprocessing.current_process().name
+	except (ValueError, AttributeError):
+		myproc = "processs %s" % multiprocessing.current_process()
 	item = 1
 	log("Started", myproc, alarm.level.Info)
 	def getTerminated():

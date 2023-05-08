@@ -77,7 +77,7 @@ class DR5000(IRD):
 			return "CLEAR"
 		try:
 			index = self.snmp_res_dict["Table_Service_ID"].index(self.getServiceId())
-		except ValueError:
+		except (IndexError, KeyError, ValueError):
 			return "Service Missing"
 		try:
 			return self.snmp_res_dict["TABLE_CA_TYPE"][index]

@@ -425,7 +425,9 @@ class Titan(IRD, DictKeyProxy):
 		dec_input = self.getInterface(dec_input_name)
 		selected_input_name = self.get_input_interface()
 		selected_input = self.getInterface(selected_input_name)
-
+		if selected_input_name is None:
+			self.set_offline("Input name not found")
+			return "DO NULL;"
 		asi = self.getInterface(selected_input_name + "_asi")
 		ip  = self.getInterface(selected_input_name + "_ip")
 		sat = self.getInterface(selected_input_name + "_sat")
