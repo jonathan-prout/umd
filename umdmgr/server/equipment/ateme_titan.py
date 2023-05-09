@@ -120,8 +120,8 @@ class Titan(IRD, DictKeyProxy):
 
 
 	def set_gateway_configuration(self, content):
-		decoder = self.getInterface("gateway")
-		decoder.setKey("name", content.get("name"))
+		gateway = self.getInterface("gateway")
+		gateway.setKey("name", content.get("name"))
 		input_id = 0
 		inputs = content.get("source", [{}])[0].get("input", [])
 		input_coll = []
@@ -180,10 +180,10 @@ class Titan(IRD, DictKeyProxy):
 
 			iface.setKey("input", _input.get("type"))
 
-		if len(enabled) == 1:
-			decoder.setKey("input", enabled[0])
+		if len(enabled) >= 1:  # Change: Take first input if enabled.
+			gateway.setKey("input", enabled[0])
 		else:
-			decoder.setKey("input", None)
+			gateway.setKey("input", None)
 
 
 	def set_get_decoder_api_channels_id_content(self, content):
