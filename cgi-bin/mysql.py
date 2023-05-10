@@ -18,40 +18,38 @@ class mysql(object):
 			#print "Opening Database Connection...."
 			mysql.db = MySQLdb.connect(self.dhost,self.duser,self.dpass,self.dname)
 			#print self.dname
-		except MySQLdb.Error, e:
+		except MySQLdb.Error as e:
 			now = datetime.datetime.now()
-			print "Database error at ", now.strftime("%H:%M:%S")
-			print "Error %d: %s" % (e.args[0], e.args[1])
+			print ("Database error at ", now.strftime("%H:%M:%S"))
+			print ("Error %d: %s" % (e.args[0], e.args[1]))
 			mysql.db.close()
 			sys.exit(1)
-			
-		
+
+
 	def qselect(self,sql):
 		""" semaphore & mutex lock to access share database """
 		mysql.semaphore.acquire()
 		mysql.mutex.acquire()
-		
+
 		mysql.cursor = mysql.db.cursor()
 		mysql.cursor.execute("set autocommit = 1")
 		#print "\n Mysql Class: I'm going to execute ", sql
 		mysql.cursor.execute(sql)
 		##mysql.cursor.commit()
 		data = mysql.cursor.fetchall()
-		
+
 		""" semaphore & mutex lock to release locked share database """
 		mysql.mutex.release()
-		mysql.semaphore.release()		
+		mysql.semaphore.release()
 		return data
-	
+
 	def close(self):
-		#print "Closing database....."
 		try:
 			mysql.db.close()
-		except Exception, e:
+		except Exception as e:
 			try:
 				message = e.message
-			except:
+			except AttributeError:
 				message = "reason unknown"
 			finally:
-				print "Could not close database because: %s"%message
-
+				print("Could not close database because: %s" % message)

@@ -5,15 +5,20 @@
     1.0 JP JUL 2012
 
 """
-from __future__ import print_function
-import telnetlib, Queue, signal, time
+import telnetlib,  signal, time
+import queue as Queue
 
+class Telnet(telnetlib.Telnet):
+        def write(self,s, *args, **kwargs):
+                return super(Telnet, self).write(s.encode("UTF-8"), *args, **kwargs)
+        def read_until(self, s, *args, **kwargs):
+                return super(Telnet, self).read_until(s.encode("UTF-8"), *args, **kwargs).decode("UTF-8")
 
 class boilerplate(object):
     """ Boilerplate stuff to inherit into sublcass that does stuff"""
     def shout(self, stuff):
-        print ("%s" % stuff)
-        
+        print("%s" % stuff)
+
     def set_offline(self, callingFunc = None):
         self.offline = True
         self.shout("Problem with %s when %s Now offline"% (self.host, callingFunc))
@@ -21,9 +26,9 @@ class boilerplate(object):
             self.tel.close()
         except:
             pass
-        
-        
-                    
+
+
+
     def get_offline(self):
             try:
                     return self.offline
@@ -31,15 +36,15 @@ class boilerplate(object):
                     return True
     def set_online(self):
         self.offline = False
-    
+
     def errorHandler(self, signum, frame):
-        print 'Error handler called with signal', signum
-        
+        print('Error handler called with signal', signum)
+
     def matchesPrevious(self, addr, level, line):
         """ Caches what the label is so it is not written next time """
         try:
             if self.previousLabel[addr][level] == line:
-                
+
                 return True
         except Exception as e:
             if isinstance(e, AttributeError):
@@ -52,12 +57,12 @@ class boilerplate(object):
             self.previousLabel[addr] = {}
         self.previousLabel[addr][level] = line
         return False
-    
-        
-        
+
+
+
     def put(self, qitem):
         """videoInput, level, line, mode"""
-        
+
         #self.q = Queue.Queue()
         if self.q.full():
             pass
@@ -79,8 +84,8 @@ class boilerplate(object):
 class zprotocol(boilerplate):
     """ This class impliments Harris/Zandar Z protocol as a class
     TCP Port is implied, but expects an instance of a collections.queue object passed to perform FIFO queueing of UMD texts """
-    
-    
+
+
     def __init__(self, host):
         self.mv_type = "Harris/Zandar"
         self.port = 4003
@@ -89,16 +94,16 @@ class zprotocol(boilerplate):
         self.connect()
         self.fullref = False
         self.last_cmd_sent = time.time()
-        
+
     def connect(self):
         """
         # Set the signal handler and a 5-second alarm
         signal.signal(signal.SIGALRM, self.errorHandler)
         signal.alarm(5)
-        
+
         """
         try:
-            self.tel = telnetlib.Telnet(self.host, self.port)
+            self.tel = Telnet(self.host, self.port)
             self.tel.write("\n")
             self.tel.read_until(">", 1)
             self.set_online()
@@ -108,7 +113,7 @@ class zprotocol(boilerplate):
         finally:
             #signal.alarm(0)          # Disable the alarm
             pass
-            
+
     def keepAlive(self):
         try:
             self.tel.write("\n")
@@ -116,8 +121,8 @@ class zprotocol(boilerplate):
             self.last_cmd_sent = time.time()
         except:
             self.set_offline("keepalive")
-            
-    
+
+
     def writeline(self, videoInput, level, line):
         a = ""
         d = {"TOP":1, "BOTTOM":2}
@@ -126,7 +131,7 @@ class zprotocol(boilerplate):
         # Set the signal handler and a 5-second alarm
         signal.signal(signal.SIGALRM, self.errorHandler)
         signal.alarm(5)
-        
+
         """
         try:
             self.tel.write(cmd)
@@ -138,7 +143,7 @@ class zprotocol(boilerplate):
             #signal.alarm(0)          # Disable the alarm
             pass
     def refresh(self):
-        
+
         while not self.q.empty():
             if self.fullref:
                 break
@@ -150,15 +155,15 @@ class zprotocol(boilerplate):
                 self.qtruncate()
         if self.last_cmd_sent < (time.time() -15 ):
             self.keepAlive()
-        
-            
-        
+
+
+
     def __del__(self):
         try:
             self.tel.close()
         except:
             pass
-        
+
 class kaleido(boilerplate):
     mv_type = "Kaleido"
     port = 13000
@@ -174,8 +179,8 @@ class kaleido(boilerplate):
         self.fullref = False
         self.make_default_input_table()
 
-    def connect(self):    
-        
+    def connect(self):
+
         """
         # Set the signal handler and a 5-second alarm
         signal.signal(signal.SIGALRM, self.errorHandler)
@@ -184,14 +189,15 @@ class kaleido(boilerplate):
         try:
             import gv
             assert(gv.programTerminationFlag == False)
-            self.tel = telnetlib.Telnet(self.host, self.port)
+            self.tel = Telnet(self.host, self.port)
             self.tel.write("\n")
             self.tel.read_until(">", self.timeout)
             self.set_online()
-            
-        except:
+
+        except Exception as e:
             self.set_offline("init")
             self.shout("Cannot connect to %s" %self.host)
+            self.shout(e)
         finally:
             #signal.alarm(0)          # Disable the alarm
             pass
@@ -206,10 +212,10 @@ class kaleido(boilerplate):
                 "COMBINED": 200 + i
             }
             self.lookuptable[i] = d
-            
+
     def lookup(self, videoInput, level):
          return self.lookuptable[int(videoInput)][level]
-    
+
     def writeline(self, videoInput, level, line, mode):
         try:
             addr = self.lookup(videoInput, level)
@@ -226,7 +232,7 @@ class kaleido(boilerplate):
                 if addr < 100:
                     addr = "0"+str(addr)
             cmd = '<setKDynamicText>set address="%s" text="%s" </setKDynamicText>\n' %(addr, line)
-        """   
+        """
         # Set the signal handler and a 5-second alarm
         signal.signal(signal.SIGALRM, self.errorHandler)
         signal.alarm(5)
@@ -245,7 +251,7 @@ class kaleido(boilerplate):
             #signal.alarm(0)          # Disable the alarm
             pass
     def setAction(self, actionName):
-        
+
         cmd = '<setKFireAction>set name="%s"</setKFireAction>\n'%actionName
         try:
             self.tel.write(cmd)
@@ -260,7 +266,7 @@ class kaleido(boilerplate):
         finally:
             #signal.alarm(0)          # Disable the alarm
             pass
-        
+
     def getActionList(self):
         import xml.etree.ElementTree as E
         a = ""
@@ -279,7 +285,7 @@ class kaleido(boilerplate):
         for el in xmlData.findall("action"):
             returnList.append(el.text)
         return returnList
-    
+
     def refresh(self):
         while not self.q.empty():
             if self.fullref:
@@ -290,8 +296,8 @@ class kaleido(boilerplate):
                     self.writeline(videoInput, level, line, mode)
         if self.fullref:
                 self.qtruncate()
-            
-        
+
+
     def __del__(self):
         try:
             self.tel.close()
@@ -312,19 +318,19 @@ class KX(kaleido):
     fullref = False
     clearAlarmsOnConnect = True
     def __init__(self, host):
-        
+
         self.q = Queue.Queue(1000)
         self.host = host
 
         self.make_default_input_table()
         self.connect()
 
-    
+
     def connect(self):
         super(KX,self).connect()
         if self.clearAlarmsOnConnect:
             self.clearalarms()
-        
+
 class K2(kaleido):
     mv_type = "K2"
     AlarmCapable = False
@@ -332,12 +338,12 @@ class K2(kaleido):
     port = 13000
     size = 32
     fullref = False
-    
+
     def __init__(self, host):
-        self.False = True #Note to self pick out variable names I can remember
+
         self.q = Queue.Queue(100)
         self.host = host
-        
+
         self.fullref = False
         self.make_default_input_table()
         self.connect()
@@ -349,4 +355,4 @@ class KX16(KX):
 class KXQUAD(KX):
     mv_type = "KX-QUAD"
     size = 4
-        
+
