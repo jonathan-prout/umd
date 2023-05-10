@@ -2,19 +2,25 @@
 import cgi, os
 import queue as Queue
 import cgitb
+
 cgitb.enable()
 import multiviewer
+
 multiviewer.openMv = None
 import mysql, threading
+
 mysql.mysql.semaphore = threading.BoundedSemaphore(value=1)
 mysql.mysql.mutex = threading.RLock()
 sql = mysql.mysql()
 
+
 class kal(multiviewer.KX):
     clearAlarmsOnConnect = False
     msgQ = Queue.Queue()
+
     def shout(self, s):
         self.msgQ.put(s)
+
 
 def printheaders():
     print("Content-Type: text/html")
@@ -48,10 +54,13 @@ def printheaders():
     print('<form action="dummy" method="post"><select name="choice" size="1" onChange="jump(this.form)">')
     print('<option value="#">Please Select</option>')
 
+
 def close():
     print('</body></html>')
-    if multiviewer.openMv != None:
+    if multiviewer.openMv is not None:
         multiviewer.openMv.close()
+
+
 def getmsgs():
     if multiviewer.openMv != None:
         if not multiviewer.openMv.msgQ.empty():
@@ -59,11 +68,15 @@ def getmsgs():
         while not multiviewer.openMv.msgQ.empty():
             print(multiviewer.openMv.msgQ.get())
             print("<br>\n")
+
+
 def nice_name(s_input):
     s = s_input.replace("ip", "input ")
     s = s.replace("_", " ")
     s = s.replace("fs", "fullscreen")
     return s
+
+
 def main():
     printheaders()
     fs = cgi.FieldStorage()
@@ -73,7 +86,7 @@ def main():
     MVIP = 2
     mvDict = {}
     for mv in mvList:
-        print('<option value="kalaction.py?mv=%s">%s</option>'%(mv[MVNAME], mv[MVNAME]))
+        print('<option value="kalaction.py?mv=%s">%s</option>' % (mv[MVNAME], mv[MVNAME]))
         mvDict[mv[MVNAME]] = mv[MVIP]
     print("</select></form></td>")
 
@@ -103,24 +116,21 @@ def main():
                 close()
                 return
             else:
-                print("Command '%s' submitted OK<br>\n"%nice_name(action))
+                print("Command '%s' submitted OK<br>\n" % nice_name(action))
 
     actions = multiviewer.openMv.getActionList()
     print("")
     if actions != []:
         print("The following commands are available on this Kaleido")
         for action in actions:
-
-
             print('<form method="post" action="#">')
-            print('<input type="hidden" name="action" value="%s"><br>'%action)
-            print('<input type="submit" value="%s">'%nice_name(action))
+            print('<input type="hidden" name="action" value="%s"><br>' % action)
+            print('<input type="submit" value="%s">' % nice_name(action))
             print('</form>')
     else:
         print("No commands are available on this Kaleido")
 
     close()
-
 
 
 if __name__ == "__main__":
