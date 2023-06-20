@@ -195,7 +195,7 @@ class TestTitan(unittest.TestCase):
 		sat = titan.getInterface(selected_input_name + "_sat")
 
 		self.assertEqual("IP", selected_input.getKey("input", "").upper())
-		self.assertAlmostEqual(15678089, dec_input.getKey("ts_bitrate", 0), 3)
+		self.assertAlmostEqual(15621315, dec_input.getKey("ts_bitrate", 0), 3)
 		self.assertEqual(True, dec_input.getKey("ts_lock", True))
 		self.assertEqual(1, decoder.getKey("service_count", 0))
 
@@ -207,6 +207,47 @@ class TestTitan(unittest.TestCase):
 
 		service_name = current_service.get("name", "")
 		self.assertEqual("", service_name)
+		self.assertEqual("16:9", decoder.getKey("aspect_ratio", ""))
+		self.assertEqual(1080, decoder.getKey("height", 0))
+		self.assertEqual(25.0, decoder.getKey("frame_rate", 0))
+		self.assertEqual(True, decoder.getKey("video_status", 0))
+		self.assertEqual("",titan.getCAType())
+
+	def test_titan_291_interface_redundancy(self):
+		titan = ateme_titan.Titan(1, "10.88.203.21", "titan", 1)
+		fname = "get__gateway_api_channels_1_291.json"
+		with open(os.sep.join(["testdata", fname]), "r") as fobj:
+			jdata = json.load(fobj)
+		titan.set_get_gateway_api_channels_id_content(jdata)
+		fname = "get__decoder_api_channels_1_291.json"
+		with open(os.sep.join(["testdata", fname]), "r") as fobj:
+			jdata = json.load(fobj)
+		titan.set_get_decoder_api_channels_id_content(jdata)
+
+		self.assertEqual(titan.get_offline(), False)
+		decoder = titan.getInterface("decoder")
+		dec_input_name = decoder.getKey("input", "UNKNOWN")
+		dec_input = titan.getInterface(dec_input_name)
+		selected_input_name = titan.get_input_interface()
+		selected_input = titan.getInterface(selected_input_name)
+
+		asi = titan.getInterface(selected_input_name + "_asi")
+		ip = titan.getInterface(selected_input_name + "_ip")
+		sat = titan.getInterface(selected_input_name + "_sat")
+
+		self.assertEqual("IP", selected_input.getKey("input", "").upper())
+		self.assertAlmostEqual(21000231, dec_input.getKey("ts_bitrate", 0), 3)
+		self.assertEqual(True, dec_input.getKey("ts_lock", True))
+		self.assertEqual(1, decoder.getKey("service_count", 0))
+
+		current_service_id = decoder.getKey("service_id", 0)
+		self.assertEqual(1, current_service_id)
+		services = decoder.getKey("services", {})
+
+		current_service = services.get(current_service_id, {})
+
+		service_name = current_service.get("name", "")
+		self.assertEqual('MDS-4 EG23 UBU', service_name)
 		self.assertEqual("16:9", decoder.getKey("aspect_ratio", ""))
 		self.assertEqual(1080, decoder.getKey("height", 0))
 		self.assertEqual(25.0, decoder.getKey("frame_rate", 0))
