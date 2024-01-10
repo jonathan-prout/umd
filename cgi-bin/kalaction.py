@@ -21,7 +21,6 @@ class kal(multiviewer.KX):
     def shout(self, s):
         self.msgQ.put(s)
 
-
 def printheaders():
     print("Content-Type: text/html")
     print("")
@@ -54,12 +53,10 @@ def printheaders():
     print('<form action="dummy" method="post"><select name="choice" size="1" onChange="jump(this.form)">')
     print('<option value="#">Please Select</option>')
 
-
 def close():
     print('</body></html>')
     if multiviewer.openMv is not None:
         multiviewer.openMv.close()
-
 
 def getmsgs():
     if multiviewer.openMv != None:
@@ -69,13 +66,11 @@ def getmsgs():
             print(multiviewer.openMv.msgQ.get())
             print("<br>\n")
 
-
 def nice_name(s_input):
     s = s_input.replace("ip", "input ")
     s = s.replace("_", " ")
     s = s.replace("fs", "fullscreen")
     return s
-
 
 def main():
     printheaders()
@@ -131,7 +126,3 @@ def main():
         print("No commands are available on this Kaleido")
 
     close()
-
-
-if __name__ == "__main__":
-    main()

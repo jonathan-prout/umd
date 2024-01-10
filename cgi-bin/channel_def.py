@@ -1,9 +1,10 @@
-#!/usr/bin/python
+#!/opt/ebu/py37/bin/python
+import csv
 numcolumns = 9
 
 
 def opencsv(inputfile, format="file"):
-	import csv
+
 	if format == "buffer":
 		#inputfile = inputfile.split("\n")
 		csvfile = csv.reader(inputfile, delimiter=',', quotechar='|')

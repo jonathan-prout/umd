@@ -3,7 +3,7 @@ import os, re, sys, time, datetime
 import threading, MySQLdb
 
 
-class mysql(object):
+class mysql:
     dhost = "localhost"
     duser = "umd"
     dpass = "umd"
@@ -18,7 +18,6 @@ class mysql(object):
         try:
             # print "Opening Database Connection...."
             mysql.db = MySQLdb.connect(self.dhost, self.duser, self.dpass, self.dname)
-        # print self.dname
         except MySQLdb.Error as e:
             now = datetime.datetime.now()
             print("Database error at ", now.strftime("%H:%M:%S"))
