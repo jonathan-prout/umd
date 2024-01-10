@@ -1,15 +1,17 @@
-#!/usr/bin/env python
+#!/opt/ebu/py37/bin/python 
+import sys
 
 try:
 	import cgi, os
 	import json
 	import cgitb; cgitb.enable()
 	import mysql, threading
-except ImportError, e:
-	print str(e)
+except ImportError as e:
+	print(str(e))
+	sys.exit(1)
 	
 	
-import threading, MySQLdb
+
 
 
 mysql.mysql.semaphore = threading.BoundedSemaphore(value=1)
@@ -29,9 +31,9 @@ for row in sql.qselect("SELECT `status`.`input`, `status`.`output` FROM `status`
 	src_dest[s].append(d)
 	
 
-print "Content-Type: application/json"
-print ""
-print "dest_src = "+ json.dumps(dest_src)
-print "src_dest = "+ json.dumps(src_dest)
+print("Content-Type: application/json")
+print("")
+print("dest_src = "+ json.dumps(dest_src))
+print("src_dest = "+ json.dumps(src_dest))
 
 	

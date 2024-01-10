@@ -1,4 +1,5 @@
-#!/usr/bin/env python
+#!/opt/ebu/py37/bin/python 
+
 import cgi, os
 import cgitb; cgitb.enable()
 import mysql, threading
@@ -27,7 +28,7 @@ def opencsv(inputfile, format="file"):
 		if len(row) == numcolumns: #Skip blank or bad rows
 			if row[0] != 'satellite': # skip the row with the column names
 				#print row 
-				#print "<br>"
+				#print("<br>"
 				okrows.append(row)
 	# don't need to close file
 	return okrows
@@ -61,9 +62,9 @@ def upload(rows):
 
 
 if __name__ == "__main__":
-	print "Content-Type: text/html"
-	print ""
-	print "<html><body>"
+	print("Content-Type: text/html")
+	print("")
+	print("<html><body>")
 	try: # Windows needs stdio set for binary mode.
 		import msvcrt
 		msvcrt.setmode (0, os.O_BINARY) # stdin  = 0
@@ -105,8 +106,8 @@ if __name__ == "__main__":
 
 		message = 'No file was uploaded'
 		
-	print """\
+	print("""\
 	<p>%s</p>
 	<p><a href="http://10.73.196.231/umd/menu.php">BACK</a></p>
 	</body></html>
-	""" % (message)
+	""" % (message))

@@ -1,16 +1,16 @@
-#!/usr/bin/env python
-
+#!/opt/ebu/py37/bin/python 
+import sys
 try:
-	import cgi, os
+	import cgi
+	import os
 	import json
-	import cgitb; cgitb.enable()
-	import mysql, threading
-except ImportError, e:
-	print str(e)
-	
-	
-import threading, MySQLdb
-
+	import cgitb
+	cgitb.enable()
+	import mysql
+	import threading
+except ImportError as e:
+	print(str(e))
+	sys.exit(1)
 
 mysql.mysql.semaphore = threading.BoundedSemaphore(value=1)
 mysql.mysql.mutex = threading.RLock()
@@ -29,22 +29,23 @@ for row in sql.qselect("SELECT `status`.`input`, `status`.`output` FROM `status`
 	src_dest[s].append(d)
 	
 inputMap = {}
+
 for row in sql.qselect("SELECT `input`.`name` , `input`.`port` FROM `input`WHERE (`input`.`matrixid` =1)"):
 	n = row[0]
 	p = int(row[1])
 	inputMap[p] = n
+
 outputMap = {}
+
 for row in sql.qselect("SELECT `output`.`name` , `output`.`port` FROM `output`WHERE (`output`.`matrixid` =1)"):
 	n = row[0]
 	p = int(row[1])
 	outputMap[p] = n
 
+print("Content-Type: text/html")
+print("")
 
-
-print "Content-Type: text/html"
-print ""
-
-print """<!DOCTYPE html>
+print("""<!DOCTYPE html>
 <html>
 	<head>
 <style>
@@ -70,15 +71,15 @@ Search: <input type="text" name="lname" value="" onkeyup="myFunction()"><br><br>
 
 <p id="demo"></p>
 
-<script> """
+<script> """)
 
 
-print "var dest_src = "+ json.dumps(dest_src) + ";"
-print "var src_dest = "+ json.dumps(src_dest) + ";"
-print "var inputMap = "+ json.dumps(inputMap) + ";"
-print "var outputMap = "+ json.dumps(outputMap) + ";"
-print ""
-print """function myFunction() {
+print("var dest_src = " + json.dumps(dest_src) + ";")
+print("var src_dest = " + json.dumps(src_dest) + ";")
+print("var inputMap = " + json.dumps(inputMap) + ";")
+print("var outputMap = " + json.dumps(outputMap) + ";")
+print("")
+print("""function myFunction() {
     var x = document.getElementById("frm1");
     var text = "";
     var i;
@@ -121,5 +122,5 @@ print """function myFunction() {
 	text +="</table>";
 		document.getElementById("demo").innerHTML = text;
 }
-</script>"""
+</script>""")
 
