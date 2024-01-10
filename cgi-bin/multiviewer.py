@@ -55,7 +55,7 @@ class boilerplate(object):
                 pass
             else:
                 self.shout(str(e))
-        if not self.previousLabel.has_key(addr):
+        if addr not in self.previousLabel:
             self.previousLabel[addr] = {}
         self.previousLabel[addr][level] = line
         return False
