@@ -1,46 +1,48 @@
 #!/opt/ebu/py37/bin/python 
 import sys
+
 try:
-	import cgi
-	import os
-	import json
-	import cgitb
-	cgitb.enable()
-	import mysql
-	import threading
+    import cgi
+    import os
+    import json
+    import cgitb
+
+    cgitb.enable()
+    import mysql
+    import threading
 except ImportError as e:
-	print(str(e))
-	sys.exit(1)
+    print(str(e))
+    sys.exit(1)
 
 mysql.mysql.semaphore = threading.BoundedSemaphore(value=1)
 mysql.mysql.mutex = threading.RLock()
-mysql.mysql.dname="matrix"
+mysql.mysql.dname = "matrix"
 sql = mysql.mysql()
 
 dest_src = {}
 src_dest = {}
 
 for row in sql.qselect("SELECT `status`.`input`, `status`.`output` FROM `status` WHERE (`status`.`matrixid` =1);"):
-	s = int(row[0])
-	d = int(row[1])
-	dest_src[d] = s
-	if not src_dest.has_key(s):
-		src_dest[s] = []	
-	src_dest[s].append(d)
-	
+    s = int(row[0])
+    d = int(row[1])
+    dest_src[d] = s
+    if s not in src_dest:
+        src_dest[s] = []
+    src_dest[s].append(d)
+
 inputMap = {}
 
 for row in sql.qselect("SELECT `input`.`name` , `input`.`port` FROM `input`WHERE (`input`.`matrixid` =1)"):
-	n = row[0]
-	p = int(row[1])
-	inputMap[p] = n
+    n = row[0]
+    p = int(row[1])
+    inputMap[p] = n
 
 outputMap = {}
 
 for row in sql.qselect("SELECT `output`.`name` , `output`.`port` FROM `output`WHERE (`output`.`matrixid` =1)"):
-	n = row[0]
-	p = int(row[1])
-	outputMap[p] = n
+    n = row[0]
+    p = int(row[1])
+    outputMap[p] = n
 
 print("Content-Type: text/html")
 print("")
@@ -72,7 +74,6 @@ Search: <input type="text" name="lname" value="" onkeyup="myFunction()"><br><br>
 <p id="demo"></p>
 
 <script> """)
-
 
 print("var dest_src = " + json.dumps(dest_src) + ";")
 print("var src_dest = " + json.dumps(src_dest) + ";")
@@ -123,4 +124,3 @@ print("""function myFunction() {
 		document.getElementById("demo").innerHTML = text;
 }
 </script>""")
-

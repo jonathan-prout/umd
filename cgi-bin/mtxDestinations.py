@@ -24,7 +24,7 @@ for row in sql.qselect("SELECT `status`.`input`, `status`.`output` FROM `status`
     s = int(row[0])
     d = int(row[1])
     dest_src[d] = s
-    if not src_dest.has_key(s):
+    if s not in src_dest:
         src_dest[s] = []
     src_dest[s].append(d)
 
