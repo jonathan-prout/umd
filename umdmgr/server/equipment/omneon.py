@@ -112,7 +112,7 @@ class IPGridport(OmneonHelper, generic.serializableObj):
 		#response, stringfromserver = httpcaller.get(self.ip, '9980', "csvoutput?--login=auto")
 		try:
 			response, stringfromserver = httpcaller.get(self.ip, self.port, "api/2/list/nodes/rec")
-		except:
+		except Exception:  # Noqa: Pybroadexception
 			
 			response = {'status':'500'}
 		if response['status'] != '200': 
@@ -128,7 +128,7 @@ class IPGridport(OmneonHelper, generic.serializableObj):
 		#response, stringfromserver = httpcaller.get(self.ip, '9980', "csvoutput?--login=auto")
 		try:
 			response, stringfromserver = httpcaller.get(self.ip, '9980', "csvoutput?--login=auto")
-		except:
+		except Exception:  # Noqa: Pybroadexception
 			
 			response = {'status':'500'}
 		if response['status'] != '200': 

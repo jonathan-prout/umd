@@ -3,6 +3,8 @@
 	git note: moved from mukltiviewer.py
 """
 import queue
+import socket
+
 from helpers import telnethelper
 
 from client.multiviewer.generic import TelnetMultiviewer
@@ -50,7 +52,7 @@ class kaleido(TelnetMultiviewer):
 			self.set_online()
 			self.write_status("UMD manager connected", queued=False)
 			self.shout("%s: Connected to %s" % (self.name, self.host))
-		except:
+		except (IOError, TimeoutError, socket.error, OSError):
 			self.set_offline("init")
 			self.shout("%s: Cannot connect to %s" % (self.name, self.host))
 		finally:
@@ -103,7 +105,7 @@ class kaleido(TelnetMultiviewer):
 					self.shout("%s: NACK ERROR in writeline when writing %s" % (self.host, cmd))
 				else:
 					self.shout(a)
-		except:
+		except (IOError, TimeoutError, socket.error, OSError):
 
 			self.set_offline("writeline, %s, %s " % (line, a))
 		finally:
@@ -119,7 +121,7 @@ class kaleido(TelnetMultiviewer):
 			a = self.tel.read_until("<ack/>", self.timeout)
 			if "<ack/>" not in a:
 				self.shout(a)
-		except:
+		except (IOError, TimeoutError, socket.error, OSError):
 			if "<nack/>" in a:
 				self.shout("Multiviewer did not recognise the action named %s" % actionName)
 			else:
@@ -137,7 +139,7 @@ class kaleido(TelnetMultiviewer):
 			if "</kActionList>" not in a:
 				self.shout(a)
 				return []
-		except:
+		except (IOError, TimeoutError, socket.error, OSError):
 			if "<nack/>" in a:
 				return []
 		xmlData = etree.fromstring(a)
@@ -175,9 +177,10 @@ class kaleido(TelnetMultiviewer):
 			self.qtruncate()
 
 	def __del__(self):
+		# noinspection PyBroadException
 		try:
 			self.tel.close()
-		except:
+		except Exception:
 			pass
 
 	def clearalarms(self):

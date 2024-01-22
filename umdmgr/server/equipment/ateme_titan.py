@@ -56,6 +56,8 @@ class Titan(IRD, DictKeyProxy):
 
 		jdata = json.loads(stringfromserver)
 		self.set_get_gateway_api_channels_id_content(jdata)
+		if self.online:
+			self.set_online()
 
 	def set_get_gateway_api_channels_id_content(self, content):
 		self.setKey("updated", "OK")
@@ -92,6 +94,8 @@ class Titan(IRD, DictKeyProxy):
 	def set_status_source_gateway(self, content):
 
 		for source in content:
+			if not source.get("isEnabled", True):
+				continue
 			self.set_status_input(source.get("input"))
 			decoder = self.getInterface("gateway")
 			tsDescriptor = source.get("tsDescriptor", {})
@@ -116,8 +120,8 @@ class Titan(IRD, DictKeyProxy):
 
 
 	def set_gateway_configuration(self, content):
-		decoder = self.getInterface("gateway")
-		decoder.setKey("name", content.get("name"))
+		gateway = self.getInterface("gateway")
+		gateway.setKey("name", content.get("name"))
 		input_id = 0
 		inputs = content.get("source", [{}])[0].get("input", [])
 		input_coll = []
@@ -176,10 +180,10 @@ class Titan(IRD, DictKeyProxy):
 
 			iface.setKey("input", _input.get("type"))
 
-		if len(enabled) == 1:
-			decoder.setKey("input", enabled[0])
+		if len(enabled) >= 1:  # Change: Take first input if enabled.
+			gateway.setKey("input", enabled[0])
 		else:
-			decoder.setKey("input", None)
+			gateway.setKey("input", None)
 
 
 	def set_get_decoder_api_channels_id_content(self, content):
@@ -203,8 +207,8 @@ class Titan(IRD, DictKeyProxy):
 			ifacename = f"{prefix}input_{input_id}"
 			iface = self.getInterface(ifacename)
 
-
-			iface.setKey("ts_bitrate", _input.get("bitrate", 0) )
+			br = float(_input.get("bitrate", 0))  # Keep as BPS
+			iface.setKey("ts_bitrate", br)
 			iface.setKey("ts_lock", _input.get("tsLocked", False))
 
 			ip = _input.get("ip", {})
@@ -213,8 +217,10 @@ class Titan(IRD, DictKeyProxy):
 			ipport = self.getInterface(connector)
 			input_ports.append(connector)
 
-
-			ipport.setKey("rtp", ip.get("isRtp"))
+			if "isRtp" in ip:
+				ipport.setKey("rtp", ip.get("isRtp"))
+			else:
+				ipport.setKey("rtp", ip.get("streamType"))
 			ipport.setKey("packet_counter", ip.get("packetCounter", 0))
 			ipport.setKey("missing_packet_counter", ip.get("missingPacketCounter", 0))
 			ipport.setKey("input_error_rate", ip.get("inputErrorRate", 0))
@@ -231,8 +237,13 @@ class Titan(IRD, DictKeyProxy):
 			satport.setKey("carrier_noise_ratio", sat.get("cnr"))
 			satport.setKey("margin", sat.get("cnrMargin"))
 			satport.setKey("bit_error_rate", sat.get("ber"))
-			satport.setKey("fec", sat.get("fec"))
-			satport.setKey("roll_off", sat.get("rollOff"))
+			satport.setKey("fec", sat.get("fec").replace("_", "/"))
+			try:
+				rolloff = float(sat.get("rollOff").replace("_", "."))
+			except (ValueError, AttributeError):
+				rolloff = 0
+
+			satport.setKey("roll_off", rolloff)
 			satport.setKey("pilot_symbols", sat.get("pilots"))
 
 	def set_status_decode(self, content):
@@ -257,11 +268,11 @@ class Titan(IRD, DictKeyProxy):
 			try:
 
 				aspect_ratio_d = aspect_ratios  # because it is dict
-				aspect_ratio = "{}_{}".format(aspect_ratio_d["numerator"], aspect_ratio_d["denominator"])
+				aspect_ratio = "{}:{}".format(aspect_ratio_d["numerator"], aspect_ratio_d["denominator"])
 			except (json.JSONDecodeError, KeyError):
-				aspect_ratio = self.processServiceName(aspect_ratios).replace(" ", "_")
+				aspect_ratio = self.processServiceName(aspect_ratios).replace(" ", ":")
 		else:
-			aspect_ratio = self.processServiceName(aspect_ratios).replace(" ", "_")
+			aspect_ratio = self.processServiceName(aspect_ratios).replace(" ", ":")
 		decoder.setKey("aspect_ratio", aspect_ratio)
 
 	def set_status_source(self, content):
@@ -367,9 +378,10 @@ class Titan(IRD, DictKeyProxy):
 	def getCAType(self):
 		decoder = self.getInterface("decoder")
 		current_service_id = decoder.getKey("service_id", 0)
-		services = decoder.getKey("services", {})
+		gateway = self.getInterface("gateway")
+		services = gateway.getKey("services", {})
 		current_service = services.get(current_service_id, {})
-		pcr = current_service.get("PCR", 0)
+
 
 		return current_service.get("caType", "")
 
@@ -413,7 +425,9 @@ class Titan(IRD, DictKeyProxy):
 		dec_input = self.getInterface(dec_input_name)
 		selected_input_name = self.get_input_interface()
 		selected_input = self.getInterface(selected_input_name)
-
+		if selected_input_name is None:
+			self.set_offline("Input name not found")
+			return "DO NULL;"
 		asi = self.getInterface(selected_input_name + "_asi")
 		ip  = self.getInterface(selected_input_name + "_ip")
 		sat = self.getInterface(selected_input_name + "_sat")
@@ -447,7 +461,7 @@ class Titan(IRD, DictKeyProxy):
 		services = decoder.getKey("services", {})
 		current_service = services.get(current_service_id, {})
 
-		sql += ["servicename = '%s' " % current_service.get("name", "")]
+		sql += ["servicename = '%s' " % self.processServiceName(current_service.get("name", ""))]
 		sql += ["aspectratio ='%s' " % decoder.getKey("aspect_ratio", "")]
 		sql += ["castatus='%s' " % self.getCAType()]
 		sql += ["videoresolution='%s' " % decoder.getKey("height", 0)]

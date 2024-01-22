@@ -57,7 +57,7 @@ def determine_type(data):
 	if not all((gv.suppressEquipCheck, (not isinstance(current_equipment, server.equipment.generic.GenericIRD)))):
 		try:
 			equipTypeStr = current_equipment.determine_type()
-		except:
+		except Exception: # noqa: pybroadexception
 			equipTypeStr = "OFFLINE"
 	equipmentID = current_equipment.equipmentId
 	ip = current_equipment.ip

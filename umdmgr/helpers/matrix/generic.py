@@ -4,20 +4,27 @@ from builtins import object
 import time
 import socket
 from threading import Lock
+
 class pointerVariable(object):
 	""" class to make a variable act like a pointer """
-	obj = None
-	def __str__(self ):
+	def __init__(self, obj):
+		self.obj = obj
+
+	def __str__(self):
 		return str(self.obj)
 	
 	def __repr__(self):
-		return '"%s"'%self.__str__()
+		return '"%s"' % self.__str__()
+
 	def set(self, assignment ):
 		self.obj = assignment
-	def __int__(self, ):
-		return int(obj)
+
+	def __int__(self ):
+		return int(self.obj)
+
 	def __float__(self ):
-		return float(obj)
+		return float(self.obj)
+
 	def __unicode__(self, ):
 		return self.__str__()
 	
@@ -47,7 +54,7 @@ class matrix(object):
 	def get_offline(self):
 			try:
 					return self.offline
-			except:
+			except AttributeError:
 					return True
 
 	def set_online(self):

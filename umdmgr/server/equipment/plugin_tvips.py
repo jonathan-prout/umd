@@ -25,7 +25,7 @@ class asiport(object):
 		for k in ["id", "enable", "dir","dest","label"]:
 			try:
 				d[k] = getattr(self, k)
-			except:
+			except AttributeError:
 				continue
 		return d
 	
@@ -52,7 +52,7 @@ class TVG420(tvips):
 				raise HTTPError
 				#	die( zip(response, "----------", "Bad response from server when getting information on ports from the TVIPS at ", self.ip))
 			self.online = True
-		except:
+		except Exception:  # Noqa: Pybroadexception
 			self.online = False
 		if self.online:
 			xmldoc = xmlhelper.stringtoxml(stringfromserver)
@@ -108,7 +108,7 @@ class TVG420(tvips):
 					#die( zip(response, "----------", "Bad response from server when getting information on ports from the TVIPS at ", self.ip))
 					raise "HTTP ERROR"
 				self.online = True
-			except:
+			except Exception:  # Noqa: Pybroadexception
 				self.online = False
 			if self.online:
 			
@@ -116,7 +116,7 @@ class TVG420(tvips):
 				ip_tx_rate =  xmlhelper.getAttributesFromTags('iptx', 'totrate', xmldoc)
 				try:
 					self.ip_tx_rate[item] = int(ip_tx_rate[0])
-				except:
+				except (ValueError, TypeError, IndexError):
 					self.ip_tx_rate[item] = 0
 			else:
 				self.ip_tx_rate[item] = 0
@@ -132,7 +132,7 @@ class TVG420(tvips):
 			enablelist = xmlhelper.getAttributesFromTags('asi', 'enable', xmldoc)
 			self.enablelist = enablelist
 			self.online = True
-		except:
+		except Exception:  # Noqa: Pybroadexception
 			for item in range(len(self.enablelist)):
 				self.enablelist[item] = "false"
 			self.online = True
@@ -194,6 +194,6 @@ class TVG420(tvips):
 		#return stringfromserver	
 		try:
 			status_text = status_text[0]
-		except:
+		except (IndexError, TypeError):
 			status_text = "ERROR"
 		return status_text

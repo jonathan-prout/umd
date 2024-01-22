@@ -146,13 +146,13 @@ class RX1290(IRD):
 	def getDirectorStatus(self):
 		try:
 			return int(self.lookup("director_encrypted")) == 2
-		except:
+		except (ValueError, TypeError):
 			return False
 
 	def getCAStatus(self):
 		try:
 			castatus = int(self.lookup('castatus'))
-		except:
+		except (ValueError, TypeError):
 			castatus = 0
 		if self.getBissStatus() == "BISS":
 			return "0x2600"
@@ -321,7 +321,7 @@ class RX8200(IRD):
 			pos = Table_Service_ID.index(int(ServiceID))
 			serviceName = Table_Service_Name[pos]
 			return self.processServiceName(serviceName)
-		except:
+		except (ValueError, TypeError, KeyError):
 			return ""
 
 	def getCAStatus(self):
@@ -345,18 +345,19 @@ class RX8200(IRD):
 			pos = Table_Service_ID.index(int(ServiceID))
 			encType = tableEncryptionType[pos].strip()
 			return encType
-		except:
+		except (ValueError, TypeError, KeyError):
 			return self.getBissStatus()
 
 	def getEbno(self):
 		ebno = self.lookupstr('Eb / No')
-		ebno = ebno.strip()
-		ebno = ebno.replace(' ', '')
-		ebno = ebno.replace('"', '')
 		try:
+			ebno = ebno.strip()
+			ebno = ebno.replace(' ', '')
+			ebno = ebno.replace('"', '')
+
 			final = ebno.replace(" ", "")
 			final = ebno.replace("+", "")
-		except:
+		except (ValueError, TypeError, AttributeError):
 			final = ""
 		if len(ebno) <= 1:
 			final = ""
@@ -381,7 +382,7 @@ class RX8200(IRD):
 		fr = self.lookupstr('video frame rate')
 		try:
 			fr = float(fr)
-		except:
+		except (ValueError, TypeError):
 			fr = 0
 		fr = old_div(fr, 1000)
 		st = "%sHz" % fr
@@ -404,7 +405,7 @@ class RX8200(IRD):
 		try:
 			resdict = snmp.get(d, self.ip)
 			self.offline = False
-		except:
+		except Exception: # NOQA: PyBroadException
 			self.offline = True
 			resdict = {'inputCardType': "OFFLINE"}
 		if 'inputCardType' in resdict:

@@ -35,7 +35,7 @@ class mysql(generic.IInfoSourceMixIn):
 		cmd = "show table status from %s like '%s';" % (self.dname, table)
 		try:
 			return self.qselect(cmd)[0][11]
-		except:
+		except (MySQLdb.error, IndexError, TypeError):
 			return None
 
 	def dbConnect(self):
@@ -100,7 +100,7 @@ class mysql(generic.IInfoSourceMixIn):
 				try:
 					if self.xpointStatus[level][dest + self.countFrom1] == src + self.countFrom1:
 						xpc = False
-				except:
+				except (IndexError, KeyError, TypeError):
 					pass
 				if xpc:
 					self.onXPointChange(dest, src, level)
@@ -134,7 +134,7 @@ class mysql(generic.IInfoSourceMixIn):
 
 					try:
 						rows += data.fetch_row(maxrows=0)
-					except:
+					except MySQLdb.error:
 						pass
 		except Exception as e:
 			pass
@@ -260,7 +260,8 @@ class sharedSql(mysql):
 
 	def dbConnect(self):
 		with self.sqlLock:
+			# noinspection PyBroadException
 			try:
 				self.db.ping()
-			except:
+			except Exception:
 				self.set_offline("database")

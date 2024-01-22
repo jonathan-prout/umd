@@ -109,7 +109,7 @@ class OmneonHelper(object):
 			#response, stringfromserver = httpcaller.get(item, '9998', 'streamstores')
 			try:
 				response, stringfromserver = httpcaller.getcache(str(ipgridportiplist[item]), '9998', 'streamstores', '30') #The last is a caching value of 15 minutes. New streamstores will not be seen for that long unless the cache is flushed
-			except:
+			except Exception:  # Noqa: Pybroadexception
 				response = {"status":"500"}
 				stringfromserver = "" 
 			if response['status'] != '200':

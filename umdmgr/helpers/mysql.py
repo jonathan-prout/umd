@@ -62,16 +62,16 @@ class mysql(object):
 
 			log("Database error on connection", self, alarm.level.Critical)
 			logerr(str(self), alarm.level.Critical)
+
+			# noinspection PyBroadException
 			try:
 				self.close()
-			except:
+			except Exception:
 				pass
 			#sys.exit(1)
 			raise e
 
-		
-
-	def qselect(self,sql, require_lock = True, commit = None):
+	def qselect(self,sql, require_lock = True, commit = None, mask_error = True):
 		""" semaphore & mutex lock to access share database takes sql command as string. Returns list"""
 		if require_lock:
 			if commit is None:
@@ -117,6 +117,8 @@ class mysql(object):
 			log("Database error on query", self, alarm.level.Critical)
 			logerr(str(self), alarm.level.Critical)
 			log(sql, self, alarm.level.critical)
+			if not mask_error:
+				raise e
 			self.close()
 
 		finally:

@@ -95,7 +95,7 @@ def getEquipmentDict():
 	for k, v in gv.equipmentDict.items():
 		try:
 			equipmentDict[k] = v.serialize()
-		except:
+		except (TypeError, ValueError, KeyError, AttributeError):
 			continue
 
 
@@ -133,19 +133,23 @@ def crashdump():
 		cleanup(1)
 
 
+
+
 def beginthreads():
 	gv.threads = []
 
 	log("Starting %s offline check subprocesses..." % gv.offlineCheckThreads, "beginthreads", alarm.level.Debug)
 	for t in range(gv.offlineCheckThreads):
 		bg = multiprocessing.Process(target=backgroundProcessWorker,
-		                             args=(gv.offlineQueue, gv.dbQ, gv.CheckInQueue, gv.threadTerminationFlag))
+		                             args=(gv.offlineQueue, gv.dbQ, gv.CheckInQueue, gv.threadTerminationFlag),
+									 name=f"OfflineCheck-{t:02}")
 		gv.threads.append(bg)
 		bg.start()
 	log("Starting %s worker subprocesses..." % gv.bg_worker_threads, "beginthreads", alarm.level.Debug)
 	for t in range(gv.offlineCheckThreads, gv.bg_worker_threads + gv.offlineCheckThreads):
 		bg = multiprocessing.Process(target=backgroundProcessWorker,
-		                             args=(gv.ThreadCommandQueue, gv.dbQ, gv.CheckInQueue, gv.threadTerminationFlag))
+		                             args=(gv.ThreadCommandQueue, gv.dbQ, gv.CheckInQueue, gv.threadTerminationFlag),
+									 name=f"BackgroundWorker-{t:02}")
 		gv.threads.append(bg)
 		bg.start()
 
@@ -171,31 +175,43 @@ def start(_id=None):
 	if not gv.threads:
 		beginthreads()
 	# Equipment Types 
-	simpleTypes = {
-		"TT1260": server.equipment.ericsson.TT1260,
+	simpleTypes = {"TT1260": server.equipment.ericsson.TT1260,
 		"RX1290": server.equipment.ericsson.RX1290,
 		"DR5000": server.equipment.ateme.DR5000,
 		"TVG420": server.equipment.tvips.TVG420,
 		"IP Gridport": server.equipment.omneon.IPGridport,
 		"Rx8200": server.equipment.ericsson.RX8200,
-		"Titan": server.equipment.ateme_titan.Titan
-
+		"Titan": server.equipment.ateme_titan.Titan,
+		"OFFLINE":equipment.generic.GenericIRD
 	}
 	log("Getting equipment", "start", alarm.level.OK)
-	for equipmentID, ip, name, model_id, subequipment in retrivalList(_id):
+	list_of_equip = retrivalList(_id)
+	i = 1
+	le = len(list_of_equip)
+	for equipmentID, ip, name, model_id, subequipment in list_of_equip:
 		query = "SELECT `id` from `status` WHERE `status`.`id` ='%d'" % equipmentID
+		if model_id.upper() == "DISABLED":
+			continue
 		if len(gv.sql.qselect(query)) == 0:
 			query = "REPLACE INTO `UMD`.`status` SET `id` ='%d'" % equipmentID
+		gv.sql.qselect(query)
+		query = "UPDATE `UMD`.`status` SET `status` = 'Initializing' WHERE `status`.`id` = '%i'" % (
+			equipmentID)
 		gv.sql.qselect(query)
 		for key in list(simpleTypes.keys()):
 
 			if any(((key in model_id), (key in name))):
+				log(f"Creating {key} {equipmentID}, {ip} {name}", "Start", alarm.level.Debug)
 				newird = simpleTypes[key](int(equipmentID), ip, name, subequipment)
+
 				break
 
 		else:
+			log(f"Creating {key} {equipmentID}, {ip} {name}", "Start", alarm.level.Debug)
 			newird = equipment.generic.GenericIRD(int(equipmentID), ip, name, subequipment)
+		log(f"Adding {newird} {i}/{le}", "Start", alarm.level.Debug)
 		gv.addEquipment(newird)
+		i += 1
 	log("Determining types", "start", alarm.level.OK)
 	for currentEquipment in list(gv.equipmentDict.values()):
 		gv.ThreadCommandQueue.put(("determine_type", currentEquipment.serialize()), block=True)
@@ -289,7 +305,10 @@ def backgroundProcessWorker(myQ, dbQ, checkInQueue, endFlag):
 	""" Entry point for sub process """
 	from . import gv
 	from helpers import mysql, logging
-	myproc = multiprocessing.current_process()
+	try:
+		myproc = multiprocessing.current_process().name
+	except (ValueError, AttributeError):
+		myproc = multiprocessing.current_process()
 	logging.startlogging(f"/var/log/umd/umdserver_proc{myproc}.log")
 	gv.dbQ = dbQ
 	gv.CheckInQueue = checkInQueue
@@ -308,7 +327,10 @@ def backgroundworker(myQ, endFlag=None):
 	import sys
 	import traceback
 	import multiprocessing
-	myproc = "processs %s" % multiprocessing.current_process()
+	try:
+		myproc = multiprocessing.current_process().name
+	except (ValueError, AttributeError):
+		myproc = "processs %s" % multiprocessing.current_process()
 	item = 1
 	log("Started", myproc, alarm.level.Info)
 	def getTerminated():
@@ -359,7 +381,7 @@ def backgroundworker(myQ, endFlag=None):
 def cleanup(exit_status=0):
 	try:
 		_prexit = gv.preexit
-	except:
+	except AttributeError:
 		gv.preexit = False
 		_prexit = False
 	if not _prexit:
@@ -399,8 +421,18 @@ def main(debugBreak=False):
 	time1 = time.time()
 
 	start()
+	log("Determining types", "main", alarm.level.Info)
+	cmd = "UPDATE `UMD`.`management` SET `value` = 'STARTING. Determining types' WHERE `management`.`key` = " \
+		"'current_status';"
+	gv.sql.qselect(cmd)
+
 	# backgroundworker()
 	gv.ThreadCommandQueue.join()
+	cmd = "UPDATE `UMD`.`management` SET `value` = 'STARTING. Finishing type determination' WHERE " \
+		"`management`.`key` = 'current_status';"
+	gv.sql.qselect(cmd)
+	log("Finishing type determination", "main", alarm.level.OK)
+
 	gv.CheckInQueue.join()
 	log("Types determined. Took %s seconds. Begininng main loop. Press CTRL C to %s" % (
 	time.time() - time1, ["quit", "enter debug console"][gv.debug]), "main", alarm.level.Info)
@@ -411,6 +443,9 @@ def main(debugBreak=False):
 		gv.mem_sum1 = summary.summarize(all_objects)
 
 	log("Starting dispatch", "main", alarm.level.OK)
+	cmd = "UPDATE `UMD`.`management` SET `value` = 'STARTING. Dispatch start' WHERE `management`.`key` = 'current_status';"
+	gv.sql.qselect(cmd)
+
 	gv.threads[gv.dispatcherThread].start()
 
 
@@ -471,7 +506,7 @@ def main(debugBreak=False):
 
 
 
-					except:
+					except (KeyError, AttributeError):
 						continue
 					statuses = {
 						0: "STAT_INIT",
@@ -504,7 +539,10 @@ def main(debugBreak=False):
 						tally("missing")
 
 				def avg(L):
-					return float(sum(L)) / len(L)
+					try:
+						return float(sum(L)) / len(L)
+					except ZeroDivisionError:
+						return 0
 
 				for t in gv.threads:
 					try:
@@ -512,7 +550,7 @@ def main(debugBreak=False):
 							runningThreads += 1
 						else:
 							stoppedThreads += 1
-					except:
+					except AttributeError:
 						stoppedThreads += 1
 				if gv.loud:
 					log("Refresh statistics loop %s" % loopcounter, "main", alarm.level.Debug)
@@ -576,7 +614,7 @@ def main(debugBreak=False):
 					fpoll_time = float(new_poll_time[0][1])
 					if fpoll_time > 0:
 						gv.min_refresh_time = fpoll_time
-				except:
+				except (IndexError, TypeError, ValueError):
 					pass
 				if gv.loud:
 					log("Min refresh time now %s" % gv.min_refresh_time, "main", alarm.level.Debug)
@@ -636,7 +674,7 @@ def main(debugBreak=False):
 						if gv.equipmentDict[equipmentID].get_offline():
 							eq = gv.equipmentDict[equipmentID]
 							log(eq.name.ljust(10, " ") + eq.modelType.ljust(10, " ") + eq.ip, "main", alarm.level.Critical)
-					except:
+					except (KeyError, AttributeError, TypeError, ValueError):
 						continue
 				log("errors:", "main", alarm.level.Critical)
 				log(gv.exceptions, "main", alarm.level.Debug)
@@ -647,8 +685,8 @@ def main(debugBreak=False):
 			gv.exceptions.append((e, traceback.format_tb(sys.exc_info()[2])))
 			try:
 				message = e.message
-			except:
-				message = ""
+			except AttributeError:
+				message = str(e)
 
 			if gv.debug:
 				gv.threadJoinFlag = True

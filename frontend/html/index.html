@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <title>UMD Manager Edit IRD</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.min.css">
+
+    <link href = "bower_components/eonasdan-bootstrap-datetimepicker/build/css/bootstrap-datetimepicker.css" rel="stylesheet">
+    <!-- Select -->
+    <link href = "bower_components/bootstrap-select/dist/css/bootstrap-select.css" rel="stylesheet">
+    <!-- Custom styles for this template -->
+
+    <link href="bower_components/bootstrap-combobox/css/bootstrap-combobox.css" rel="stylesheet"></link>
+    <!-- Required Javascript -->
+    <script src="bower_components/jquery/dist/jquery.min.js"></script>
+    <script src="bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+    <script src="bower_components/bootstrap-treeview/src/js/bootstrap-treeview.js"></script>
+    <script src="bower_components/progressbar.js/dist/progressbar.min.js"></script>
+    <script src="bower_components/d3/d3.js"></script>
+    <script src="bower_components/moment/moment.js"></script>
+    <script src="bower_components/moment-timezone/builds/moment-timezone-with-data.js"></script>
+    <script src="bower_components/eonasdan-bootstrap-datetimepicker/src/js/bootstrap-datetimepicker.js"></script>
+    <script src="bower_components/bootstrap-select/dist/js/bootstrap-select.js"></script>
+    <script src="bower_components/bootstrap-combobox/js/bootstrap-combobox.js"></script>
+    <script src="bower_components/bootstrap-toggle/js/bootstrap-toggle.js"></script>
+    <script src="bower_components/bootstrap-table/dist/bootstrap-table.js"></script>
+    <script src="node_modules/@json-editor/json-editor/dist/jsoneditor.min.js"></script>
+    <script src="base.js"></script>
+<script>
+   function getUrlVars() {
+    var vars = {};
+    var parts = window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function(m,key,value) {
+        vars[key] = value;
+    });
+    return vars;
+}
+
+function getScript(url, callback) {
+   var script = document.createElement('script');
+   script.type = 'text/javascript';
+   script.src = url;
+
+   script.onreadystatechange = callback;
+   script.onload = callback;
+
+   document.getElementsByTagName('head')[0].appendChild(script);
+}
+
+$(document).ready(function () {
+    $("input#AddMVsubmit").click(function(){
+        $.ajax({
+            type: "POST",
+            url: "submit_form.php", //process to mail
+            data: $('#addMVForm').serialize(),
+            success: function(msg){
+                $("#thanks").append(msg) //hide button and show thank you
+                $("#form-addmv").modal('hide'); //hide popup
+                getScript('static_parameters.php', function(){
+                   // populateListbox(multiviewers )
+                   filter();
+                   });
+            },
+            error: function(){
+                alert("failure");
+            }
+        });
+    });
+});
+</script>
+</head>
+
+<body>
+ 
+<ul class="nav nav-tabs" role="tablist">
+<li class="active"><a href="#">Status</a></li>
+        <li ><a href="editmv.html">Multiviewer</a></li>
+        <li><a href="editird.html">IRD</a></li>
+        <li><a href="editcolour.php">Colours</a></li>
+    <li><a href="mtxchangelog.html">Matrix Changelog</a></li>
+      </ul>
+    </div>
+   <div class="page-header">
+   <h2>Eurovision UMD Manager
+      
+   </h2>
+</div>
+<div id="id01"></div>  
+<iframe src="umdmgrstatus.php" style="width:100%;height:2000px" frameborder="0" scrolling="yes" >
+
+
+
+
+
+
+        
+</body>
+</html>

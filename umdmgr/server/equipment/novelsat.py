@@ -32,7 +32,7 @@ class NS2000(IRD):
 			resdict  = snmp.get(nov_soft_ver, self.ip) 
 			self.offline = False
 			
-		except:
+		except Exception: # Noqa: Pybroadexception
 			self.offline = True
 			resdict = {'ver':"0.0"}
 		if "ver" in resdict: #well it ought to
@@ -45,7 +45,7 @@ class NS2000(IRD):
 				try:
 					v.append( int(rev))
 					
-				except:
+				except (ValueError, TypeError):
 					continue
 			v = float("%d.%s"%(v[0], "".join("%d"%i for i in v[1:])))
 			if gv.loud: print("Novelsat NS2000 version %s"%v)
@@ -121,7 +121,7 @@ class NS2000_WEB(NS2000):
 		for i in range(2):
 			try:
 				response, stringfromserver = httpcaller.get(self.ip, '80', page[i])
-			except:
+			except Exception:  # Noqa: Pybroadexception
 				
 				response = {'status':'500'}
 			if response['status'] != '200': 
@@ -175,7 +175,7 @@ class NS2000_WEB(NS2000):
 		val = val.strip()
 		try:
 			val = float(val)
-		except:
+		except (TypeError, ValueError):
 			val = 0
 		val = val * 1000000 #mbps -> bps
 		return str( int( val )) #string of integer
@@ -186,7 +186,7 @@ class NS2000_WEB(NS2000):
 		val = val.strip()
 		try:
 			val = float(val)
-		except:
+		except (TypeError, ValueError):
 			val = 0
 		#val = val * 1 #Already MHZ. Note this is the Lband freq
 		return str(  val ) #string of integer
@@ -196,7 +196,7 @@ class NS2000_WEB(NS2000):
 		val = val.strip()
 		try:
 			val = float(val)
-		except:
+		except (TypeError, ValueError):
 			val = 0
 		val = val * 1000 #msps -> ksps
 		return str( int( val )) #string of integer
